@@ -10,7 +10,7 @@ This phase focuses on building the foundational elements of the application.
 
 * **Project Setup:**
   * Initialize a Next.js project with TypeScript and Tailwind CSS
-  * Libraries: Next.js 14+, TypeScript 5.0+, Tailwind CSS 3.0+
+  * Libraries: Next.js 14+, TypeScript 5.0+, Tailwind CSS 3.0+, React, Konva, Zustland, React-Konva
   * Configuration files: `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`
   * Run development server with `npm run dev`
   * Expected file structure: `/src/app` for routing, `/src/components` for UI components
@@ -72,7 +72,13 @@ This phase focuses on building the foundational elements of the application.
   * Add toggle buttons for grid, snap settings
 
 * **View Switcher:**
-  * Create floating action button for view switching (2D/3D)
+  * Create floating action button for view switching:
+    * 2D (Top Down View) (Default)
+    * Isometric View
+    * Front View
+    * Right View
+    * Left View
+    * Back View
   * File: `/src/components/ViewSwitcher/ViewSwitcher.tsx`
   * Implement smooth transition between views
   * Add preset view options (top-down, isometric)
@@ -181,9 +187,8 @@ The `docs/llm/task_management.md` file is a living document that should be updat
 1. **Consult `implementation_plan.md`:** At the beginning of a session, review this document to identify the next task(s) to be implemented.
 2. **Request AI assistance:** When working with an AI assistant, reference the specific section from this plan to provide context.
 3. **Implement the feature:** Write the code to implement the feature, focusing on one component at a time.
-4. **Test implementation:** Verify the feature works as expected in the application.
-5. **Code quality:** Run linters, typecheckers, and formatters (ESLint, TypeScript, Prettier).
-6. **Update `task_management.md`:** At the end of the session:
+4. **Code quality:** Fix lint and type errors without deviating from the plan or breaking or reverting any existing features.
+5. **Update `task_management.md`:** At the end of the session:
    * Add completed task(s) to the "Completed Tasks" section
    * Document key decisions made during implementation
    * Update the "Pending Tasks/Next Steps" section
@@ -196,3 +201,7 @@ The `docs/llm/task_management.md` file is a living document that should be updat
 * **Code structure:** Follow the component and file organization outlined in this plan
 * **Testing approach:** Include test considerations when implementing key features
 * **State management:** Follow the Zustand patterns defined in the plan
+
+> Dev server must be started manually if needed.
+> You should assume it is already running
+> You should not attempt to start it unless explicitly requested.

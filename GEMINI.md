@@ -11,17 +11,13 @@ The `docs/llm` directory contains optimized documentation specifically for AI ag
 - `task_management.md`: Development phases and task breakdown.
 - `implementation_plan.md`: Step-by-step implementation guidance and technical details.
 
-
-## Server Startup Best Practice
-
-**Before starting the development server, always check if it is already running at <http://localhost:3000>.** This prevents redundant server startups and avoids port conflicts.
-
 ## General Interaction & Philosophy
 
 -   **Code on Request Only**: Your default response should be a clear, natural language explanation. Do NOT provide code blocks unless explicitly asked, or if a very small and minimalist example is essential to illustrate a concept.
 -   **Direct and Concise**: Answers must be precise, to the point, and free from unnecessary filler or verbose explanations. Get straight to the solution without "beating around the bush."
 -   **Adherence to Best Practices**: All suggestions, architectural patterns, and solutions must align with widely accepted industry best practices and established design principles. Avoid experimental, obscure, or overly "creative" approaches. Stick to what is proven and reliable.
 -   **Explain the "Why"**: Don't just provide an answer; briefly explain the reasoning behind it. Why is this the standard approach? What specific problem does this pattern solve? This context is more valuable than the solution itself.
+-   **Professional Language**: Never ever use any special characters or emojis in documentation or code comments. Use clear, professional language without any embellishments.
 
 ## Minimalist & Standard Code Generation
 
