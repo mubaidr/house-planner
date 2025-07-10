@@ -43,10 +43,10 @@ export default function DrawingCanvas() {
     setMouseCoordinates,
   } = useUIStore();
   
-  const { walls, doors, windows, clearSelection, selectedElementId, selectedElementType } = useDesignStore();
+  const { walls, doors, windows, clearSelection, selectedElementId, selectedElementType, selectElement } = useDesignStore();
   const { undo, redo, canUndo, canRedo } = useHistoryStore();
   const { drawingState, startDrawing, updateDrawing, finishDrawing, cancelDrawing } = useWallTool();
-  const { deleteSelectedWall } = useWallEditor();
+  const { deleteSelectedWall, startDrag: handleWallStartDrag, updateDrag: handleWallDrag, endDrag: handleWallEndDrag } = useWallEditor();
   const { deleteSelectedDoor } = useDoorEditor();
   const { deleteSelectedWindow } = useWindowEditor();
   const { placementState: doorPlacementState, startPlacement: startDoorPlacement, updatePlacement: updateDoorPlacement, finishPlacement: finishDoorPlacement, cancelPlacement: cancelDoorPlacement } = useDoorTool();
@@ -331,9 +331,9 @@ export default function DrawingCanvas() {
               wall={wall}
               isSelected={selectedElementId === wall.id && selectedElementType === 'wall'}
               onSelect={() => selectElement(wall.id, 'wall')}
-              onStartDrag={handleWallStartDrag}
-              onDrag={handleWallDrag}
-              onEndDrag={handleWallEndDrag}
+              onStartDrag={(handleType: 'start' | 'end' | 'move', x: number, y: number) => handleWallStartDrag(wall.id, handleType, x, y)}
+              onDrag={(handleType: 'start' | 'end' | 'move', x: number, y: number) => handleWallDrag(wall.id, handleType, x, y)}
+              onEndDrag={() => handleWallEndDrag(wall.id)}
             />
           ))}
 
