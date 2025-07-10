@@ -24,6 +24,7 @@ import WallComponent from './elements/WallComponent';
 import DoorComponent from './elements/DoorComponent';
 import WindowComponent from './elements/WindowComponent';
 import DoorFloatingControls from './DoorFloatingControls';
+import RoomOverlay from './RoomOverlay';
 
 export default function DrawingCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -379,6 +380,9 @@ export default function DrawingCanvas() {
             showAll={measureState.showAllMeasurements}
             onRemoveMeasurement={removeMeasurement}
           />
+
+          {/* Room Detection Overlay */}
+          <RoomOverlay />
         </Layer>
       </Stage>
 

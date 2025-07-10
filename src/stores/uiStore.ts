@@ -13,6 +13,7 @@ export interface UIState {
   sidebarCollapsed: boolean;
   propertiesPanelCollapsed: boolean;
   mouseCoordinates: { x: number; y: number };
+  showRooms: boolean;
 }
 
 export interface UIActions {
@@ -25,6 +26,7 @@ export interface UIActions {
   toggleSidebar: () => void;
   togglePropertiesPanel: () => void;
   setMouseCoordinates: (x: number, y: number) => void;
+  toggleRooms: () => void;
 }
 
 export const useUIStore = create<UIState & UIActions>((set) => ({
@@ -39,6 +41,7 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   sidebarCollapsed: false,
   propertiesPanelCollapsed: false,
   mouseCoordinates: { x: 0, y: 0 },
+  showRooms: true,
 
   // Actions
   setActiveTool: (tool) =>
@@ -85,5 +88,10 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   setMouseCoordinates: (x, y) =>
     set(() => ({
       mouseCoordinates: { x, y },
+    })),
+
+  toggleRooms: () =>
+    set((state) => ({
+      showRooms: !state.showRooms,
     })),
 }));
