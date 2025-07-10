@@ -12,6 +12,7 @@ import MeasurementControls from '@/components/Toolbar/MeasurementControls';
 import DoorAnimationControls from '@/components/Toolbar/DoorAnimationControls';
 import DrawingCanvas from '@/components/Canvas/DrawingCanvas';
 import MaterialLibrary from '../Materials/MaterialLibrary';
+import TemplateLibrary from '../Templates/TemplateLibrary';
 
 interface AppLayoutProps {
   children?: React.ReactNode;

@@ -8,6 +8,7 @@ import { saveDesign, loadDesign, getSavedDesigns, loadAutoSave } from '@/utils/s
 import ToolButton from './ToolButton';
 import ExportButton from './ExportButton';
 import MaterialsButton from './MaterialsButton';
+import TemplatesButton from './TemplatesButton';
 
 interface ToolbarProps {
   stageRef?: React.RefObject<any>;
@@ -150,6 +151,9 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
 
         {/* Materials Button */}
         <MaterialsButton />
+
+        {/* Templates Button */}
+        <TemplatesButton />
 
         {/* Export Button */}
         <ExportButton stage={stageRef?.current} />
