@@ -6,8 +6,13 @@ import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { saveDesign, loadDesign, getSavedDesigns, loadAutoSave } from '@/utils/storage';
 import ToolButton from './ToolButton';
+import ExportButton from './ExportButton';
 
-export default function Toolbar() {
+interface ToolbarProps {
+  stageRef?: React.RefObject<any>;
+}
+
+export default function Toolbar({ stageRef }: ToolbarProps) {
   const { activeTool, setActiveTool, toggleSidebar, togglePropertiesPanel } = useUIStore();
   const { walls, doors, windows, addWall, addDoor, addWindow, clearAll } = useDesignStore();
   const { undo, redo, canUndo, canRedo, getUndoDescription, getRedoDescription } = useHistoryStore();
@@ -141,6 +146,9 @@ export default function Toolbar() {
         >
           Load
         </button>
+
+        {/* Export Button */}
+        <ExportButton stage={stageRef?.current} />
 
         <button
           onClick={handleLoadAutoSave}

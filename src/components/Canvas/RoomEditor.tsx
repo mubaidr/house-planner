@@ -12,20 +12,12 @@ interface RoomEditorProps {
 }
 
 export default function RoomEditor({ room, isSelected, onSelect, onEdit }: RoomEditorProps) {
-  const [isEditing, setIsEditing] = useState(false);
-
   const handleDoubleClick = () => {
-    setIsEditing(true);
     // In a real implementation, this would trigger a modal or inline editor
     const newName = prompt('Enter room name:', room.name);
     if (newName && newName !== room.name) {
       onEdit(room.id, { name: newName });
     }
-    setIsEditing(false);
-  };
-
-  const handleRoomTypeChange = (type: string) => {
-    onEdit(room.id, { roomType: type });
   };
 
   return (

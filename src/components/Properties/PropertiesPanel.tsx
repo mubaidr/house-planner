@@ -156,6 +156,7 @@ export default function PropertiesPanel() {
                 <h3 className="font-medium text-gray-800 mb-2 capitalize">
                   {selectedElementType} Properties
                 </h3>
+              </div>
               
               {/* Common properties */}
               <div className="space-y-3">
