@@ -15,11 +15,21 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
   // const { applyMaterial } = useMaterialStore(); // TODO: Implement material application
 
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('application/json', JSON.stringify({
+    const dragData = {
       type: 'material',
       materialId: material.id,
-    }));
+    };
+    
+    e.dataTransfer.setData('application/json', JSON.stringify(dragData));
     e.dataTransfer.effectAllowed = 'copy';
+    
+    // Store drag data globally for canvas drop handling
+    (window as any).currentDragData = dragData;
+  };
+
+  const handleDragEnd = () => {
+    // Clean up global drag data
+    delete (window as any).currentDragData;
   };
 
   const getCostDisplay = () => {
@@ -37,6 +47,7 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
       onClick={onSelect}
       draggable
       onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       {/* Material Preview */}
       <div className="aspect-square rounded-t-lg overflow-hidden relative">

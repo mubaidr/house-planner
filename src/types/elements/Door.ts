@@ -9,6 +9,7 @@ export interface Door {
   swingDirection: 'left' | 'right' | 'inward' | 'outward';
   style: 'single' | 'double' | 'sliding';
   material?: string;
+  materialId?: string;
   color: string;
 }
 

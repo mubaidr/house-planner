@@ -8,6 +8,7 @@ export interface Window {
   wallAngle: number; // Angle of the parent wall in radians
   style: 'single' | 'double' | 'casement';
   material?: string;
+  materialId?: string;
   color: string;
   opacity: number;
 }

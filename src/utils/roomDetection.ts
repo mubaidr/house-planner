@@ -12,6 +12,7 @@ export interface Room {
   color: string;
   roomType?: string;
   isCustomNamed?: boolean;
+  materialId?: string;
 }
 
 export interface RoomDetectionResult {

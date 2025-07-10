@@ -7,6 +7,7 @@ export interface Wall {
   thickness: number;
   height: number;
   material?: string;
+  materialId?: string;
   color: string;
 }
 

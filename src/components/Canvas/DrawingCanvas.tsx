@@ -24,7 +24,9 @@ import WallComponent from './elements/WallComponent';
 import DoorComponent from './elements/DoorComponent';
 import WindowComponent from './elements/WindowComponent';
 import DoorFloatingControls from './DoorFloatingControls';
-import RoomOverlay from './RoomOverlay';
+import MaterializedRoomOverlay from './MaterializedRoomOverlay';
+import MaterializedWallComponent from './MaterializedWallComponent';
+import MaterializedDoorComponent from './MaterializedDoorComponent';
 
 export default function DrawingCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -322,14 +324,30 @@ export default function DrawingCanvas() {
 
         {/* Elements Layer */}
         <Layer>
-          {/* Render Walls */}
+          {/* Render Walls with Materials */}
           {walls.map((wall) => (
-            <WallComponent key={wall.id} wall={wall} />
+            <MaterializedWallComponent 
+              key={wall.id} 
+              wall={wall}
+              isSelected={selectedElementId === wall.id && selectedElementType === 'wall'}
+              onSelect={() => selectElement(wall.id, 'wall')}
+              onStartDrag={handleWallStartDrag}
+              onDrag={handleWallDrag}
+              onEndDrag={handleWallEndDrag}
+            />
           ))}
 
-          {/* Render Doors */}
+          {/* Render Doors with Materials */}
           {doors.map((door) => (
-            <DoorComponent key={door.id} door={door} />
+            <MaterializedDoorComponent 
+              key={door.id} 
+              door={door}
+              isSelected={selectedElementId === door.id && selectedElementType === 'door'}
+              onSelect={() => selectElement(door.id, 'door')}
+              onStartDrag={() => {}}
+              onDrag={() => {}}
+              onEndDrag={() => {}}
+            />
           ))}
 
           {/* Render Windows */}
@@ -381,8 +399,8 @@ export default function DrawingCanvas() {
             onRemoveMeasurement={removeMeasurement}
           />
 
-          {/* Room Detection Overlay */}
-          <RoomOverlay />
+          {/* Room Detection Overlay with Materials */}
+          <MaterializedRoomOverlay />
         </Layer>
       </Stage>
 

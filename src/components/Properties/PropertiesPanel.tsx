@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import RoomPropertiesPanel from './RoomPropertiesPanel';
+import MaterialPropertiesSection from './MaterialPropertiesSection';
 import { useWallEditor } from '@/hooks/useWallEditor';
 import { useDoorEditor } from '@/hooks/useDoorEditor';
 import { useWindowEditor } from '@/hooks/useWindowEditor';
