@@ -184,11 +184,10 @@ The `docs/llm/task_management.md` file is a living document that should be updat
 
 ### Workflow Steps
 
-1. **Consult `implementation_plan.md`:** At the beginning of a session, review this document to identify the next task(s) to be implemented.
-2. **Request AI assistance:** When working with an AI assistant, reference the specific section from this plan to provide context.
-3. **Implement the feature:** Write the code to implement the feature, focusing on one component at a time.
-4. **Code quality:** Fix lint and type errors without deviating from the plan or breaking or reverting any existing features.
-5. **Update `task_management.md`:** At the end of the session:
+1. **Review the plan:** Before starting a new feature, read the relevant sections of this implementation plan.
+2. **Implement the feature:** Write the code to implement the feature, focusing on one component at a time.
+3. **Code quality:** Fix lint and type errors without deviating from the plan or breaking or reverting any existing features.
+4. **Update `task_management.md`:**
    * Add completed task(s) to the "Completed Tasks" section
    * Document key decisions made during implementation
    * Update the "Pending Tasks/Next Steps" section

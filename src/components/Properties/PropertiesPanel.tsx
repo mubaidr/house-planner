@@ -18,7 +18,7 @@ export default function PropertiesPanel() {
   const { deleteSelectedDoor } = useDoorEditor();
   const { deleteSelectedWindow } = useWindowEditor();
   
-  const [editValues, setEditValues] = useState<Partial<Wall & Door & Window>>({});
+  const [editValues, setEditValues] = useState<Record<string, string | number>>({});
 
   const getSelectedElement = () => {
     if (!selectedElementId || !selectedElementType) return null;
@@ -56,7 +56,7 @@ export default function PropertiesPanel() {
             width: door.width,
             height: door.height,
             swingDirection: door.swingDirection,
-            style: door.style as any,
+            style: door.style,
           });
           break;
         case 'window':
@@ -65,7 +65,7 @@ export default function PropertiesPanel() {
             color: window.color,
             width: window.width,
             height: window.height,
-            style: window.style as any,
+            style: window.style,
             opacity: window.opacity,
           });
           break;
@@ -312,7 +312,7 @@ export default function PropertiesPanel() {
                         className="w-full"
                       />
                       <div className="text-xs text-gray-500 mt-1">
-                        {Math.round(((editValues.opacity ?? (selectedElement as Window).opacity) * 100))}%
+                        {Math.round((Number(editValues.opacity ?? (selectedElement as Window).opacity) * 100))}%
                       </div>
                     </div>
                   </>

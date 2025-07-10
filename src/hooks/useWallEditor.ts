@@ -21,7 +21,7 @@ export const useWallEditor = () => {
     dragStartPos: null,
   });
 
-  const { removeWall, addWall, walls, selectedElementId, selectedElementType } = useDesignStore();
+  const { updateWall, removeWall, addWall, walls, selectedElementId, selectedElementType } = useDesignStore();
   const { executeCommand } = useHistoryStore();
   const { updateWallWithIntersectionHandling } = useWallIntersection();
 
@@ -43,14 +43,39 @@ export const useWallEditor = () => {
     const wall = walls.find(w => w.id === wallId);
     if (!wall) return;
 
-    // Note: Live feedback during drag is handled by the drag handles themselves
-    // Snap calculation and actual wall updates with intersection handling happen in endDrag
-    
-    // Suppress unused parameter warnings - these will be used when drag-time snapping is implemented
-    void handleType;
-    void x;
-    void y;
-  }, [editState, walls]);
+    // Calculate updates based on handle type for live feedback
+    let updates: Partial<Wall> = {};
+
+    switch (handleType) {
+      case 'start':
+        updates = {
+          startX: x,
+          startY: y,
+        };
+        break;
+      case 'end':
+        updates = {
+          endX: x,
+          endY: y,
+        };
+        break;
+      case 'move':
+        const deltaX = x - editState.dragStartPos.x;
+        const deltaY = y - editState.dragStartPos.y;
+        updates = {
+          startX: editState.originalWall.startX + deltaX,
+          startY: editState.originalWall.startY + deltaY,
+          endX: editState.originalWall.endX + deltaX,
+          endY: editState.originalWall.endY + deltaY,
+        };
+        break;
+    }
+
+    // Apply updates immediately for live visual feedback
+    if (Object.keys(updates).length > 0) {
+      updateWall(wallId, updates);
+    }
+  }, [editState, walls, updateWall]);
 
   const endDrag = useCallback((wallId: string) => {
     if (!editState.isDragging || !editState.originalWall) return;
