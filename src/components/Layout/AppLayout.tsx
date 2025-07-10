@@ -8,6 +8,7 @@ import ElementsSidebar from '@/components/Sidebar/ElementsSidebar';
 import PropertiesPanel from '@/components/Properties/PropertiesPanel';
 import StatusBar from '@/components/StatusBar/StatusBar';
 import ViewSwitcher from '@/components/ViewSwitcher/ViewSwitcher';
+import MeasurementControls from '@/components/Toolbar/MeasurementControls';
 import DrawingCanvas from '@/components/Canvas/DrawingCanvas';
 
 interface AppLayoutProps {
@@ -59,6 +60,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <main className="flex-1 bg-gray-50 relative overflow-hidden">
           <DrawingCanvas />
           <ViewSwitcher />
+          <MeasurementControls />
           {children}
         </main>
 

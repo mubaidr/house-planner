@@ -9,9 +9,14 @@ import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { useWallTool } from '@/hooks/useWallTool';
 import { useWallEditor } from '@/hooks/useWallEditor';
+import { useDoorTool } from '@/hooks/useDoorTool';
+import { useWindowTool } from '@/hooks/useWindowTool';
+import { useMeasureTool } from '@/hooks/useMeasureTool';
 import { useCanvasControls } from '@/hooks/useCanvasControls';
 import Grid from './Grid';
 import SnapIndicators from './SnapIndicators';
+import ConstraintIndicators from './ConstraintIndicators';
+import MeasurementDisplay from './MeasurementDisplay';
 import WallComponent from './elements/WallComponent';
 import DoorComponent from './elements/DoorComponent';
 import WindowComponent from './elements/WindowComponent';
@@ -35,6 +40,9 @@ export default function DrawingCanvas() {
   const { undo, redo, canUndo, canRedo } = useHistoryStore();
   const { drawingState, startDrawing, updateDrawing, finishDrawing, cancelDrawing } = useWallTool();
   const { deleteSelectedWall } = useWallEditor();
+  const { placementState: doorPlacementState, startPlacement: startDoorPlacement, updatePlacement: updateDoorPlacement, finishPlacement: finishDoorPlacement, cancelPlacement: cancelDoorPlacement } = useDoorTool();
+  const { placementState: windowPlacementState, startPlacement: startWindowPlacement, updatePlacement: updateWindowPlacement, finishPlacement: finishWindowPlacement, cancelPlacement: cancelWindowPlacement } = useWindowTool();
+  const { measureState, startMeasurement, updateMeasurement, finishMeasurement, cancelMeasurement, removeMeasurement, getCurrentDistance } = useMeasureTool();
   const { } = useCanvasControls();
 
   // Handle canvas resize
@@ -89,14 +97,26 @@ export default function DrawingCanvas() {
       clearSelection();
     }
 
-    if (activeTool === 'wall') {
-      const pos = e.target.getStage()?.getPointerPosition();
-      const stage = stageRef.current;
-      if (stage && pos) {
-        // Adjust for stage position and scale
-        const transform = stage.getAbsoluteTransform().copy().invert();
-        const localPos = transform.point(pos);
-        startDrawing(localPos.x, localPos.y);
+    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = stageRef.current;
+    if (stage && pos) {
+      // Adjust for stage position and scale
+      const transform = stage.getAbsoluteTransform().copy().invert();
+      const localPos = transform.point(pos);
+
+      switch (activeTool) {
+        case 'wall':
+          startDrawing(localPos.x, localPos.y);
+          break;
+        case 'door':
+          startDoorPlacement(localPos.x, localPos.y);
+          break;
+        case 'window':
+          startWindowPlacement(localPos.x, localPos.y);
+          break;
+        case 'measure':
+          startMeasurement(localPos.x, localPos.y);
+          break;
       }
     }
   };
@@ -112,16 +132,54 @@ export default function DrawingCanvas() {
       // Update mouse coordinates for status bar
       setMouseCoordinates(Math.round(localPos.x), Math.round(localPos.y));
       
-      // Handle wall drawing
-      if (activeTool === 'wall' && drawingState.isDrawing) {
-        updateDrawing(localPos.x, localPos.y);
+      // Handle tool-specific mouse movement
+      switch (activeTool) {
+        case 'wall':
+          if (drawingState.isDrawing) {
+            updateDrawing(localPos.x, localPos.y);
+          }
+          break;
+        case 'door':
+          if (doorPlacementState.isPlacing) {
+            updateDoorPlacement(localPos.x, localPos.y);
+          }
+          break;
+        case 'window':
+          if (windowPlacementState.isPlacing) {
+            updateWindowPlacement(localPos.x, localPos.y);
+          }
+          break;
+        case 'measure':
+          if (measureState.isMeasuring) {
+            updateMeasurement(localPos.x, localPos.y);
+          }
+          break;
       }
     }
   };
 
   const handleStageMouseUp = () => {
-    if (activeTool === 'wall' && drawingState.isDrawing) {
-      finishDrawing();
+    switch (activeTool) {
+      case 'wall':
+        if (drawingState.isDrawing) {
+          finishDrawing();
+        }
+        break;
+      case 'door':
+        if (doorPlacementState.isPlacing) {
+          finishDoorPlacement();
+        }
+        break;
+      case 'window':
+        if (windowPlacementState.isPlacing) {
+          finishWindowPlacement();
+        }
+        break;
+      case 'measure':
+        if (measureState.isMeasuring) {
+          finishMeasurement();
+        }
+        break;
     }
   };
 
@@ -168,6 +226,12 @@ export default function DrawingCanvas() {
           case 'escape':
             if (drawingState.isDrawing) {
               cancelDrawing();
+            } else if (doorPlacementState.isPlacing) {
+              cancelDoorPlacement();
+            } else if (windowPlacementState.isPlacing) {
+              cancelWindowPlacement();
+            } else if (measureState.isMeasuring) {
+              cancelMeasurement();
             } else {
               clearSelection();
             }
@@ -184,7 +248,7 @@ export default function DrawingCanvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActiveTool, drawingState.isDrawing, cancelDrawing, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, setMouseCoordinates]);
+  }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, setMouseCoordinates]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
@@ -216,6 +280,24 @@ export default function DrawingCanvas() {
             canvasWidth={canvasWidth}
             canvasHeight={canvasHeight}
           />
+          
+          {/* Door Constraint Indicators */}
+          {activeTool === 'door' && doorPlacementState.constraintResult && (
+            <ConstraintIndicators
+              constraintResult={doorPlacementState.constraintResult}
+              isValid={doorPlacementState.isValid}
+              elementWidth={80}
+            />
+          )}
+          
+          {/* Window Constraint Indicators */}
+          {activeTool === 'window' && windowPlacementState.constraintResult && (
+            <ConstraintIndicators
+              constraintResult={windowPlacementState.constraintResult}
+              isValid={windowPlacementState.isValid}
+              elementWidth={100}
+            />
+          )}
         </Layer>
 
         {/* Elements Layer */}
@@ -252,6 +334,32 @@ export default function DrawingCanvas() {
               listening={false}
             />
           )}
+
+          {/* Render door preview */}
+          {activeTool === 'door' && doorPlacementState.previewDoor && doorPlacementState.isValid && (
+            <DoorComponent door={doorPlacementState.previewDoor} />
+          )}
+
+          {/* Render window preview */}
+          {activeTool === 'window' && windowPlacementState.previewWindow && windowPlacementState.isValid && (
+            <WindowComponent window={windowPlacementState.previewWindow} />
+          )}
+
+          {/* Render measurements */}
+          <MeasurementDisplay
+            measurements={measureState.measurements}
+            currentMeasurement={
+              measureState.isMeasuring && measureState.startPoint && measureState.currentPoint
+                ? {
+                    startPoint: measureState.startPoint,
+                    currentPoint: measureState.currentPoint,
+                    distance: getCurrentDistance() || '',
+                  }
+                : null
+            }
+            showAll={measureState.showAllMeasurements}
+            onRemoveMeasurement={removeMeasurement}
+          />
         </Layer>
       </Stage>
     </div>

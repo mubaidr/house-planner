@@ -1,4 +1,6 @@
 import { Wall } from '@/types/elements/Wall';
+import { Door } from '@/types/elements/Door';
+import { Window } from '@/types/elements/Window';
 
 export interface Command {
   execute(): void;
@@ -66,6 +68,90 @@ export class UpdateWallCommand implements Command {
 
   get description(): string {
     return `Update wall ${this.wallId}`;
+  }
+}
+
+export class AddDoorCommand implements Command {
+  constructor(
+    private doorId: string,
+    private addDoor: (door: Door) => void,
+    private removeDoor: (id: string) => void,
+    private door: Door
+  ) {}
+
+  execute(): void {
+    this.addDoor(this.door);
+  }
+
+  undo(): void {
+    this.removeDoor(this.doorId);
+  }
+
+  get description(): string {
+    return `Add door ${this.doorId}`;
+  }
+}
+
+export class RemoveDoorCommand implements Command {
+  constructor(
+    private doorId: string,
+    private addDoor: (door: Door) => void,
+    private removeDoor: (id: string) => void,
+    private door: Door
+  ) {}
+
+  execute(): void {
+    this.removeDoor(this.doorId);
+  }
+
+  undo(): void {
+    this.addDoor(this.door);
+  }
+
+  get description(): string {
+    return `Remove door ${this.doorId}`;
+  }
+}
+
+export class AddWindowCommand implements Command {
+  constructor(
+    private windowId: string,
+    private addWindow: (window: Window) => void,
+    private removeWindow: (id: string) => void,
+    private window: Window
+  ) {}
+
+  execute(): void {
+    this.addWindow(this.window);
+  }
+
+  undo(): void {
+    this.removeWindow(this.windowId);
+  }
+
+  get description(): string {
+    return `Add window ${this.windowId}`;
+  }
+}
+
+export class RemoveWindowCommand implements Command {
+  constructor(
+    private windowId: string,
+    private addWindow: (window: Window) => void,
+    private removeWindow: (id: string) => void,
+    private window: Window
+  ) {}
+
+  execute(): void {
+    this.removeWindow(this.windowId);
+  }
+
+  undo(): void {
+    this.addWindow(this.window);
+  }
+
+  get description(): string {
+    return `Remove window ${this.windowId}`;
   }
 }
 
