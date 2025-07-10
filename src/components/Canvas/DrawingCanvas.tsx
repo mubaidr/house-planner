@@ -23,6 +23,7 @@ import MeasurementDisplay from './MeasurementDisplay';
 import WallComponent from './elements/WallComponent';
 import DoorComponent from './elements/DoorComponent';
 import WindowComponent from './elements/WindowComponent';
+import DoorFloatingControls from './DoorFloatingControls';
 
 export default function DrawingCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -380,6 +381,9 @@ export default function DrawingCanvas() {
           />
         </Layer>
       </Stage>
+
+      {/* Door Floating Controls */}
+      <DoorFloatingControls />
     </div>
   );
 }

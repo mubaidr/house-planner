@@ -23,7 +23,7 @@ export function calculateNewElementPosition(
 
   // If wall length is zero, return current position
   if (oldWallLength === 0 || newWallLength === 0) {
-    return { x: element.x, y: element.y };
+    return { x: element.x, y: element.y, wallAngle: element.wallAngle };
   }
 
   // Calculate the element's position as a ratio along the old wall
