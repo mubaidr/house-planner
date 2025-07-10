@@ -9,6 +9,8 @@ import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { useWallTool } from '@/hooks/useWallTool';
 import { useWallEditor } from '@/hooks/useWallEditor';
+import { useDoorEditor } from '@/hooks/useDoorEditor';
+import { useWindowEditor } from '@/hooks/useWindowEditor';
 import { useDoorTool } from '@/hooks/useDoorTool';
 import { useWindowTool } from '@/hooks/useWindowTool';
 import { useMeasureTool } from '@/hooks/useMeasureTool';
@@ -41,6 +43,8 @@ export default function DrawingCanvas() {
   const { undo, redo, canUndo, canRedo } = useHistoryStore();
   const { drawingState, startDrawing, updateDrawing, finishDrawing, cancelDrawing } = useWallTool();
   const { deleteSelectedWall } = useWallEditor();
+  const { deleteSelectedDoor } = useDoorEditor();
+  const { deleteSelectedWindow } = useWindowEditor();
   const { placementState: doorPlacementState, startPlacement: startDoorPlacement, updatePlacement: updateDoorPlacement, finishPlacement: finishDoorPlacement, cancelPlacement: cancelDoorPlacement } = useDoorTool();
   const { placementState: windowPlacementState, startPlacement: startWindowPlacement, updatePlacement: updateWindowPlacement, finishPlacement: finishWindowPlacement, cancelPlacement: cancelWindowPlacement } = useWindowTool();
   const { measureState, startMeasurement, updateMeasurement, finishMeasurement, cancelMeasurement, removeMeasurement, getCurrentDistance } = useMeasureTool();
@@ -239,8 +243,18 @@ export default function DrawingCanvas() {
             break;
           case 'delete':
           case 'backspace':
-            if (selectedElementId && selectedElementType === 'wall') {
-              deleteSelectedWall();
+            if (selectedElementId) {
+              switch (selectedElementType) {
+                case 'wall':
+                  deleteSelectedWall();
+                  break;
+                case 'door':
+                  deleteSelectedDoor();
+                  break;
+                case 'window':
+                  deleteSelectedWindow();
+                  break;
+              }
             }
             break;
         }
@@ -249,7 +263,7 @@ export default function DrawingCanvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, setMouseCoordinates]);
+  }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, deleteSelectedDoor, deleteSelectedWindow, setMouseCoordinates]);
 
   return (
     <div ref={containerRef} className="w-full h-full">

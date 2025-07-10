@@ -4,6 +4,8 @@ import React from 'react';
 import { Rect, Line } from 'react-konva';
 import { Window } from '@/types/elements/Window';
 import { useDesignStore } from '@/stores/designStore';
+import { useWindowEditor } from '@/hooks/useWindowEditor';
+import WindowHandles from './WindowHandles';
 
 interface WindowComponentProps {
   window: Window;
@@ -11,11 +13,24 @@ interface WindowComponentProps {
 
 export default function WindowComponent({ window }: WindowComponentProps) {
   const { selectElement, selectedElementId } = useDesignStore();
+  const { startDrag, updateDrag, endDrag } = useWindowEditor();
   
   const isSelected = selectedElementId === window.id;
 
   const handleClick = () => {
     selectElement(window.id, 'window');
+  };
+
+  const handleStartDrag = (handleType: 'resize' | 'move', x: number, y: number) => {
+    startDrag(window.id, handleType, x, y);
+  };
+
+  const handleDrag = (handleType: 'resize' | 'move', x: number, y: number) => {
+    updateDrag(window.id, handleType, x, y);
+  };
+
+  const handleEndDrag = () => {
+    endDrag(window.id);
   };
 
   return (
@@ -55,6 +70,15 @@ export default function WindowComponent({ window }: WindowComponentProps) {
           onTap={handleClick}
         />
       )}
+
+      {/* Editing handles */}
+      <WindowHandles
+        window={window}
+        isSelected={isSelected}
+        onStartDrag={handleStartDrag}
+        onDrag={handleDrag}
+        onEndDrag={handleEndDrag}
+      />
     </>
   );
 }

@@ -4,15 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { useWallEditor } from '@/hooks/useWallEditor';
-import { UpdateWallCommand } from '@/utils/history';
+import { useDoorEditor } from '@/hooks/useDoorEditor';
+import { useWindowEditor } from '@/hooks/useWindowEditor';
+import { UpdateWallCommand, UpdateDoorCommand, UpdateWindowCommand } from '@/utils/history';
 import { Wall } from '@/types/elements/Wall';
+import { Door } from '@/types/elements/Door';
+import { Window } from '@/types/elements/Window';
 
 export default function PropertiesPanel() {
-  const { selectedElementId, selectedElementType, walls, doors, windows, updateWall } = useDesignStore();
+  const { selectedElementId, selectedElementType, walls, doors, windows, updateWall, updateDoor, updateWindow } = useDesignStore();
   const { executeCommand } = useHistoryStore();
   const { deleteSelectedWall } = useWallEditor();
+  const { deleteSelectedDoor } = useDoorEditor();
+  const { deleteSelectedWindow } = useWindowEditor();
   
-  const [editValues, setEditValues] = useState<Partial<Wall>>({});
+  const [editValues, setEditValues] = useState<Partial<Wall & Door & Window>>({});
 
   const getSelectedElement = () => {
     if (!selectedElementId || !selectedElementType) return null;
@@ -33,35 +39,94 @@ export default function PropertiesPanel() {
 
   // Update edit values when selection changes
   useEffect(() => {
-    if (selectedElement && selectedElementType === 'wall') {
-      setEditValues({
-        color: selectedElement.color,
-        thickness: (selectedElement as Wall).thickness,
-        height: (selectedElement as Wall).height,
-      });
+    if (selectedElement) {
+      switch (selectedElementType) {
+        case 'wall':
+          const wall = selectedElement as Wall;
+          setEditValues({
+            color: wall.color,
+            thickness: wall.thickness,
+            height: wall.height,
+          });
+          break;
+        case 'door':
+          const door = selectedElement as Door;
+          setEditValues({
+            color: door.color,
+            width: door.width,
+            height: door.height,
+            swingDirection: door.swingDirection,
+            style: door.style as any,
+          });
+          break;
+        case 'window':
+          const window = selectedElement as Window;
+          setEditValues({
+            color: window.color,
+            width: window.width,
+            height: window.height,
+            style: window.style as any,
+            opacity: window.opacity,
+          });
+          break;
+        default:
+          setEditValues({});
+      }
     } else {
       setEditValues({});
     }
   }, [selectedElement, selectedElementType]);
 
-  const handlePropertyChange = (property: keyof Wall, value: string | number) => {
-    if (!selectedElement || !selectedElementId || selectedElementType !== 'wall') return;
+  const handlePropertyChange = (property: string, value: string | number) => {
+    if (!selectedElement || !selectedElementId || !selectedElementType) return;
 
-    const originalWall = selectedElement as Wall;
-    const newValue = property === 'color' ? value : Number(value);
-    
     // Update edit values for immediate UI feedback
-    setEditValues(prev => ({ ...prev, [property]: newValue }));
+    setEditValues(prev => ({ ...prev, [property]: value }));
 
-    // Create and execute command for undo/redo support
-    const command = new UpdateWallCommand(
-      selectedElementId,
-      updateWall,
-      originalWall,
-      { [property]: newValue }
-    );
-    
-    executeCommand(command);
+    // Create and execute appropriate command based on element type
+    switch (selectedElementType) {
+      case 'wall':
+        const originalWall = selectedElement as Wall;
+        const wallValue = property === 'color' ? value : Number(value);
+        const wallCommand = new UpdateWallCommand(
+          selectedElementId,
+          updateWall,
+          originalWall,
+          { [property]: wallValue }
+        );
+        executeCommand(wallCommand);
+        break;
+        
+      case 'door':
+        const originalDoor = selectedElement as Door;
+        let doorValue: string | number = value;
+        if (property === 'width' || property === 'height') {
+          doorValue = Number(value);
+        }
+        const doorCommand = new UpdateDoorCommand(
+          selectedElementId,
+          updateDoor,
+          originalDoor,
+          { [property]: doorValue }
+        );
+        executeCommand(doorCommand);
+        break;
+        
+      case 'window':
+        const originalWindow = selectedElement as Window;
+        let windowValue: string | number = value;
+        if (property === 'width' || property === 'height' || property === 'opacity') {
+          windowValue = Number(value);
+        }
+        const windowCommand = new UpdateWindowCommand(
+          selectedElementId,
+          updateWindow,
+          originalWindow,
+          { [property]: windowValue }
+        );
+        executeCommand(windowCommand);
+        break;
+    }
   };
 
   return (
@@ -97,6 +162,7 @@ export default function PropertiesPanel() {
                   />
                 </div>
 
+                {/* Wall-specific properties */}
                 {selectedElementType === 'wall' && 'thickness' in selectedElement && (
                   <>
                     <div>
@@ -124,6 +190,130 @@ export default function PropertiesPanel() {
                         onChange={(e) => handlePropertyChange('height', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                    </div>
+                  </>
+                )}
+
+                {/* Door-specific properties */}
+                {selectedElementType === 'door' && 'width' in selectedElement && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Width (px)
+                      </label>
+                      <input
+                        type="number"
+                        min="40"
+                        max="200"
+                        value={editValues.width ?? selectedElement.width}
+                        onChange={(e) => handlePropertyChange('width', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Height (px)
+                      </label>
+                      <input
+                        type="number"
+                        min="150"
+                        max="250"
+                        value={editValues.height ?? selectedElement.height}
+                        onChange={(e) => handlePropertyChange('height', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Swing Direction
+                      </label>
+                      <select
+                        value={editValues.swingDirection ?? (selectedElement as Door).swingDirection}
+                        onChange={(e) => handlePropertyChange('swingDirection', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                        <option value="inward">Inward</option>
+                        <option value="outward">Outward</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Style
+                      </label>
+                      <select
+                        value={editValues.style ?? (selectedElement as Door).style}
+                        onChange={(e) => handlePropertyChange('style', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="single">Single</option>
+                        <option value="double">Double</option>
+                        <option value="sliding">Sliding</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* Window-specific properties */}
+                {selectedElementType === 'window' && 'width' in selectedElement && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Width (px)
+                      </label>
+                      <input
+                        type="number"
+                        min="60"
+                        max="300"
+                        value={editValues.width ?? selectedElement.width}
+                        onChange={(e) => handlePropertyChange('width', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Height (px)
+                      </label>
+                      <input
+                        type="number"
+                        min="40"
+                        max="150"
+                        value={editValues.height ?? selectedElement.height}
+                        onChange={(e) => handlePropertyChange('height', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Style
+                      </label>
+                      <select
+                        value={editValues.style ?? (selectedElement as Window).style}
+                        onChange={(e) => handlePropertyChange('style', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="single">Single</option>
+                        <option value="double">Double</option>
+                        <option value="casement">Casement</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Opacity
+                      </label>
+                      <input
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value={editValues.opacity ?? (selectedElement as Window).opacity}
+                        onChange={(e) => handlePropertyChange('opacity', e.target.value)}
+                        className="w-full"
+                      />
+                      <div className="text-xs text-gray-500 mt-1">
+                        {Math.round(((editValues.opacity ?? (selectedElement as Window).opacity) * 100))}%
+                      </div>
                     </div>
                   </>
                 )}
@@ -157,7 +347,19 @@ export default function PropertiesPanel() {
                 {/* Actions */}
                 <div className="pt-3 border-t border-gray-200">
                   <button
-                    onClick={deleteSelectedWall}
+                    onClick={() => {
+                      switch (selectedElementType) {
+                        case 'wall':
+                          deleteSelectedWall();
+                          break;
+                        case 'door':
+                          deleteSelectedDoor();
+                          break;
+                        case 'window':
+                          deleteSelectedWindow();
+                          break;
+                      }
+                    }}
                     className="w-full px-3 py-2 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200 transition-colors"
                   >
                     Delete {selectedElementType}

@@ -5,6 +5,8 @@ import { Rect, Arc, Line, Text } from 'react-konva';
 import { Door } from '@/types/elements/Door';
 import { useDesignStore } from '@/stores/designStore';
 import { useGlobalDoorAnimation } from '@/hooks/useDoorAnimation';
+import { useDoorEditor } from '@/hooks/useDoorEditor';
+import DoorHandles from './DoorHandles';
 
 interface DoorComponentProps {
   door: Door;
@@ -13,6 +15,7 @@ interface DoorComponentProps {
 export default function DoorComponent({ door }: DoorComponentProps) {
   const { selectElement, selectedElementId } = useDesignStore();
   const { getDoorState, toggleDoor } = useGlobalDoorAnimation();
+  const { startDrag, updateDrag, endDrag } = useDoorEditor();
   
   const isSelected = selectedElementId === door.id;
   const doorState = getDoorState(door.id);
@@ -23,6 +26,18 @@ export default function DoorComponent({ door }: DoorComponentProps) {
 
   const handleDoubleClick = () => {
     toggleDoor(door.id);
+  };
+
+  const handleStartDrag = (handleType: 'resize' | 'move', x: number, y: number) => {
+    startDrag(door.id, handleType, x, y);
+  };
+
+  const handleDrag = (handleType: 'resize' | 'move', x: number, y: number) => {
+    updateDrag(door.id, handleType, x, y);
+  };
+
+  const handleEndDrag = () => {
+    endDrag(door.id);
   };
 
   // Calculate door swing based on animation state
@@ -140,6 +155,15 @@ export default function DoorComponent({ door }: DoorComponentProps) {
           listening={false}
         />
       )}
+
+      {/* Editing handles */}
+      <DoorHandles
+        door={door}
+        isSelected={isSelected}
+        onStartDrag={handleStartDrag}
+        onDrag={handleDrag}
+        onEndDrag={handleEndDrag}
+      />
     </>
   );
 }

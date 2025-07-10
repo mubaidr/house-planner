@@ -155,6 +155,48 @@ export class RemoveWindowCommand implements Command {
   }
 }
 
+export class UpdateDoorCommand implements Command {
+  constructor(
+    private doorId: string,
+    private updateDoor: (id: string, updates: Partial<Door>) => void,
+    private oldDoor: Door,
+    private newUpdates: Partial<Door>
+  ) {}
+
+  execute(): void {
+    this.updateDoor(this.doorId, this.newUpdates);
+  }
+
+  undo(): void {
+    this.updateDoor(this.doorId, this.oldDoor);
+  }
+
+  get description(): string {
+    return `Update door ${this.doorId}`;
+  }
+}
+
+export class UpdateWindowCommand implements Command {
+  constructor(
+    private windowId: string,
+    private updateWindow: (id: string, updates: Partial<Window>) => void,
+    private oldWindow: Window,
+    private newUpdates: Partial<Window>
+  ) {}
+
+  execute(): void {
+    this.updateWindow(this.windowId, this.newUpdates);
+  }
+
+  undo(): void {
+    this.updateWindow(this.windowId, this.oldWindow);
+  }
+
+  get description(): string {
+    return `Update window ${this.windowId}`;
+  }
+}
+
 export class BatchCommand implements Command {
   constructor(
     private commands: Command[],
