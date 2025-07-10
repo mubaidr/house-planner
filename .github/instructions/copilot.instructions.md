@@ -8,10 +8,17 @@ applyTo: '**'
 This project is a web-based floor plan designer built with Next.js 15, React 19, TypeScript, Konva.js, and Tailwind CSS 4.
 
 ## Effective Use of `docs/llm`
+
 The `docs/llm` directory contains optimized documentation specifically for AI agents. Always refer to these documents for project context, technical specifications, architectural decisions, and implementation patterns.
 
 -   `project_summary.md`: Business requirements, stakeholders, and technical constraints.
 -   `task_management.md`: Development phases and task breakdown.
+-   `implementation_plan.md`: Step-by-step implementation guidance and technical details.
+
+
+## Server Startup Best Practice
+
+**Before starting the development server, always check if it is already running at http://localhost:3000.** This prevents redundant server startups and avoids port conflicts.
 
 ## General Interaction & Philosophy
 
