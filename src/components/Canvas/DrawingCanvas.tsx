@@ -16,6 +16,7 @@ import { useCanvasControls } from '@/hooks/useCanvasControls';
 import Grid from './Grid';
 import SnapIndicators from './SnapIndicators';
 import ConstraintIndicators from './ConstraintIndicators';
+import IntersectionIndicators from './IntersectionIndicators';
 import MeasurementDisplay from './MeasurementDisplay';
 import WallComponent from './elements/WallComponent';
 import DoorComponent from './elements/DoorComponent';
@@ -298,6 +299,9 @@ export default function DrawingCanvas() {
               elementWidth={100}
             />
           )}
+          
+          {/* Intersection Indicators */}
+          <IntersectionIndicators />
         </Layer>
 
         {/* Elements Layer */}

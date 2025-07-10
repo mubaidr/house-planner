@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useUIStore } from '@/stores/uiStore';
-import { useHistoryStore } from '@/stores/historyStore';
+import { useWallIntersection } from '@/hooks/useWallIntersection';
 import { Wall } from '@/types/elements/Wall';
-import { snapPoint, getWallSnapPoints, SnapResult } from '@/utils/snapping';
-import { AddWallCommand } from '@/utils/history';
+import { snapPoint, SnapResult } from '@/utils/snapping';
+import { getWallSnapPointsWithIntersections } from '@/utils/wallIntersection';
 
 interface WallDrawingState {
   isDrawing: boolean;
@@ -21,14 +21,15 @@ export const useWallTool = () => {
     currentSnapResult: null,
   });
 
-  const { addWall, removeWall, walls } = useDesignStore();
+  const { walls } = useDesignStore();
   const { snapToGrid, gridSize, activeTool } = useUIStore();
-  const { executeCommand } = useHistoryStore();
+  const { addWallWithIntersectionHandling } = useWallIntersection();
 
   const startDrawing = useCallback((x: number, y: number) => {
     if (activeTool !== 'wall') return;
 
-    const snapPoints = getWallSnapPoints(walls);
+    // Use enhanced snap points that include intersections
+    const snapPoints = getWallSnapPointsWithIntersections(walls);
     const snapResult = snapPoint(
       { x, y },
       gridSize,
@@ -47,7 +48,8 @@ export const useWallTool = () => {
   const updateDrawing = useCallback((x: number, y: number) => {
     if (!drawingState.isDrawing || activeTool !== 'wall') return;
 
-    const snapPoints = getWallSnapPoints(walls);
+    // Use enhanced snap points that include intersections
+    const snapPoints = getWallSnapPointsWithIntersections(walls);
     const snapResult = snapPoint(
       { x, y },
       gridSize,
@@ -85,14 +87,8 @@ export const useWallTool = () => {
         color: '#666666',
       };
 
-      // Use command pattern for undo/redo support
-      const command = new AddWallCommand(
-        newWall.id,
-        addWall,
-        removeWall,
-        newWall
-      );
-      executeCommand(command);
+      // Use intersection-aware wall creation
+      addWallWithIntersectionHandling(newWall);
     }
 
     setDrawingState({
@@ -101,7 +97,7 @@ export const useWallTool = () => {
       currentPoint: null,
       currentSnapResult: null,
     });
-  }, [drawingState, addWall, removeWall, executeCommand]);
+  }, [drawingState, addWallWithIntersectionHandling]);
 
   const cancelDrawing = useCallback(() => {
     setDrawingState({
