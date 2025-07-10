@@ -9,6 +9,7 @@ import PropertiesPanel from '@/components/Properties/PropertiesPanel';
 import StatusBar from '@/components/StatusBar/StatusBar';
 import ViewSwitcher from '@/components/ViewSwitcher/ViewSwitcher';
 import MeasurementControls from '@/components/Toolbar/MeasurementControls';
+import DoorAnimationControls from '@/components/Toolbar/DoorAnimationControls';
 import DrawingCanvas from '@/components/Canvas/DrawingCanvas';
 
 interface AppLayoutProps {
@@ -61,6 +62,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <DrawingCanvas />
           <ViewSwitcher />
           <MeasurementControls />
+          <DoorAnimationControls />
           {children}
         </main>
 
