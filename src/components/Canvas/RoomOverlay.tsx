@@ -1,16 +1,47 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Group, Line, Text, Circle } from 'react-konva';
 import { useDesignStore } from '@/stores/designStore';
 import { useUIStore } from '@/stores/uiStore';
 import { detectRooms, getRoomInfo } from '@/utils/roomDetection';
+import RoomEditor from './RoomEditor';
 
 export default function RoomOverlay() {
-  const { walls } = useDesignStore();
+  const { walls, rooms, updateRooms, updateRoom, selectElement, selectedElementId, selectedElementType } = useDesignStore();
   const { showRooms } = useUIStore();
   
-  const { rooms } = detectRooms(walls);
+  const { rooms: detectedRooms } = detectRooms(walls);
+
+  // Update rooms when walls change, preserving custom properties
+  useEffect(() => {
+    const updatedRooms = detectedRooms.map(detectedRoom => {
+      const existingRoom = rooms.find(r => 
+        r.walls.length === detectedRoom.walls.length &&
+        r.walls.every(wallId => detectedRoom.walls.includes(wallId))
+      );
+      
+      if (existingRoom) {
+        // Preserve custom properties but update calculated ones
+        return {
+          ...existingRoom,
+          vertices: detectedRoom.vertices,
+          area: detectedRoom.area,
+          perimeter: detectedRoom.perimeter,
+          center: detectedRoom.center,
+          walls: detectedRoom.walls,
+        };
+      }
+      
+      return {
+        ...detectedRoom,
+        roomType: 'other',
+        isCustomNamed: false,
+      };
+    });
+    
+    updateRooms(updatedRooms);
+  }, [walls, detectedRooms, updateRooms]);
 
   if (!showRooms || rooms.length === 0) return null;
 
@@ -32,7 +63,7 @@ export default function RoomOverlay() {
             points={room.vertices.flatMap(v => [v.x, v.y])}
             closed={true}
             stroke={room.color.replace('F2FD', '90A4')} // Darker version
-            strokeWidth={2}
+            strokeWidth={selectedElementId === room.id && selectedElementType === 'room' ? 3 : 2}
             dash={[5, 5]}
             opacity={0.6}
             listening={false}
@@ -42,24 +73,18 @@ export default function RoomOverlay() {
           <Circle
             x={room.center.x}
             y={room.center.y}
-            radius={3}
+            radius={selectedElementId === room.id && selectedElementType === 'room' ? 5 : 3}
             fill={room.color.replace('F2FD', '1976')} // Much darker version
             opacity={0.8}
             listening={false}
           />
           
-          {/* Room label */}
-          <Text
-            x={room.center.x}
-            y={room.center.y + 10}
-            text={getRoomInfo(room)}
-            fontSize={12}
-            fontFamily="Arial"
-            fill="#333"
-            align="center"
-            offsetX={50} // Center the text
-            width={100}
-            listening={false}
+          {/* Interactive Room Editor */}
+          <RoomEditor
+            room={room}
+            isSelected={selectedElementId === room.id && selectedElementType === 'room'}
+            onSelect={() => selectElement(room.id, 'room')}
+            onEdit={updateRoom}
           />
         </Group>
       ))}

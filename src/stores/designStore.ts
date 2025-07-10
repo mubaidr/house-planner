@@ -2,14 +2,16 @@ import { create } from 'zustand';
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
+import { Room } from '@/utils/roomDetection';
 import { updateElementsForWallMovement } from '@/utils/wallElementMovement';
 
 export interface DesignState {
   walls: Wall[];
   doors: Door[];
   windows: Window[];
+  rooms: Room[];
   selectedElementId: string | null;
-  selectedElementType: 'wall' | 'door' | 'window' | null;
+  selectedElementType: 'wall' | 'door' | 'window' | 'room' | null;
 }
 
 export interface DesignActions {
@@ -22,7 +24,9 @@ export interface DesignActions {
   addWindow: (window: Window) => void;
   updateWindow: (id: string, updates: Partial<Window>) => void;
   removeWindow: (id: string) => void;
-  selectElement: (id: string | null, type: 'wall' | 'door' | 'window' | null) => void;
+  updateRoom: (id: string, updates: Partial<Room>) => void;
+  updateRooms: (rooms: Room[]) => void;
+  selectElement: (id: string | null, type: 'wall' | 'door' | 'window' | 'room' | null) => void;
   clearSelection: () => void;
   clearAll: () => void;
 }
@@ -32,6 +36,7 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
   walls: [],
   doors: [],
   windows: [],
+  rooms: [],
   selectedElementId: null,
   selectedElementType: null,
 
@@ -124,6 +129,18 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
       windows: state.windows.filter((window) => window.id !== id),
     })),
 
+  updateRoom: (id, updates) =>
+    set((state) => ({
+      rooms: state.rooms.map((room) =>
+        room.id === id ? { ...room, ...updates } : room
+      ),
+    })),
+
+  updateRooms: (rooms) =>
+    set(() => ({
+      rooms,
+    })),
+
   selectElement: (id, type) =>
     set(() => ({
       selectedElementId: id,
@@ -141,6 +158,7 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
       walls: [],
       doors: [],
       windows: [],
+      rooms: [],
       selectedElementId: null,
       selectedElementType: null,
     })),

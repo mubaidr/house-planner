@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
+import RoomPropertiesPanel from './RoomPropertiesPanel';
 import { useWallEditor } from '@/hooks/useWallEditor';
 import { useDoorEditor } from '@/hooks/useDoorEditor';
 import { useWindowEditor } from '@/hooks/useWindowEditor';
@@ -12,7 +13,7 @@ import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
 
 export default function PropertiesPanel() {
-  const { selectedElementId, selectedElementType, walls, doors, windows, updateWall, updateDoor, updateWindow } = useDesignStore();
+  const { selectedElementId, selectedElementType, walls, doors, windows, rooms, updateWall, updateDoor, updateWindow, updateRoom } = useDesignStore();
   const { executeCommand } = useHistoryStore();
   const { deleteSelectedWall } = useWallEditor();
   const { deleteSelectedDoor } = useDoorEditor();
@@ -30,6 +31,8 @@ export default function PropertiesPanel() {
         return doors.find(d => d.id === selectedElementId);
       case 'window':
         return windows.find(w => w.id === selectedElementId);
+      case 'room':
+        return rooms.find(r => r.id === selectedElementId);
       default:
         return null;
     }
@@ -142,11 +145,17 @@ export default function PropertiesPanel() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {selectedElement ? (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium text-gray-800 mb-2 capitalize">
-                {selectedElementType} Properties
-              </h3>
+          selectedElementType === 'room' ? (
+            <RoomPropertiesPanel 
+              room={selectedElement as any}
+              onUpdate={updateRoom}
+            />
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium text-gray-800 mb-2 capitalize">
+                  {selectedElementType} Properties
+                </h3>
               
               {/* Common properties */}
               <div className="space-y-3">
@@ -394,7 +403,7 @@ export default function PropertiesPanel() {
                 )}
               </div>
             </div>
-          </div>
+          )
         ) : (
           <div className="text-center text-gray-500 mt-8">
             <div className="text-4xl mb-4">📐</div>

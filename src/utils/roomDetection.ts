@@ -10,6 +10,8 @@ export interface Room {
   perimeter: number;
   center: Point;
   color: string;
+  roomType?: string;
+  isCustomNamed?: boolean;
 }
 
 export interface RoomDetectionResult {
