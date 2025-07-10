@@ -11,6 +11,7 @@ import ViewSwitcher from '@/components/ViewSwitcher/ViewSwitcher';
 import MeasurementControls from '@/components/Toolbar/MeasurementControls';
 import DoorAnimationControls from '@/components/Toolbar/DoorAnimationControls';
 import DrawingCanvas from '@/components/Canvas/DrawingCanvas';
+import MaterialLibrary from '../Materials/MaterialLibrary';
 
 interface AppLayoutProps {
   children?: React.ReactNode;

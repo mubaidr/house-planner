@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Group, Line, Text, Circle } from 'react-konva';
+import { Group, Line, Circle } from 'react-konva';
 import { useDesignStore } from '@/stores/designStore';
 import { useUIStore } from '@/stores/uiStore';
-import { detectRooms, getRoomInfo } from '@/utils/roomDetection';
+import { detectRooms } from '@/utils/roomDetection';
 import RoomEditor from './RoomEditor';
 
 export default function RoomOverlay() {

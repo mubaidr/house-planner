@@ -7,6 +7,7 @@ import { useHistoryStore } from '@/stores/historyStore';
 import { saveDesign, loadDesign, getSavedDesigns, loadAutoSave } from '@/utils/storage';
 import ToolButton from './ToolButton';
 import ExportButton from './ExportButton';
+import MaterialsButton from './MaterialsButton';
 
 interface ToolbarProps {
   stageRef?: React.RefObject<any>;
@@ -146,6 +147,9 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
         >
           Load
         </button>
+
+        {/* Materials Button */}
+        <MaterialsButton />
 
         {/* Export Button */}
         <ExportButton stage={stageRef?.current} />
