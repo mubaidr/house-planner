@@ -40,25 +40,41 @@ export default function DoorComponent({ door }: DoorComponentProps) {
     endDrag(door.id);
   };
 
-  // Calculate door swing based on animation state
+  // Calculate door swing based on animation state and wall angle
   const swingAngle = doorState.currentAngle;
   const isLeftSwing = door.swingDirection === 'left';
-  const hingeX = isLeftSwing ? door.x - door.width / 2 : door.x + door.width / 2;
-  const hingeY = door.y;
+  const wallAngle = door.wallAngle || 0;
+  
+  // Calculate door opening direction perpendicular to wall
+  const wallDirX = Math.cos(wallAngle);
+  const wallDirY = Math.sin(wallAngle);
+  const perpDirX = -wallDirY; // Perpendicular to wall (90 degrees rotated)
+  const perpDirY = wallDirX;
+  
+  // Position hinge at door center, offset slightly along wall direction
+  const hingeOffsetX = (isLeftSwing ? -1 : 1) * (door.width / 2) * wallDirX;
+  const hingeOffsetY = (isLeftSwing ? -1 : 1) * (door.width / 2) * wallDirY;
+  const hingeX = door.x + hingeOffsetX;
+  const hingeY = door.y + hingeOffsetY;
 
-  // Calculate door panel position based on swing angle
-  const radians = (swingAngle * Math.PI) / 180;
-  const doorEndX = hingeX + (isLeftSwing ? -1 : 1) * door.width * Math.cos(radians);
-  const doorEndY = hingeY + (isLeftSwing ? -1 : 1) * door.width * Math.sin(radians);
+  // Calculate door panel position based on swing angle and wall orientation
+  const swingRadians = (swingAngle * Math.PI) / 180;
+  const swingDirX = Math.cos(wallAngle + (isLeftSwing ? -1 : 1) * swingRadians);
+  const swingDirY = Math.sin(wallAngle + (isLeftSwing ? -1 : 1) * swingRadians);
+  const doorEndX = hingeX + door.width * swingDirX;
+  const doorEndY = hingeY + door.width * swingDirY;
 
   return (
     <>
-      {/* Door opening (gap in wall) */}
+      {/* Door opening (gap in wall) - simplified as a line along the wall */}
       <Rect
-        x={door.x - door.width / 2}
-        y={door.y - 2}
+        x={door.x}
+        y={door.y}
         width={door.width}
         height={4}
+        rotation={(wallAngle * 180) / Math.PI}
+        offsetX={door.width / 2}
+        offsetY={2}
         fill="white"
         stroke={isSelected ? '#3b82f6' : '#666'}
         strokeWidth={isSelected ? 2 : 1}
@@ -75,7 +91,7 @@ export default function DoorComponent({ door }: DoorComponentProps) {
         innerRadius={0}
         outerRadius={door.width}
         angle={90}
-        rotation={isLeftSwing ? 0 : -90}
+        rotation={(wallAngle * 180) / Math.PI + (isLeftSwing ? 0 : -90)}
         stroke={isSelected ? '#3b82f6' : door.color}
         strokeWidth={1}
         dash={[5, 5]}

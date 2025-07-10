@@ -5,6 +5,7 @@ export interface Window {
   width: number;
   height: number;
   wallId: string;
+  wallAngle: number; // Angle of the parent wall in radians
   style: 'single' | 'double' | 'casement';
   material?: string;
   color: string;
@@ -17,6 +18,7 @@ export interface WindowCreateData {
   width?: number;
   height?: number;
   wallId: string;
+  wallAngle?: number; // Angle of the parent wall in radians
   style?: 'single' | 'double' | 'casement';
   material?: string;
   color?: string;

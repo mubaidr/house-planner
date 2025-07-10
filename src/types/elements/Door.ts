@@ -5,6 +5,7 @@ export interface Door {
   width: number;
   height: number;
   wallId: string;
+  wallAngle: number; // Angle of the parent wall in radians
   swingDirection: 'left' | 'right' | 'inward' | 'outward';
   style: 'single' | 'double' | 'sliding';
   material?: string;
@@ -17,6 +18,7 @@ export interface DoorCreateData {
   width?: number;
   height?: number;
   wallId: string;
+  wallAngle?: number; // Angle of the parent wall in radians
   swingDirection?: 'left' | 'right' | 'inward' | 'outward';
   style?: 'single' | 'double' | 'sliding';
   material?: string;

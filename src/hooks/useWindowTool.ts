@@ -45,6 +45,7 @@ export const useWindowTool = () => {
         width: windowWidth,
         height: 80, // Default window height
         wallId: constraintResult.wallId,
+        wallAngle: constraintResult.wallSegment?.angle || 0,
         style: 'single',
         color: '#4A90E2',
         opacity: 0.7,
@@ -86,6 +87,7 @@ export const useWindowTool = () => {
         width: windowWidth,
         height: 80,
         wallId: constraintResult.wallId,
+        wallAngle: constraintResult.wallSegment?.angle || 0,
         style: 'single',
         color: '#4A90E2',
         opacity: 0.7,

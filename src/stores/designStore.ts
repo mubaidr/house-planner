@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
+import { updateElementsForWallMovement } from '@/utils/wallElementMovement';
 
 export interface DesignState {
   walls: Wall[];
@@ -41,11 +42,45 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
     })),
 
   updateWall: (id, updates) =>
-    set((state) => ({
-      walls: state.walls.map((wall) =>
-        wall.id === id ? { ...wall, ...updates } : wall
-      ),
-    })),
+    set((state) => {
+      const oldWall = state.walls.find(wall => wall.id === id);
+      if (!oldWall) return state;
+
+      const newWall = { ...oldWall, ...updates };
+      
+      // Check if wall position actually changed
+      const positionChanged = 
+        newWall.startX !== oldWall.startX ||
+        newWall.startY !== oldWall.startY ||
+        newWall.endX !== oldWall.endX ||
+        newWall.endY !== oldWall.endY;
+
+      if (positionChanged) {
+        // Update doors and windows to move with the wall
+        const { updatedDoors, updatedWindows } = updateElementsForWallMovement(
+          state.doors,
+          state.windows,
+          id,
+          oldWall,
+          newWall
+        );
+
+        return {
+          walls: state.walls.map((wall) =>
+            wall.id === id ? newWall : wall
+          ),
+          doors: updatedDoors,
+          windows: updatedWindows,
+        };
+      }
+
+      // If only non-position properties changed, just update the wall
+      return {
+        walls: state.walls.map((wall) =>
+          wall.id === id ? newWall : wall
+        ),
+      };
+    }),
 
   removeWall: (id) =>
     set((state) => ({

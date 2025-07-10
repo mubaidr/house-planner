@@ -17,9 +17,6 @@ export default function Toolbar() {
 
   const tools: { id: Tool; label: string; icon: string; shortcut?: string }[] = [
     { id: 'select', label: 'Select', icon: '↖', shortcut: 'V' },
-    { id: 'wall', label: 'Wall', icon: '▬', shortcut: 'W' },
-    { id: 'door', label: 'Door', icon: '🚪', shortcut: 'D' },
-    { id: 'window', label: 'Window', icon: '🪟', shortcut: 'N' },
     { id: 'measure', label: 'Measure', icon: '📏', shortcut: 'M' },
   ];
 
@@ -28,7 +25,7 @@ export default function Toolbar() {
       setShowSaveDialog(true);
       return;
     }
-    
+
     const designData = { walls, doors, windows };
     saveDesign(designName, designData);
     setShowSaveDialog(false);
@@ -74,38 +71,38 @@ export default function Toolbar() {
         >
           ☰
         </button>
-        
+
         <div className="w-px h-6 bg-gray-300 mx-2" />
-        
+
         {/* Undo/Redo buttons */}
         <button
           onClick={undo}
           disabled={!canUndo()}
           className={`p-2 rounded transition-colors ${
-            canUndo() 
-              ? 'hover:bg-gray-100 text-gray-700' 
+            canUndo()
+              ? 'hover:bg-gray-100 text-gray-700'
               : 'text-gray-400 cursor-not-allowed'
           }`}
           title={`Undo${getUndoDescription() ? `: ${getUndoDescription()}` : ''} (Ctrl+Z)`}
         >
           ↶
         </button>
-        
+
         <button
           onClick={redo}
           disabled={!canRedo()}
           className={`p-2 rounded transition-colors ${
-            canRedo() 
-              ? 'hover:bg-gray-100 text-gray-700' 
+            canRedo()
+              ? 'hover:bg-gray-100 text-gray-700'
               : 'text-gray-400 cursor-not-allowed'
           }`}
           title={`Redo${getRedoDescription() ? `: ${getRedoDescription()}` : ''} (Ctrl+Y)`}
         >
           ↷
         </button>
-        
+
         <div className="w-px h-6 bg-gray-300 mx-2" />
-        
+
         {tools.map((tool) => (
           <ToolButton
             key={tool.id}
@@ -136,7 +133,7 @@ export default function Toolbar() {
         >
           Save
         </button>
-        
+
         <button
           onClick={() => setShowLoadDialog(true)}
           className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
@@ -152,9 +149,9 @@ export default function Toolbar() {
         >
           Auto-save
         </button>
-        
+
         <div className="w-px h-6 bg-gray-300 mx-2" />
-        
+
         <button
           onClick={togglePropertiesPanel}
           className="p-2 rounded hover:bg-gray-100 transition-colors"

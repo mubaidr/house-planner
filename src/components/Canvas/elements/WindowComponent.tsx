@@ -37,10 +37,13 @@ export default function WindowComponent({ window }: WindowComponentProps) {
     <>
       {/* Window frame */}
       <Rect
-        x={window.x - window.width / 2}
-        y={window.y - 2}
+        x={window.x}
+        y={window.y}
         width={window.width}
         height={4}
+        rotation={((window.wallAngle || 0) * 180) / Math.PI}
+        offsetX={window.width / 2}
+        offsetY={2}
         fill="white"
         stroke={isSelected ? '#3b82f6' : window.color}
         strokeWidth={isSelected ? 2 : 1}
@@ -50,10 +53,13 @@ export default function WindowComponent({ window }: WindowComponentProps) {
       
       {/* Window glass (transparent) */}
       <Rect
-        x={window.x - window.width / 2 + 2}
-        y={window.y - 1}
+        x={window.x}
+        y={window.y}
         width={window.width - 4}
         height={2}
+        rotation={((window.wallAngle || 0) * 180) / Math.PI}
+        offsetX={(window.width - 4) / 2}
+        offsetY={1}
         fill="#87ceeb"
         opacity={window.opacity}
         onClick={handleClick}
@@ -63,7 +69,10 @@ export default function WindowComponent({ window }: WindowComponentProps) {
       {/* Window divider (for double windows) */}
       {window.style === 'double' && (
         <Line
-          points={[window.x, window.y - 1, window.x, window.y + 1]}
+          points={[0, -1, 0, 1]}
+          x={window.x}
+          y={window.y}
+          rotation={((window.wallAngle || 0) * 180) / Math.PI}
           stroke={isSelected ? '#3b82f6' : window.color}
           strokeWidth={1}
           onClick={handleClick}

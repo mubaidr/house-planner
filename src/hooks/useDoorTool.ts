@@ -45,6 +45,7 @@ export const useDoorTool = () => {
         width: doorWidth,
         height: 200, // Default door height
         wallId: constraintResult.wallId,
+        wallAngle: constraintResult.wallSegment?.angle || 0,
         swingDirection: 'right',
         style: 'single',
         color: '#8B4513',
@@ -86,6 +87,7 @@ export const useDoorTool = () => {
         width: doorWidth,
         height: 200,
         wallId: constraintResult.wallId,
+        wallAngle: constraintResult.wallSegment?.angle || 0,
         swingDirection: 'right',
         style: 'single',
         color: '#8B4513',
