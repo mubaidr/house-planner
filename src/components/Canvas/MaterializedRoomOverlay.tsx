@@ -42,8 +42,19 @@ export default function MaterializedRoomOverlay() {
       };
     });
     
-    updateRooms(updatedRooms);
-  }, [walls, detectedRooms, updateRooms]);
+    // Only update if the rooms have actually changed
+    const roomsChanged = updatedRooms.length !== rooms.length || 
+      updatedRooms.some((room, index) => {
+        const existingRoom = rooms[index];
+        return !existingRoom || 
+          room.walls.length !== existingRoom.walls.length ||
+          room.walls.some(wallId => !existingRoom.walls.includes(wallId));
+      });
+    
+    if (roomsChanged) {
+      updateRooms(updatedRooms);
+    }
+  }, [walls, updateRooms]);
 
   if (!showRooms || rooms.length === 0) return null;
 

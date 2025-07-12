@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Stage } from 'konva/lib/Stage';
 import { useUIStore, Tool } from '@/stores/uiStore';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
@@ -9,14 +10,15 @@ import ToolButton from './ToolButton';
 import ExportButton from './ExportButton';
 import MaterialsButton from './MaterialsButton';
 import TemplatesButton from './TemplatesButton';
+import AlignmentTools from './AlignmentTools';
 
 interface ToolbarProps {
-  stageRef?: React.RefObject<any>;
+  stageRef?: React.RefObject<Stage>;
 }
 
 export default function Toolbar({ stageRef }: ToolbarProps) {
   const { activeTool, setActiveTool, toggleSidebar, togglePropertiesPanel } = useUIStore();
-  const { walls, doors, windows, addWall, addDoor, addWindow, clearAll } = useDesignStore();
+  const { walls, doors, windows, clearAll } = useDesignStore();
   const { undo, redo, canUndo, canRedo, getUndoDescription, getRedoDescription } = useHistoryStore();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -154,6 +156,9 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
 
         {/* Templates Button */}
         <TemplatesButton />
+        
+        {/* Alignment Tools */}
+        <AlignmentTools />
 
         {/* Export Button */}
         <ExportButton stage={stageRef?.current} />

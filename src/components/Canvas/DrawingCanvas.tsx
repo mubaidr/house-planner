@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { Stage, Layer, Line } from 'react-konva';
+import { Stage, Layer, Line, Group } from 'react-konva';
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useUIStore } from '@/stores/uiStore';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
+import { useViewStore } from '@/stores/viewStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useWallTool } from '@/hooks/useWallTool';
 import { useWallEditor } from '@/hooks/useWallEditor';
 import { useDoorEditor } from '@/hooks/useDoorEditor';
@@ -14,15 +16,21 @@ import { useWindowEditor } from '@/hooks/useWindowEditor';
 import { useDoorTool } from '@/hooks/useDoorTool';
 import { useWindowTool } from '@/hooks/useWindowTool';
 import { useMeasureTool } from '@/hooks/useMeasureTool';
+import { useDimensionTool } from '@/hooks/useDimensionTool';
+import { useStairTool } from '@/hooks/useStairTool';
+import { useRoofTool } from '@/hooks/useRoofTool';
 import { useCanvasControls } from '@/hooks/useCanvasControls';
 import Grid from './Grid';
 import SnapIndicators from './SnapIndicators';
 import ConstraintIndicators from './ConstraintIndicators';
 import IntersectionIndicators from './IntersectionIndicators';
 import MeasurementDisplay from './MeasurementDisplay';
-import WallComponent from './elements/WallComponent';
+import DimensionAnnotations from './DimensionAnnotations';
+// import EnhancedRoomEditor from './EnhancedRoomEditor'; // Not used yet
 import DoorComponent from './elements/DoorComponent';
 import WindowComponent from './elements/WindowComponent';
+import StairComponent from './elements/StairComponent';
+import RoofComponent from './elements/RoofComponent';
 import DoorFloatingControls from './DoorFloatingControls';
 import MaterializedRoomOverlay from './MaterializedRoomOverlay';
 import MaterializedWallComponent from './MaterializedWallComponent';
@@ -43,7 +51,9 @@ export default function DrawingCanvas() {
     setMouseCoordinates,
   } = useUIStore();
   
-  const { walls, doors, windows, clearSelection, selectedElementId, selectedElementType, selectElement } = useDesignStore();
+  const { currentView, getViewTransform, isTransitioning } = useViewStore();
+  const { walls, doors, windows, stairs, roofs, clearSelection, selectedElementId, selectedElementType, selectElement, syncWithCurrentFloor } = useDesignStore();
+  const { currentFloorId, getCurrentFloor, showAllFloors, floorOpacity, getFloorsOrderedByLevel } = useFloorStore();
   const { undo, redo, canUndo, canRedo } = useHistoryStore();
   const { drawingState, startDrawing, updateDrawing, finishDrawing, cancelDrawing } = useWallTool();
   const { deleteSelectedWall, startDrag: handleWallStartDrag, updateDrag: handleWallDrag, endDrag: handleWallEndDrag } = useWallEditor();
@@ -52,6 +62,9 @@ export default function DrawingCanvas() {
   const { placementState: doorPlacementState, startPlacement: startDoorPlacement, updatePlacement: updateDoorPlacement, finishPlacement: finishDoorPlacement, cancelPlacement: cancelDoorPlacement } = useDoorTool();
   const { placementState: windowPlacementState, startPlacement: startWindowPlacement, updatePlacement: updateWindowPlacement, finishPlacement: finishWindowPlacement, cancelPlacement: cancelWindowPlacement } = useWindowTool();
   const { measureState, startMeasurement, updateMeasurement, finishMeasurement, cancelMeasurement, removeMeasurement, getCurrentDistance } = useMeasureTool();
+  const { state: dimensionState, startDimension, updateDimension, finishDimension, updateAnnotation, getCurrentDimension } = useDimensionTool();
+  const { isDrawing: isDrawingStair, previewStair, startDrawing: startStairDrawing, updateDrawing: updateStairDrawing, finishDrawing: finishStairDrawing, cancelDrawing: cancelStairDrawing } = useStairTool();
+  const { isDrawing: isDrawingRoof, previewRoof, startDrawing: startRoofDrawing, updateDrawing: updateRoofDrawing, finishDrawing: finishRoofDrawing, cancelDrawing: cancelRoofDrawing } = useRoofTool();
   const { } = useCanvasControls();
 
   // Handle canvas resize
@@ -67,6 +80,51 @@ export default function DrawingCanvas() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [setCanvasSize]);
+
+  // Sync with current floor when floor changes
+  React.useEffect(() => {
+    syncWithCurrentFloor();
+  }, [currentFloorId, syncWithCurrentFloor]);
+
+  // Get current floor elements for rendering
+  const currentFloor = getCurrentFloor();
+  const currentFloorElements = currentFloor ? currentFloor.elements : { walls, doors, windows, stairs, roofs, rooms: [] };
+  
+  // Get all floors for ghost view if enabled
+  const allFloors = showAllFloors ? getFloorsOrderedByLevel() : [];
+
+  // Get current view transform
+  const viewTransform = getViewTransform(currentView);
+  
+  // Apply view-specific transformations to the stage
+  const getStageProps = () => {
+    const baseProps = {
+      width: canvasWidth,
+      height: canvasHeight,
+      scaleX: zoomLevel * viewTransform.scale.x,
+      scaleY: zoomLevel * viewTransform.scale.y,
+      rotation: viewTransform.rotation,
+      offsetX: viewTransform.offset.x,
+      offsetY: viewTransform.offset.y,
+      draggable: activeTool === 'select',
+      onWheel: handleWheel,
+      onMouseDown: handleStageMouseDown,
+      onMouseMove: handleStageMouseMove,
+      onMouseUp: handleStageMouseUp,
+      className: "bg-white",
+    };
+
+    // Add perspective transformations for 3D-like views
+    if (viewTransform.perspective) {
+      return {
+        ...baseProps,
+        skewX: viewTransform.perspective.skewX,
+        skewY: viewTransform.perspective.skewY,
+      };
+    }
+
+    return baseProps;
+  };
 
   // Handle wheel zoom
   const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
@@ -126,6 +184,15 @@ export default function DrawingCanvas() {
         case 'measure':
           startMeasurement(localPos.x, localPos.y);
           break;
+        case 'dimension':
+          startDimension(localPos.x, localPos.y);
+          break;
+        case 'stair':
+          startStairDrawing(e);
+          break;
+        case 'roof':
+          startRoofDrawing(e);
+          break;
       }
     }
   };
@@ -163,6 +230,21 @@ export default function DrawingCanvas() {
             updateMeasurement(localPos.x, localPos.y);
           }
           break;
+        case 'dimension':
+          if (dimensionState.isCreating) {
+            updateDimension(localPos.x, localPos.y);
+          }
+          break;
+        case 'stair':
+          if (isDrawingStair) {
+            updateStairDrawing(e);
+          }
+          break;
+        case 'roof':
+          if (isDrawingRoof) {
+            updateRoofDrawing(e);
+          }
+          break;
       }
     }
   };
@@ -187,6 +269,21 @@ export default function DrawingCanvas() {
       case 'measure':
         if (measureState.isMeasuring) {
           finishMeasurement();
+        }
+        break;
+      case 'dimension':
+        if (dimensionState.isCreating) {
+          finishDimension();
+        }
+        break;
+      case 'stair':
+        if (isDrawingStair) {
+          finishStairDrawing();
+        }
+        break;
+      case 'roof':
+        if (isDrawingRoof) {
+          finishRoofDrawing();
         }
         break;
     }
@@ -232,6 +329,12 @@ export default function DrawingCanvas() {
           case 'm':
             setActiveTool('measure');
             break;
+          case 's':
+            setActiveTool('stair');
+            break;
+          case 'r':
+            setActiveTool('roof');
+            break;
           case 'escape':
             if (drawingState.isDrawing) {
               cancelDrawing();
@@ -241,6 +344,10 @@ export default function DrawingCanvas() {
               cancelWindowPlacement();
             } else if (measureState.isMeasuring) {
               cancelMeasurement();
+            } else if (isDrawingStair) {
+              cancelStairDrawing();
+            } else if (isDrawingRoof) {
+              cancelRoofDrawing();
             } else {
               clearSelection();
             }
@@ -258,6 +365,12 @@ export default function DrawingCanvas() {
                 case 'window':
                   deleteSelectedWindow();
                   break;
+                case 'stair':
+                  // TODO: Add deleteSelectedStair when implemented
+                  break;
+                case 'roof':
+                  // TODO: Add deleteSelectedRoof when implemented
+                  break;
               }
             }
             break;
@@ -273,16 +386,11 @@ export default function DrawingCanvas() {
     <div ref={containerRef} className="w-full h-full">
       <Stage
         ref={stageRef}
-        width={canvasWidth}
-        height={canvasHeight}
-        scaleX={zoomLevel}
-        scaleY={zoomLevel}
-        draggable={activeTool === 'select'}
-        onWheel={handleWheel}
-        onMouseDown={handleStageMouseDown}
-        onMouseMove={handleStageMouseMove}
-        onMouseUp={handleStageMouseUp}
-        className="bg-white"
+        {...getStageProps()}
+        style={{ 
+          transition: isTransitioning ? 'all 0.3s ease-in-out' : 'none',
+          opacity: isTransitioning ? 0.7 : 1,
+        }}
       >
         {/* Grid Layer */}
         {showGrid && (
@@ -325,20 +433,64 @@ export default function DrawingCanvas() {
         {/* Elements Layer */}
         <Layer>
           {/* Render Walls with Materials */}
-          {walls.map((wall) => (
+          {/* Render Ghost Floors (if enabled) */}
+          {showAllFloors && allFloors.map((floor) => 
+            floor.id !== currentFloorId ? (
+              <Group key={`ghost-${floor.id}`} opacity={floorOpacity}>
+                {floor.elements.walls.map((wall) => (
+                  <MaterializedWallComponent
+                    key={`ghost-wall-${wall.id}`}
+                    wall={wall}
+                    isSelected={false}
+                    onSelect={() => {}}
+                    onStartDrag={() => {}}
+                    onDrag={() => {}}
+                    onEndDrag={() => {}}
+                  />
+                ))}
+                {floor.elements.doors.map((door) => (
+                  <MaterializedDoorComponent
+                    key={`ghost-door-${door.id}`}
+                    door={door}
+                    isSelected={false}
+                    onSelect={() => {}}
+                    onStartDrag={() => {}}
+                    onDrag={() => {}}
+                    onEndDrag={() => {}}
+                  />
+                ))}
+                {floor.elements.windows.map((window) => (
+                  <WindowComponent
+                    key={`ghost-window-${window.id}`}
+                    window={window}
+                  />
+                ))}
+              </Group>
+            ) : null
+          )}
+
+          {/* Render Current Floor Walls */}
+          {currentFloorElements.walls.map((wall) => (
             <MaterializedWallComponent 
               key={wall.id} 
               wall={wall}
               isSelected={selectedElementId === wall.id && selectedElementType === 'wall'}
               onSelect={() => selectElement(wall.id, 'wall')}
-              onStartDrag={(handleType: 'start' | 'end' | 'move', x: number, y: number) => handleWallStartDrag(wall.id, handleType, x, y)}
-              onDrag={(handleType: 'start' | 'end' | 'move', x: number, y: number) => handleWallDrag(wall.id, handleType, x, y)}
+              onStartDrag={(e: KonvaEventObject<DragEvent>) => {
+                const pos = e.target.getStage().getPointerPosition();
+                handleWallStartDrag(wall.id, 'move', pos.x, pos.y);
+              }}
+              onDrag={(e: KonvaEventObject<DragEvent>) => {
+                const pos = e.target.getStage().getPointerPosition();
+                handleWallDrag(wall.id, 'move', pos.x, pos.y);
+              }}
               onEndDrag={() => handleWallEndDrag(wall.id)}
             />
           ))}
 
           {/* Render Doors with Materials */}
-          {doors.map((door) => (
+          {/* Render Current Floor Doors */}
+          {currentFloorElements.doors.map((door) => (
             <MaterializedDoorComponent 
               key={door.id} 
               door={door}
@@ -351,8 +503,34 @@ export default function DrawingCanvas() {
           ))}
 
           {/* Render Windows */}
-          {windows.map((window) => (
-            <WindowComponent key={window.id} window={window} />
+          {/* Render Current Floor Windows */}
+          {currentFloorElements.windows.map((window) => (
+            <WindowComponent 
+              key={window.id} 
+              window={window}
+            />
+          ))}
+
+          {/* Render Stairs */}
+          {currentFloorElements.stairs?.map((stair) => (
+            <StairComponent 
+              key={stair.id} 
+              stair={stair}
+              isSelected={selectedElementId === stair.id && selectedElementType === 'stair'}
+              onSelect={() => selectElement(stair.id, 'stair')}
+              onDragEnd={() => {}}
+            />
+          ))}
+
+          {/* Render Roofs */}
+          {currentFloorElements.roofs?.map((roof) => (
+            <RoofComponent 
+              key={roof.id} 
+              roof={roof}
+              isSelected={selectedElementId === roof.id && selectedElementType === 'roof'}
+              onSelect={() => selectElement(roof.id, 'roof')}
+              onDragEnd={() => {}}
+            />
           ))}
 
           {/* Render drawing preview for wall tool */}
@@ -383,6 +561,26 @@ export default function DrawingCanvas() {
             <WindowComponent window={windowPlacementState.previewWindow} />
           )}
 
+          {/* Render stair preview */}
+          {activeTool === 'stair' && previewStair && (
+            <StairComponent 
+              stair={previewStair} 
+              isSelected={false}
+              onSelect={() => {}}
+              onDragEnd={() => {}}
+            />
+          )}
+
+          {/* Render roof preview */}
+          {activeTool === 'roof' && previewRoof && (
+            <RoofComponent 
+              roof={previewRoof} 
+              isSelected={false}
+              onSelect={() => {}}
+              onDragEnd={() => {}}
+            />
+          )}
+
           {/* Render measurements */}
           <MeasurementDisplay
             measurements={measureState.measurements}
@@ -398,6 +596,43 @@ export default function DrawingCanvas() {
             showAll={measureState.showAllMeasurements}
             onRemoveMeasurement={removeMeasurement}
           />
+
+          {/* Dimension Annotations */}
+          <DimensionAnnotations
+            annotations={dimensionState.annotations}
+            onUpdate={updateAnnotation}
+            showAll={dimensionState.showAll}
+          />
+
+          {/* Current dimension being created */}
+          {dimensionState.isCreating && getCurrentDimension() && (
+            <DimensionAnnotations
+              annotations={[{
+                id: 'current',
+                startPoint: getCurrentDimension()!.startPoint,
+                endPoint: getCurrentDimension()!.endPoint,
+                distance: getCurrentDimension()!.distance,
+                label: getCurrentDimension()!.label,
+                offset: 30,
+                style: {
+                  color: '#3b82f6',
+                  strokeWidth: 1.5,
+                  fontSize: 12,
+                  arrowSize: 8,
+                  extensionLength: 20,
+                  textBackground: true,
+                  precision: 1,
+                  units: 'both',
+                },
+                isVisible: true,
+                isPermanent: false,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              }]}
+              onUpdate={() => {}}
+              showAll={true}
+            />
+          )}
 
           {/* Room Detection Overlay with Materials */}
           <MaterializedRoomOverlay />

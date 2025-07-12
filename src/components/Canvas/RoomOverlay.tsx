@@ -41,7 +41,7 @@ export default function RoomOverlay() {
     });
     
     updateRooms(updatedRooms);
-  }, [walls, detectedRooms, updateRooms]);
+  }, [walls, detectedRooms, updateRooms, rooms]);
 
   if (!showRooms || rooms.length === 0) return null;
 

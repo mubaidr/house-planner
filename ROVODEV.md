@@ -3,6 +3,10 @@
 ## Project Overview
 This project is a web-based floor plan designer built with Next.js 15, React 19, TypeScript, Konva.js, and Tailwind CSS 4.
 
+## Project Requirements
+
+- `requirements.md`: Contains the business requirements and features for this project.
+
 ## Effective Use of `docs/llm`
 
 The `docs/llm` directory contains optimized documentation specifically for AI agents. Always refer to these documents for project context, technical specifications, architectural decisions, and implementation patterns.

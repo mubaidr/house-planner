@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-
-type ViewMode = '2D' | 'isometric' | 'front' | 'back' | 'left' | 'right';
+import { useViewStore, ViewMode } from '@/stores/viewStore';
 
 export default function ViewSwitcher() {
-  const [currentView, setCurrentView] = useState<ViewMode>('2D');
+  const { currentView, setView, isTransitioning } = useViewStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const views: { mode: ViewMode; label: string; icon: string }[] = [
@@ -18,9 +17,8 @@ export default function ViewSwitcher() {
   ];
 
   const handleViewChange = (view: ViewMode) => {
-    setCurrentView(view);
+    setView(view);
     setIsExpanded(false);
-    // TODO: Implement actual view switching logic in Phase 3
     console.log(`Switching to ${view} view`);
   };
 
@@ -49,10 +47,17 @@ export default function ViewSwitcher() {
       {/* Main floating action button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-all duration-200 flex items-center justify-center group"
+        className={`w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-all duration-200 flex items-center justify-center group ${
+          isTransitioning ? 'animate-pulse' : ''
+        }`}
         title={`Current: ${currentViewData.label} - Click to switch views`}
+        disabled={isTransitioning}
       >
-        <span className="text-xl">{currentViewData.icon}</span>
+        {isTransitioning ? (
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+        ) : (
+          <span className="text-xl">{currentViewData.icon}</span>
+        )}
       </button>
 
       {/* View label */}

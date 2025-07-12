@@ -29,33 +29,55 @@ export const exportToPNG = async (
   options: ExportOptions
 ): Promise<ExportResult> => {
   try {
-    // Get the stage bounds
-    const stageBounds = stage.getClientRect();
+    // Configure stage for export
+    const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
+    const originalPosition = { x: stage.x(), y: stage.y() };
     
-    // Create a temporary stage for export
-    const exportStage = stage.clone();
-    exportStage.width(stageBounds.width);
-    exportStage.height(stageBounds.height);
-    
-    // Apply scale if specified
+    // Reset stage position and apply export scale
+    stage.position({ x: 0, y: 0 });
     if (options.scale && options.scale !== 1) {
-      exportStage.scale({ x: options.scale, y: options.scale });
-      exportStage.width(stageBounds.width * options.scale);
-      exportStage.height(stageBounds.height * options.scale);
+      stage.scale({ 
+        x: originalScale.x * options.scale, 
+        y: originalScale.y * options.scale 
+      });
+    }
+    
+    // Hide grid if not included in export
+    if (!options.includeGrid) {
+      const gridLayers = stage.find('.grid-layer');
+      gridLayers.forEach(layer => layer.hide());
+    }
+    
+    // Hide measurements if not included
+    if (!options.includeMeasurements) {
+      const measurementLayers = stage.find('.measurement-layer');
+      measurementLayers.forEach(layer => layer.hide());
     }
     
     // Generate the image
-    const dataUrl = exportStage.toDataURL({
+    const dataUrl = stage.toDataURL({
       mimeType: 'image/png',
       quality: options.quality,
-      pixelRatio: 2, // High DPI for crisp export
+      pixelRatio: options.quality >= 0.9 ? 2 : 1, // High quality uses 2x pixel ratio
     });
     
-    // Convert to blob for download
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
+    // Convert to blob
+    const blob = await dataURLToBlob(dataUrl);
     
-    exportStage.destroy();
+    // Restore original stage state
+    stage.scale(originalScale);
+    stage.position(originalPosition);
+    
+    // Show hidden layers
+    if (!options.includeGrid) {
+      const gridLayers = stage.find('.grid-layer');
+      gridLayers.forEach(layer => layer.show());
+    }
+    
+    if (!options.includeMeasurements) {
+      const measurementLayers = stage.find('.measurement-layer');
+      measurementLayers.forEach(layer => layer.show());
+    }
     
     return {
       success: true,
@@ -71,9 +93,154 @@ export const exportToPNG = async (
 };
 
 /**
- * Export canvas as PDF
+ * Export canvas as PDF document
  */
 export const exportToPDF = async (
+  stage: Stage,
+  options: ExportOptions
+): Promise<ExportResult> => {
+  try {
+    // First generate PNG
+    const pngResult = await exportToPNG(stage, { ...options, format: 'png' });
+    if (!pngResult.success || !pngResult.dataUrl) {
+      return { success: false, error: 'Failed to generate PNG for PDF' };
+    }
+    
+    // Create PDF
+    const pdf = new jsPDF({
+      orientation: options.orientation || 'landscape',
+      unit: 'mm',
+      format: options.paperSize || 'A4',
+    });
+    
+    // Get PDF dimensions
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    
+    // Add title if provided
+    if (options.title) {
+      pdf.setFontSize(16);
+      pdf.text(options.title, 20, 20);
+    }
+    
+    // Add description if provided
+    if (options.description) {
+      pdf.setFontSize(10);
+      pdf.text(options.description, 20, options.title ? 30 : 20);
+    }
+    
+    // Calculate image position and size
+    const margin = 20;
+    const availableWidth = pdfWidth - (margin * 2);
+    const availableHeight = pdfHeight - (margin * 2) - (options.title ? 20 : 0) - (options.description ? 10 : 0);
+    
+    // Add the image
+    const yPosition = margin + (options.title ? 20 : 0) + (options.description ? 10 : 0);
+    pdf.addImage(
+      pngResult.dataUrl,
+      'PNG',
+      margin,
+      yPosition,
+      availableWidth,
+      availableHeight,
+      undefined,
+      'FAST'
+    );
+    
+    // Add metadata
+    pdf.setProperties({
+      title: options.title || 'House Plan',
+      subject: options.description || 'Created with 2D House Planner',
+      creator: '2D House Planner',
+      keywords: 'house plan, architecture, design',
+    });
+    
+    // Convert to blob
+    const pdfBlob = pdf.output('blob');
+    
+    return {
+      success: true,
+      blob: pdfBlob,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'PDF generation failed',
+    };
+  }
+};
+
+/**
+ * Generate preview image for export dialog
+ */
+export const getExportPreview = async (
+  stage: Stage,
+  maxWidth: number = 300,
+  maxHeight: number = 200
+): Promise<string> => {
+  try {
+    // Calculate scale to fit preview dimensions
+    const stageBounds = stage.getClientRect();
+    const scaleX = maxWidth / stageBounds.width;
+    const scaleY = maxHeight / stageBounds.height;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
+    
+    const previewResult = await exportToPNG(stage, {
+      format: 'png',
+      quality: 0.7,
+      scale,
+      includeGrid: false,
+      includeRooms: true,
+      includeMeasurements: false,
+    });
+    
+    return previewResult.dataUrl || '';
+  } catch (error) {
+    console.error('Failed to generate preview:', error);
+    return '';
+  }
+};
+
+/**
+ * Convert data URL to Blob
+ */
+const dataURLToBlob = async (dataURL: string): Promise<Blob> => {
+  const response = await fetch(dataURL);
+  return response.blob();
+};
+
+/**
+ * Download file to user's device
+ */
+export const downloadFile = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * Generate filename based on options
+ */
+export const generateFilename = (
+  format: 'png' | 'pdf',
+  title?: string
+): string => {
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+  const baseName = title ? title.replace(/[^a-zA-Z0-9]/g, '_') : 'house_plan';
+  return `${baseName}_${timestamp}.${format}`;
+};
+
+/**
+ * Export canvas as PDF (duplicate removed)
+ */
+// Removed duplicate function
+/*
+const exportToPDFDuplicate = async (
   stage: Stage,
   options: ExportOptions
 ): Promise<ExportResult> => {
@@ -164,12 +331,13 @@ export const exportToPDF = async (
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
-};
+*/
 
 /**
- * Download file from blob
+ * Download file from blob (duplicate removed)
  */
-export const downloadFile = (blob: Blob, filename: string): void => {
+/*
+const downloadFileDuplicate = (blob: Blob, filename: string): void => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -179,11 +347,13 @@ export const downloadFile = (blob: Blob, filename: string): void => {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
+*/
 
 /**
- * Generate filename with timestamp
+ * Generate filename with timestamp (duplicate removed)
  */
-export const generateFilename = (
+/*
+const generateFilenameDuplicate = (
   format: 'png' | 'pdf',
   title?: string
 ): string => {
@@ -191,11 +361,13 @@ export const generateFilename = (
   const baseName = title ? title.replace(/[^a-zA-Z0-9]/g, '_') : 'house_plan';
   return `${baseName}_${timestamp}.${format}`;
 };
+*/
 
 /**
- * Get export preview (smaller version for UI)
+ * Get export preview (smaller version for UI) (duplicate removed)
  */
-export const getExportPreview = async (
+/*
+const getExportPreviewDuplicate = async (
   stage: Stage,
   maxWidth: number = 200,
   maxHeight: number = 150
@@ -219,3 +391,4 @@ export const getExportPreview = async (
     pixelRatio: scale,
   });
 };
+*/

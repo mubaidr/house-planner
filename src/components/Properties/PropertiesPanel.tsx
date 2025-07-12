@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import RoomPropertiesPanel from './RoomPropertiesPanel';
-import MaterialPropertiesSection from './MaterialPropertiesSection';
+import StairPropertiesPanel from './StairPropertiesPanel';
+import RoofPropertiesPanel from './RoofPropertiesPanel';
 import { useWallEditor } from '@/hooks/useWallEditor';
 import { useDoorEditor } from '@/hooks/useDoorEditor';
 import { useWindowEditor } from '@/hooks/useWindowEditor';
@@ -12,9 +13,11 @@ import { UpdateWallCommand, UpdateDoorCommand, UpdateWindowCommand } from '@/uti
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
+import { Stair } from '@/types/elements/Stair';
+import { Roof } from '@/types/elements/Roof';
 
 export default function PropertiesPanel() {
-  const { selectedElementId, selectedElementType, walls, doors, windows, rooms, updateWall, updateDoor, updateWindow, updateRoom } = useDesignStore();
+  const { selectedElementId, selectedElementType, walls, doors, windows, stairs, roofs, rooms, updateWall, updateDoor, updateWindow, updateStair, updateRoof, updateRoom, removeStair, removeRoof } = useDesignStore();
   const { executeCommand } = useHistoryStore();
   const { deleteSelectedWall } = useWallEditor();
   const { deleteSelectedDoor } = useDoorEditor();
@@ -32,6 +35,10 @@ export default function PropertiesPanel() {
         return doors.find(d => d.id === selectedElementId);
       case 'window':
         return windows.find(w => w.id === selectedElementId);
+      case 'stair':
+        return stairs.find(s => s.id === selectedElementId);
+      case 'roof':
+        return roofs.find(r => r.id === selectedElementId);
       case 'room':
         return rooms.find(r => r.id === selectedElementId);
       default:
@@ -148,8 +155,48 @@ export default function PropertiesPanel() {
         {selectedElement ? (
           selectedElementType === 'room' ? (
             <RoomPropertiesPanel 
-              room={selectedElement as any}
+              room={selectedElement as import('@/utils/roomDetection').Room}
               onUpdate={updateRoom}
+            />
+          ) : selectedElementType === 'stair' ? (
+            <StairPropertiesPanel
+              stair={selectedElement as Stair}
+              onUpdate={(updates) => {
+                executeCommand({
+                  type: 'UPDATE_STAIR',
+                  execute: () => updateStair(selectedElementId, updates),
+                  undo: () => updateStair(selectedElementId, selectedElement as Stair),
+                  description: 'Update stair properties',
+                });
+              }}
+              onDelete={() => {
+                executeCommand({
+                  type: 'DELETE_STAIR',
+                  execute: () => removeStair(selectedElementId),
+                  undo: () => updateStair(selectedElementId, selectedElement as Stair),
+                  description: 'Delete stair',
+                });
+              }}
+            />
+          ) : selectedElementType === 'roof' ? (
+            <RoofPropertiesPanel
+              roof={selectedElement as Roof}
+              onUpdate={(updates) => {
+                executeCommand({
+                  type: 'UPDATE_ROOF',
+                  execute: () => updateRoof(selectedElementId, updates),
+                  undo: () => updateRoof(selectedElementId, selectedElement as Roof),
+                  description: 'Update roof properties',
+                });
+              }}
+              onDelete={() => {
+                executeCommand({
+                  type: 'DELETE_ROOF',
+                  execute: () => removeRoof(selectedElementId),
+                  undo: () => updateRoof(selectedElementId, selectedElement as Roof),
+                  description: 'Delete roof',
+                });
+              }}
             />
           ) : (
             <div className="space-y-4">

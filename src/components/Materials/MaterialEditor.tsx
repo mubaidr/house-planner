@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Material, MaterialCategory, MaterialProperties } from '@/types/materials/Material';
 import { useMaterialStore } from '@/stores/materialStore';
 import { MATERIAL_CATEGORIES } from '@/data/materialLibrary';
@@ -39,7 +40,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
   });
 
   const [newTag, setNewTag] = useState('');
-  const [textureFile, setTextureFile] = useState<File | null>(null);
+  const [, setTextureFile] = useState<File | null>(null);
   const [texturePreview, setTexturePreview] = useState<string>('');
 
   useEffect(() => {
@@ -51,14 +52,14 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
     }
   }, [existingMaterial]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | MaterialCategory) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handlePropertiesChange = (field: keyof MaterialProperties, value: any) => {
+  const handlePropertiesChange = (field: keyof MaterialProperties, value: number | boolean) => {
     setFormData(prev => ({
       ...prev,
       properties: {
@@ -68,7 +69,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
     }));
   };
 
-  const handleMetadataChange = (field: string, value: any) => {
+  const handleMetadataChange = (field: string, value: string | string[]) => {
     setFormData(prev => ({
       ...prev,
       metadata: {
@@ -315,9 +316,11 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
                     />
                     {texturePreview && (
                       <div className="mt-2">
-                        <img
+                        <Image
                           src={texturePreview}
                           alt="Texture preview"
+                          width={80}
+                          height={80}
                           className="w-20 h-20 object-cover border border-gray-300 rounded"
                         />
                       </div>
@@ -335,7 +338,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
                   ].map(({ key, label, min, max, step }) => (
                     <div key={key}>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {label}: {((formData.properties as any)?.[key] || 0).toFixed(key === 'patternRotation' ? 0 : 2)}
+                        {label}: {(formData.properties?.[key as keyof MaterialProperties] as number || 0).toFixed(key === 'patternRotation' ? 0 : 2)}
                         {key === 'patternRotation' ? '°' : key.includes('Scale') ? 'x' : ''}
                       </label>
                       <input
@@ -343,7 +346,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
                         min={min}
                         max={max}
                         step={step}
-                        value={(formData.properties as any)?.[key] || 0}
+                        value={formData.properties?.[key as keyof MaterialProperties] as number || 0}
                         onChange={(e) => handlePropertiesChange(key as keyof MaterialProperties, parseFloat(e.target.value))}
                         className="w-full"
                       />

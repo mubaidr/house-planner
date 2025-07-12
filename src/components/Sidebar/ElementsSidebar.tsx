@@ -22,8 +22,8 @@ export default function ElementsSidebar() {
       'Wall': 'wall',
       'Door': 'door', 
       'Window': 'window',
-      'Stairs': 'wall', // For now, use wall tool for stairs
-      'Roof': 'wall', // For now, use wall tool for roof
+      'Stairs': 'stair',
+      'Roof': 'roof',
     };
     
     const tool = elementToToolMap[elementName];
@@ -44,8 +44,8 @@ export default function ElementsSidebar() {
     {
       name: 'Advanced Elements',
       items: [
-        { name: 'Stairs', icon: '🪜', description: 'Add stairs (Coming in Phase 2)', tool: 'wall' },
-        { name: 'Roof', icon: '🏠', description: 'Add roof elements (Coming in Phase 2)', tool: 'wall' },
+        { name: 'Stairs', icon: '🪜', description: 'Click to draw stairs between floors', tool: 'stair' },
+        { name: 'Roof', icon: '🏠', description: 'Click to draw roof structures', tool: 'roof' },
       ],
     },
   ];

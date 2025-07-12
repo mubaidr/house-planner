@@ -5,6 +5,7 @@ import { Group, Rect, Text } from 'react-konva';
 import { useMaterialApplication } from '@/hooks/useMaterialApplication';
 import { useDesignStore } from '@/stores/designStore';
 import { useMaterialStore } from '@/stores/materialStore';
+import { KonvaDragEvent } from '@/types/konva';
 
 interface MaterialDropZoneProps {
   elementId: string;
@@ -33,23 +34,23 @@ export default function MaterialDropZone({
 
   const isSelected = selectedElementId === elementId && selectedElementType === elementType;
 
-  const handleDragOver = useCallback((e: any) => {
+  const handleDragOver = useCallback((e: KonvaDragEvent) => {
     e.preventDefault();
     e.currentTarget.opacity(0.5);
   }, []);
 
-  const handleDragLeave = useCallback((e: any) => {
+  const handleDragLeave = useCallback((e: KonvaDragEvent) => {
     e.currentTarget.opacity(0);
   }, []);
 
-  const handleDrop = useCallback((e: any) => {
+  const handleDrop = useCallback((e: KonvaDragEvent) => {
     e.preventDefault();
     e.currentTarget.opacity(0);
     
     try {
       // In a real implementation, we would get the drag data from the browser event
       // For now, we'll use a simulated approach
-      const dragData = (window as any).currentDragData;
+      const dragData = (window as unknown as { currentDragData?: { type: string; materialId: string } }).currentDragData;
       
       if (dragData && dragData.type === 'material') {
         const material = getMaterialById(dragData.materialId);

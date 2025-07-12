@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { useUIStore } from '@/stores/uiStore';
+import { useMaterialStore } from '@/stores/materialStore';
+import { useTemplateStore } from '@/stores/templateStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import Toolbar from '@/components/Toolbar/Toolbar';
 import ElementsSidebar from '@/components/Sidebar/ElementsSidebar';
@@ -11,8 +13,9 @@ import ViewSwitcher from '@/components/ViewSwitcher/ViewSwitcher';
 import MeasurementControls from '@/components/Toolbar/MeasurementControls';
 import DoorAnimationControls from '@/components/Toolbar/DoorAnimationControls';
 import DrawingCanvas from '@/components/Canvas/DrawingCanvas';
-import MaterialLibrary from '../Materials/MaterialLibrary';
-import TemplateLibrary from '../Templates/TemplateLibrary';
+import FloorSwitcher from '@/components/Floor/FloorSwitcher';
+import MaterialLibrary from '@/components/Materials/MaterialLibrary';
+import TemplateLibrary from '@/components/Templates/TemplateLibrary';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -20,6 +23,8 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const { sidebarCollapsed, propertiesPanelCollapsed } = useUIStore();
+  const { isLibraryOpen } = useMaterialStore();
+  const { isTemplateLibraryOpen } = useTemplateStore();
   
   // Enable auto-save every 30 seconds
   useAutoSave(30000);
@@ -63,6 +68,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <main className="flex-1 bg-gray-50 relative overflow-hidden">
           <DrawingCanvas />
           <ViewSwitcher />
+          <FloorSwitcher />
           <MeasurementControls />
           <DoorAnimationControls />
           {children}
@@ -82,6 +88,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <footer className="bg-white border-t border-gray-200">
         <StatusBar />
       </footer>
+
+      {/* Material Library Modal */}
+      {isLibraryOpen && <MaterialLibrary />}
+
+      {/* Template Library Modal */}
+      {isTemplateLibraryOpen && <TemplateLibrary />}
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Material } from '@/types/materials/Material';
-import { useMaterialStore } from '@/stores/materialStore';
 
 interface MaterialCardProps {
   material: Material;
@@ -24,12 +23,12 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
     e.dataTransfer.effectAllowed = 'copy';
     
     // Store drag data globally for canvas drop handling
-    (window as any).currentDragData = dragData;
+    (window as unknown as { currentDragData: typeof dragData }).currentDragData = dragData;
   };
 
   const handleDragEnd = () => {
     // Clean up global drag data
-    delete (window as any).currentDragData;
+    delete (window as unknown as { currentDragData?: unknown }).currentDragData;
   };
 
   const getCostDisplay = () => {

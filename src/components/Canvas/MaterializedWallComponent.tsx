@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Line, Rect } from 'react-konva';
+import { KonvaEventObject } from 'konva/lib/Node';
 import { Wall } from '@/types/elements/Wall';
 import { useMaterialStore } from '@/stores/materialStore';
 import WallHandles from './elements/WallHandles';
@@ -10,9 +11,9 @@ interface MaterializedWallComponentProps {
   wall: Wall;
   isSelected: boolean;
   onSelect: () => void;
-  onStartDrag: (e: any) => void;
-  onDrag: (e: any) => void;
-  onEndDrag: (e: any) => void;
+  onStartDrag: (e: KonvaEventObject<DragEvent>) => void;
+  onDrag: (e: KonvaEventObject<DragEvent>) => void;
+  onEndDrag: (e: KonvaEventObject<DragEvent>) => void;
 }
 
 export default function MaterializedWallComponent({
@@ -34,11 +35,11 @@ export default function MaterializedWallComponent({
   const angle = Math.atan2(wall.endY - wall.startY, wall.endX - wall.startX);
   const angleDegrees = (angle * 180) / Math.PI;
 
-  const handleDragOver = (e: any) => {
+  const handleDragOver = (e: KonvaEventObject<DragEvent>) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: any) => {
+  const handleDrop = (e: KonvaEventObject<DragEvent>) => {
     e.preventDefault();
     // Material drop handling will be implemented here
   };

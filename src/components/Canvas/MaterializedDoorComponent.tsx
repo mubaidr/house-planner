@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Group, Rect, Arc, Line } from 'react-konva';
+import { KonvaEventObject } from 'konva/lib/Node';
 import { Door } from '@/types/elements/Door';
 import { useMaterialStore } from '@/stores/materialStore';
 import { useGlobalDoorAnimation } from '@/hooks/useDoorAnimation';
@@ -11,9 +12,9 @@ interface MaterializedDoorComponentProps {
   door: Door;
   isSelected: boolean;
   onSelect: () => void;
-  onStartDrag: (e: any) => void;
-  onDrag: (e: any) => void;
-  onEndDrag: (e: any) => void;
+  onStartDrag: (e: KonvaEventObject<DragEvent>) => void;
+  onDrag: (e: KonvaEventObject<DragEvent>) => void;
+  onEndDrag: (e: KonvaEventObject<DragEvent>) => void;
 }
 
 export default function MaterializedDoorComponent({

@@ -31,7 +31,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
   const [newTag, setNewTag] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | boolean | TemplateCategory | DesignStyle) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -56,7 +56,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
   };
 
   const analyzeCurrentDesign = () => {
-    const materials: any[] = [];
+    const materials: { id: string; name: string; category: string }[] = [];
     let materialCount = 0;
 
     // Analyze walls

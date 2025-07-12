@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Stage } from 'konva/lib/Stage';
 import { 
   ExportOptions, 
@@ -36,14 +37,7 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
   const [exportError, setExportError] = useState<string>('');
   const previewRef = useRef<HTMLImageElement>(null);
 
-  // Generate preview when dialog opens or options change
-  React.useEffect(() => {
-    if (isOpen && stage) {
-      generatePreview();
-    }
-  }, [isOpen, stage, exportOptions.scale]);
-
-  const generatePreview = async () => {
+  const generatePreview = React.useCallback(async () => {
     if (!stage) return;
     
     try {
@@ -52,7 +46,14 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
     } catch (error) {
       console.error('Failed to generate preview:', error);
     }
-  };
+  }, [stage]);
+
+  // Generate preview when dialog opens or options change
+  React.useEffect(() => {
+    if (isOpen && stage) {
+      generatePreview();
+    }
+  }, [isOpen, stage, exportOptions.scale, generatePreview]);
 
   const handleExport = async () => {
     if (!stage) return;
@@ -114,11 +115,13 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
             <h3 className="text-sm font-medium text-gray-700 mb-3">Preview</h3>
             <div className="flex justify-center">
               {preview ? (
-                <img
+                <Image
                   ref={previewRef}
                   src={preview}
                   alt="Export preview"
-                  className="max-w-full h-auto border border-gray-300 rounded shadow-sm"
+                  width={300}
+                  height={200}
+                  className="max-w-full h-auto border border-gray-300 rounded shadow-sm object-contain"
                   style={{ maxHeight: '200px' }}
                 />
               ) : (
@@ -214,7 +217,7 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
                   <label className="block text-sm text-gray-600 mb-2">Paper Size</label>
                   <select
                     value={exportOptions.paperSize}
-                    onChange={(e) => updateOption('paperSize', e.target.value as any)}
+                    onChange={(e) => updateOption('paperSize', e.target.value as 'A4' | 'A3' | 'Letter' | 'Legal')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="A4">A4 (210 × 297 mm)</option>
@@ -232,7 +235,7 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
                         type="radio"
                         value="portrait"
                         checked={exportOptions.orientation === 'portrait'}
-                        onChange={(e) => updateOption('orientation', e.target.value as any)}
+                        onChange={(e) => updateOption('orientation', e.target.value as 'portrait' | 'landscape')}
                         className="mr-2"
                       />
                       Portrait
@@ -242,7 +245,7 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
                         type="radio"
                         value="landscape"
                         checked={exportOptions.orientation === 'landscape'}
-                        onChange={(e) => updateOption('orientation', e.target.value as any)}
+                        onChange={(e) => updateOption('orientation', e.target.value as 'portrait' | 'landscape')}
                         className="mr-2"
                       />
                       Landscape

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { MaterialTemplate } from '@/types/materials/MaterialTemplate';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useMaterialStore } from '@/stores/materialStore';
@@ -155,10 +156,11 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
               
               <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
                 {template.thumbnail ? (
-                  <img
+                  <Image
                     src={template.thumbnail}
                     alt={template.name}
-                    className="w-full h-full object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
                   />
                 ) : (
                   <div className="text-center">

@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Stage } from 'konva/lib/Stage';
 import ExportDialog from '../Export/ExportDialog';
 
 interface ExportButtonProps {
-  stage: any; // Konva Stage reference
+  stage: Stage | null; // Konva Stage reference
 }
 
 export default function ExportButton({ stage }: ExportButtonProps) {

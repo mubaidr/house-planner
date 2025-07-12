@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { MaterialTemplate } from '@/types/materials/MaterialTemplate';
 import { useTemplateStore } from '@/stores/templateStore';
 
@@ -62,10 +63,11 @@ export default function TemplateCard({ template, isSelected, onSelect }: Templat
       {/* Template Preview/Thumbnail */}
       <div className="aspect-video rounded-t-lg overflow-hidden relative bg-gradient-to-br from-gray-100 to-gray-200">
         {template.thumbnail ? (
-          <img
+          <Image
             src={template.thumbnail}
             alt={template.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

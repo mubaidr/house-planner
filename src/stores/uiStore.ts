@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Tool = 'select' | 'wall' | 'door' | 'window' | 'measure';
+export type Tool = 'select' | 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'measure' | 'dimension' | 'align';
 
 export interface UIState {
   activeTool: Tool;

@@ -99,7 +99,7 @@ const buildWallGraph = (walls: Wall[]): Map<string, string[]> => {
 /**
  * Find cycles in the wall graph using DFS
  */
-const findCycles = (graph: Map<string, string[]>, _walls: Wall[]): string[][] => {
+const findCycles = (graph: Map<string, string[]>): string[][] => {
   const visited = new Set<string>();
   const cycles: string[][] = [];
 
@@ -285,7 +285,7 @@ export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
   }
 
   const graph = buildWallGraph(walls);
-  const cycles = findCycles(graph, walls);
+  const cycles = findCycles(graph);
   const rooms: Room[] = [];
   const closedShapes: Point[][] = [];
 
