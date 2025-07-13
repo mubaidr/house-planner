@@ -23,7 +23,6 @@ export const useWallTool = () => {
 
   const { walls } = useDesignStore();
   const { snapToGrid, gridSize, activeTool } = useUIStore();
-  const { addWallWithIntersectionHandling } = useWallIntersection();
 
   const startDrawing = useCallback((x: number, y: number) => {
     if (activeTool !== 'wall') return;
@@ -43,7 +42,7 @@ export const useWallTool = () => {
       currentPoint: { x: snapResult.x, y: snapResult.y },
       currentSnapResult: snapResult,
     });
-  }, [activeTool, walls, gridSize, snapToGrid]);
+  }, [activeTool, walls, gridSize, snapToGrid, getWallSnapPointsWithIntersections]);
 
   const updateDrawing = useCallback((x: number, y: number) => {
     if (!drawingState.isDrawing || activeTool !== 'wall') return;
@@ -62,7 +61,7 @@ export const useWallTool = () => {
       currentPoint: { x: snapResult.x, y: snapResult.y },
       currentSnapResult: snapResult,
     }));
-  }, [drawingState.isDrawing, activeTool, walls, gridSize, snapToGrid]);
+  }, [drawingState.isDrawing, activeTool, walls, gridSize, snapToGrid, getWallSnapPointsWithIntersections]);
 
   const finishDrawing = useCallback(() => {
     if (!drawingState.isDrawing || !drawingState.startPoint || !drawingState.currentPoint) {

@@ -36,16 +36,16 @@ export default function StairPropertiesPanel({ stair, onUpdate, onDelete }: Stai
 
   const handleInputBlur = (field: string) => {
     const numericFields = ['width', 'length', 'steps', 'stepHeight', 'stepDepth'];
-    
+
     if (numericFields.includes(field)) {
       const numValue = parseFloat(editValues[field as keyof typeof editValues] as string);
       if (!isNaN(numValue) && numValue > 0) {
         onUpdate({ [field]: numValue });
       } else {
         // Reset to current value if invalid
-        setEditValues(prev => ({ 
-          ...prev, 
-          [field]: (stair[field as keyof Stair] as number).toString() 
+        setEditValues(prev => ({
+          ...prev,
+          [field]: (stair[field as keyof Stair] as number).toString()
         }));
       }
     } else {
@@ -83,6 +83,32 @@ export default function StairPropertiesPanel({ stair, onUpdate, onDelete }: Stai
         >
           Delete
         </button>
+      </div>
+      {/* Material */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Material
+        </label>
+        <input
+          type="text"
+          value={stair.material ?? ''}
+          onChange={e => onUpdate({ material: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Concrete"
+        />
+      </div>
+      {/* Floor ID */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Floor ID
+        </label>
+        <input
+          type="text"
+          value={stair.floorId ?? ''}
+          onChange={e => onUpdate({ floorId: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="e.g. floor-1"
+        />
       </div>
 
       {/* Basic Properties */}

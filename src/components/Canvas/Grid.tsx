@@ -5,7 +5,9 @@ import { Line } from 'react-konva';
 import { useUIStore } from '@/stores/uiStore';
 
 export default function Grid() {
-  const { gridSize, canvasWidth, canvasHeight } = useUIStore();
+  const { gridSize, canvasWidth, canvasHeight, gridVisible = true } = useUIStore();
+
+  if (!gridVisible) return null;
 
   const lines = [];
 

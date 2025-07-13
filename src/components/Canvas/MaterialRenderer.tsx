@@ -6,7 +6,7 @@ import { Material } from '@/types/materials/Material';
 
 interface MaterialRendererProps {
   material: Material;
-  shape: 'rect' | 'line';
+  shape: 'rect' | 'line' | 'polygon';
   x: number;
   y: number;
   width?: number;
@@ -35,7 +35,7 @@ export default function MaterialRenderer({
 }: MaterialRendererProps) {
   const getPatternImage = () => {
     if (!material.texture) return null;
-    
+
     const image = new Image();
     image.src = material.texture;
     return image;
@@ -95,7 +95,7 @@ export default function MaterialRenderer({
           height={height}
           {...getFillPatternProps()}
         />
-        
+
         {/* Metallic overlay effect */}
         {material.properties.metallic > 0.5 && (
           <Rect
@@ -107,7 +107,7 @@ export default function MaterialRenderer({
             listening={false}
           />
         )}
-        
+
         {/* Reflectivity effect */}
         {material.properties.reflectivity > 0.5 && (
           <Rect
@@ -132,7 +132,7 @@ export default function MaterialRenderer({
           points={points}
           {...getStrokeProps()}
         />
-        
+
         {/* Metallic effect for lines */}
         {material.properties.metallic > 0.5 && (
           <Line
@@ -146,6 +146,40 @@ export default function MaterialRenderer({
         )}
       </Group>
     );
+  }
+
+  if (shape === 'polygon' && points && points.length >= 6) {
+    return (
+      <Group>
+        <Line
+          {...commonProps}
+          points={points}
+          closed
+          {...getFillPatternProps()}
+        />
+        {material.properties?.metallic > 0.5 && (
+          <Line
+            {...commonProps}
+            points={points}
+            closed
+            fill="linear-gradient(45deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%)"
+            opacity={(material.properties?.metallic ?? 0) * 0.3}
+            listening={false}
+          />
+        )}
+        {material.properties?.reflectivity > 0.5 && (
+          <Line
+            {...commonProps}
+            points={points}
+            closed
+            stroke="rgba(255,255,255,0.5)"
+            strokeWidth={1}
+            opacity={(material.properties?.reflectivity ?? 0) * 0.5}
+            listening={false}
+          />
+        )}
+      </Group>
+    )
   }
 
   return null;

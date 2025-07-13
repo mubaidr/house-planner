@@ -14,7 +14,7 @@ interface WindowComponentProps {
 export default function WindowComponent({ window }: WindowComponentProps) {
   const { selectElement, selectedElementId } = useDesignStore();
   const { startDrag, updateDrag, endDrag } = useWindowEditor();
-  
+
   const isSelected = selectedElementId === window.id;
 
   const handleClick = () => {
@@ -36,49 +36,62 @@ export default function WindowComponent({ window }: WindowComponentProps) {
   return (
     <>
       {/* Window frame */}
-      <Rect
-        x={window.x}
-        y={window.y}
-        width={window.width}
-        height={4}
-        rotation={((window.wallAngle || 0) * 180) / Math.PI}
-        offsetX={window.width / 2}
-        offsetY={2}
-        fill="white"
-        stroke={isSelected ? '#3b82f6' : window.color}
-        strokeWidth={isSelected ? 2 : 1}
-        onClick={handleClick}
-        onTap={handleClick}
-      />
-      
-      {/* Window glass (transparent) */}
-      <Rect
-        x={window.x}
-        y={window.y}
-        width={window.width - 4}
-        height={2}
-        rotation={((window.wallAngle || 0) * 180) / Math.PI}
-        offsetX={(window.width - 4) / 2}
-        offsetY={1}
-        fill="#87ceeb"
-        opacity={window.opacity}
-        onClick={handleClick}
-        onTap={handleClick}
-      />
-      
-      {/* Window divider (for double windows) */}
-      {window.style === 'double' && (
-        <Line
-          points={[0, -1, 0, 1]}
-          x={window.x}
-          y={window.y}
-          rotation={((window.wallAngle || 0) * 180) / Math.PI}
-          stroke={isSelected ? '#3b82f6' : window.color}
-          strokeWidth={1}
-          onClick={handleClick}
-          onTap={handleClick}
-        />
-      )}
+     <Rect
+       x={window.x}
+       y={window.y}
+       width={window.width}
+       height={4}
+       rotation={((window.wallAngle || 0) * 180) / Math.PI}
+       offsetX={window.width / 2}
+       offsetY={2}
+       fill={window.material ? window.material : 'white'}
+       stroke={isSelected ? '#3b82f6' : window.color}
+       strokeWidth={isSelected ? 2 : 1}
+       onClick={handleClick}
+       onTap={handleClick}
+     />
+
+     {/* Window glass (transparent) */}
+     <Rect
+       x={window.x}
+       y={window.y}
+       width={window.width - 4}
+       height={2}
+       rotation={((window.wallAngle || 0) * 180) / Math.PI}
+       offsetX={(window.width - 4) / 2}
+       offsetY={1}
+       fill="#87ceeb"
+       opacity={window.opacity}
+       onClick={handleClick}
+       onTap={handleClick}
+     />
+
+     {/* Window divider (for double windows) */}
+     {window.style === 'double' && (
+       <Line
+         points={[0, -1, 0, 1]}
+         x={window.x}
+         y={window.y}
+         rotation={((window.wallAngle || 0) * 180) / Math.PI}
+         stroke={isSelected ? '#3b82f6' : window.color}
+         strokeWidth={1}
+         onClick={handleClick}
+         onTap={handleClick}
+       />
+     )}
+     {/* Casement window rendering */}
+     {window.style === 'casement' && (
+       <Line
+         points={[0, 0, window.width / 2, -window.height / 2]}
+         x={window.x}
+         y={window.y}
+         rotation={((window.wallAngle || 0) * 180) / Math.PI}
+         stroke={isSelected ? '#3b82f6' : window.color}
+         strokeWidth={2}
+         onClick={handleClick}
+         onTap={handleClick}
+       />
+     )}
 
       {/* Editing handles */}
       <WindowHandles

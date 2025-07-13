@@ -56,7 +56,7 @@ export default function MaterialLibrary() {
               <p className="text-sm text-gray-600">{filteredMaterials.length} materials available</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button
               onClick={handleCreateMaterial}
@@ -67,7 +67,7 @@ export default function MaterialLibrary() {
               </svg>
               <span>New Material</span>
             </button>
-            
+
             <button
               onClick={() => setLibraryOpen(false)}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -115,7 +115,7 @@ export default function MaterialLibrary() {
                     <span>All Materials</span>
                   </div>
                 </button>
-                
+
                 {Object.entries(MATERIAL_CATEGORIES).map(([key, category]) => (
                   <button
                     key={key}
@@ -159,6 +159,8 @@ export default function MaterialLibrary() {
                       isSelected={selectedMaterialId === material.id}
                       onSelect={() => setSelectedMaterial(material.id)}
                       onEdit={() => handleEditMaterial(material.id)}
+                      onDuplicate={() => useMaterialStore.getState().duplicateMaterial(material.id)}
+                      onRemove={() => useMaterialStore.getState().removeMaterial(material.id)}
                     />
                   ))}
                 </div>

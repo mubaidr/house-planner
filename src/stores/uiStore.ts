@@ -14,6 +14,7 @@ export interface UIState {
   propertiesPanelCollapsed: boolean;
   mouseCoordinates: { x: number; y: number };
   showRooms: boolean;
+  gridVisible?: boolean;
 }
 
 export interface UIActions {
@@ -29,7 +30,7 @@ export interface UIActions {
   toggleRooms: () => void;
 }
 
-export const useUIStore = create<UIState & UIActions>((set) => ({
+export const useUIStore = create<UIState & UIActions>((set, get) => ({
   // State
   activeTool: 'select',
   showGrid: true,
@@ -42,6 +43,9 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   propertiesPanelCollapsed: false,
   mouseCoordinates: { x: 0, y: 0 },
   showRooms: true,
+  get gridVisible() {
+    return get().showGrid
+  },
 
   // Actions
   setActiveTool: (tool) =>

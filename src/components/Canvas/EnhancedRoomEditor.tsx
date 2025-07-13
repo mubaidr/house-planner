@@ -22,12 +22,12 @@ const RoomLabel: React.FC<RoomLabelProps> = ({ room, isSelected }) => {
     if (room.isCustomNamed) {
       return room.name;
     }
-    
+
     // Use suggested name if available and confidence is high
     if (room.confidence > 0.5 && room.suggestedNames.length > 0) {
       return room.suggestedNames[0];
     }
-    
+
     return room.name;
   };
 
@@ -130,11 +130,10 @@ const RoomLabel: React.FC<RoomLabelProps> = ({ room, isSelected }) => {
   );
 };
 
-export default function EnhancedRoomEditor({ 
-  room, 
-  isSelected, 
-  onSelect, 
-  onEdit 
+export default function EnhancedRoomEditor({
+  room,
+  isSelected,
+  onSelect
 }: EnhancedRoomEditorProps) {
   const { doors, windows } = useDesignStore();
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -318,9 +317,9 @@ export const RoomTypeSelector: React.FC<{
         </label>
         <select
           value={room.roomType}
-          onChange={(e) => onUpdate({ 
+          onChange={(e) => onUpdate({
             roomType: e.target.value,
-            isCustomNamed: true 
+            isCustomNamed: true
           })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
@@ -342,9 +341,9 @@ export const RoomTypeSelector: React.FC<{
             {suggestions.slice(0, 3).map((suggestion, index) => (
               <button
                 key={index}
-                onClick={() => onUpdate({ 
+                onClick={() => onUpdate({
                   name: suggestion,
-                  isCustomNamed: true 
+                  isCustomNamed: true
                 })}
                 className="w-full text-left px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors"
               >

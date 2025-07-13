@@ -13,7 +13,7 @@ interface MaterialEditorProps {
 
 export default function MaterialEditor({ materialId, onClose }: MaterialEditorProps) {
   const { getMaterialById, addMaterial, updateMaterial } = useMaterialStore();
-  
+
   const existingMaterial = materialId ? getMaterialById(materialId) : null;
   const isEditing = !!existingMaterial;
 
@@ -157,7 +157,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
               {/* Basic Information */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -227,13 +227,78 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
                       placeholder="Product code or SKU"
                     />
                   </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Cost</h4>
+                    <div className="flex space-x-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.cost?.pricePerUnit ?? ''}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            cost: {
+                              ...prev.cost,
+                              pricePerUnit: parseFloat(e.target.value) || 0,
+                              unit: prev.cost?.unit || 'sqft',
+                              currency: prev.cost?.currency || 'USD',
+                              lastUpdated: new Date(),
+                            },
+                          }))
+                        }
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Price"
+                      />
+                      <select
+                        value={formData.cost?.unit ?? 'sqft'}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            cost: {
+                              ...prev.cost,
+                              pricePerUnit: prev.cost?.pricePerUnit || 0,
+                              unit: e.target.value as 'sqft' | 'sqm' | 'linear_ft' | 'linear_m' | 'piece',
+                              currency: prev.cost?.currency || 'USD',
+                              lastUpdated: new Date(),
+                            },
+                          }))
+                        }
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="sqft">sqft</option>
+                        <option value="sqm">sqm</option>
+                        <option value="linear_ft">linear_ft</option>
+                        <option value="linear_m">linear_m</option>
+                        <option value="piece">piece</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={formData.cost?.currency ?? 'USD'}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            cost: {
+                              ...prev.cost,
+                              pricePerUnit: prev.cost?.pricePerUnit || 0,
+                              unit: prev.cost?.unit || 'sqft',
+                              currency: e.target.value,
+                              lastUpdated: new Date(),
+                            },
+                          }))
+                        }
+                        className="w-16 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Currency"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Tags */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Tags</h3>
-                
+
                 <div className="space-y-3">
                   <div className="flex space-x-2">
                     <input
@@ -251,7 +316,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
                       Add
                     </button>
                   </div>
-                  
+
                   {formData.metadata?.tags && formData.metadata.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {formData.metadata.tags.map((tag, index) => (
@@ -281,7 +346,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
               {/* Visual Properties */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Visual Properties</h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -380,7 +445,7 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
                       }}
                     />
                   )}
-                  
+
                   {/* Metallic overlay */}
                   {(formData.properties?.metallic || 0) > 0.5 && (
                     <div

@@ -39,7 +39,7 @@ import MaterializedDoorComponent from './MaterializedDoorComponent';
 export default function DrawingCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     zoomLevel,
     canvasWidth,
@@ -50,7 +50,7 @@ export default function DrawingCanvas() {
     setActiveTool,
     setMouseCoordinates,
   } = useUIStore();
-  
+
   const { currentView, getViewTransform, isTransitioning } = useViewStore();
   const { walls, doors, windows, stairs, roofs, clearSelection, selectedElementId, selectedElementType, selectElement, syncWithCurrentFloor } = useDesignStore();
   const { currentFloorId, getCurrentFloor, showAllFloors, floorOpacity, getFloorsOrderedByLevel } = useFloorStore();
@@ -89,13 +89,13 @@ export default function DrawingCanvas() {
   // Get current floor elements for rendering
   const currentFloor = getCurrentFloor();
   const currentFloorElements = currentFloor ? currentFloor.elements : { walls, doors, windows, stairs, roofs, rooms: [] };
-  
+
   // Get all floors for ghost view if enabled
   const allFloors = showAllFloors ? getFloorsOrderedByLevel() : [];
 
   // Get current view transform
   const viewTransform = getViewTransform(currentView);
-  
+
   // Apply view-specific transformations to the stage
   const getStageProps = () => {
     const baseProps = {
@@ -129,7 +129,7 @@ export default function DrawingCanvas() {
   // Handle wheel zoom
   const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
-    
+
     const stage = stageRef.current;
     if (!stage) return;
 
@@ -153,7 +153,7 @@ export default function DrawingCanvas() {
       x: pointer.x - mousePointTo.x * clampedScale,
       y: pointer.y - mousePointTo.y * clampedScale,
     };
-    
+
     stage.position(newPos);
   };
 
@@ -200,14 +200,14 @@ export default function DrawingCanvas() {
   const handleStageMouseMove = (e: KonvaEventObject<MouseEvent>) => {
     const pos = e.target.getStage()?.getPointerPosition();
     const stage = stageRef.current;
-    
+
     if (stage && pos) {
       const transform = stage.getAbsoluteTransform().copy().invert();
       const localPos = transform.point(pos);
-      
+
       // Update mouse coordinates for status bar
       setMouseCoordinates(Math.round(localPos.x), Math.round(localPos.y));
-      
+
       // Handle tool-specific mouse movement
       switch (activeTool) {
         case 'wall':
@@ -380,14 +380,14 @@ export default function DrawingCanvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, deleteSelectedDoor, deleteSelectedWindow, setMouseCoordinates]);
+  }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, deleteSelectedDoor, deleteSelectedWindow, setMouseCoordinates, cancelRoofDrawing, cancelStairDrawing, isDrawingRoof, isDrawingStair]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
       <Stage
         ref={stageRef}
         {...getStageProps()}
-        style={{ 
+        style={{
           transition: isTransitioning ? 'all 0.3s ease-in-out' : 'none',
           opacity: isTransitioning ? 0.7 : 1,
         }}
@@ -407,7 +407,7 @@ export default function DrawingCanvas() {
             canvasWidth={canvasWidth}
             canvasHeight={canvasHeight}
           />
-          
+
           {/* Door Constraint Indicators */}
           {activeTool === 'door' && doorPlacementState.constraintResult && (
             <ConstraintIndicators
@@ -416,7 +416,7 @@ export default function DrawingCanvas() {
               elementWidth={80}
             />
           )}
-          
+
           {/* Window Constraint Indicators */}
           {activeTool === 'window' && windowPlacementState.constraintResult && (
             <ConstraintIndicators
@@ -425,7 +425,7 @@ export default function DrawingCanvas() {
               elementWidth={100}
             />
           )}
-          
+
           {/* Intersection Indicators */}
           <IntersectionIndicators />
         </Layer>
@@ -434,7 +434,7 @@ export default function DrawingCanvas() {
         <Layer>
           {/* Render Walls with Materials */}
           {/* Render Ghost Floors (if enabled) */}
-          {showAllFloors && allFloors.map((floor) => 
+          {showAllFloors && allFloors.map((floor) =>
             floor.id !== currentFloorId ? (
               <Group key={`ghost-${floor.id}`} opacity={floorOpacity}>
                 {floor.elements.walls.map((wall) => (
@@ -471,8 +471,8 @@ export default function DrawingCanvas() {
 
           {/* Render Current Floor Walls */}
           {currentFloorElements.walls.map((wall) => (
-            <MaterializedWallComponent 
-              key={wall.id} 
+            <MaterializedWallComponent
+              key={wall.id}
               wall={wall}
               isSelected={selectedElementId === wall.id && selectedElementType === 'wall'}
               onSelect={() => selectElement(wall.id, 'wall')}
@@ -491,8 +491,8 @@ export default function DrawingCanvas() {
           {/* Render Doors with Materials */}
           {/* Render Current Floor Doors */}
           {currentFloorElements.doors.map((door) => (
-            <MaterializedDoorComponent 
-              key={door.id} 
+            <MaterializedDoorComponent
+              key={door.id}
               door={door}
               isSelected={selectedElementId === door.id && selectedElementType === 'door'}
               onSelect={() => selectElement(door.id, 'door')}
@@ -505,16 +505,16 @@ export default function DrawingCanvas() {
           {/* Render Windows */}
           {/* Render Current Floor Windows */}
           {currentFloorElements.windows.map((window) => (
-            <WindowComponent 
-              key={window.id} 
+            <WindowComponent
+              key={window.id}
               window={window}
             />
           ))}
 
           {/* Render Stairs */}
           {currentFloorElements.stairs?.map((stair) => (
-            <StairComponent 
-              key={stair.id} 
+            <StairComponent
+              key={stair.id}
               stair={stair}
               isSelected={selectedElementId === stair.id && selectedElementType === 'stair'}
               onSelect={() => selectElement(stair.id, 'stair')}
@@ -524,8 +524,8 @@ export default function DrawingCanvas() {
 
           {/* Render Roofs */}
           {currentFloorElements.roofs?.map((roof) => (
-            <RoofComponent 
-              key={roof.id} 
+            <RoofComponent
+              key={roof.id}
               roof={roof}
               isSelected={selectedElementId === roof.id && selectedElementType === 'roof'}
               onSelect={() => selectElement(roof.id, 'roof')}
@@ -563,8 +563,8 @@ export default function DrawingCanvas() {
 
           {/* Render stair preview */}
           {activeTool === 'stair' && previewStair && (
-            <StairComponent 
-              stair={previewStair} 
+            <StairComponent
+              stair={previewStair}
               isSelected={false}
               onSelect={() => {}}
               onDragEnd={() => {}}
@@ -573,8 +573,8 @@ export default function DrawingCanvas() {
 
           {/* Render roof preview */}
           {activeTool === 'roof' && previewRoof && (
-            <RoofComponent 
-              roof={previewRoof} 
+            <RoofComponent
+              roof={previewRoof}
               isSelected={false}
               onSelect={() => {}}
               onDragEnd={() => {}}

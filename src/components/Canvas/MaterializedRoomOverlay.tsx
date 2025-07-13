@@ -12,17 +12,17 @@ export default function MaterializedRoomOverlay() {
   const { walls, rooms, updateRooms, updateRoom, selectElement, selectedElementId, selectedElementType } = useDesignStore();
   const { showRooms } = useUIStore();
   const { getMaterialById } = useMaterialStore();
-  
+
   const { rooms: detectedRooms } = detectRooms(walls);
 
   // Update rooms when walls change, preserving custom properties
   useEffect(() => {
     const updatedRooms = detectedRooms.map(detectedRoom => {
-      const existingRoom = rooms.find(r => 
+      const existingRoom = rooms.find(r =>
         r.walls.length === detectedRoom.walls.length &&
         r.walls.every(wallId => detectedRoom.walls.includes(wallId))
       );
-      
+
       if (existingRoom) {
         // Preserve custom properties but update calculated ones
         return {
@@ -34,27 +34,27 @@ export default function MaterializedRoomOverlay() {
           walls: detectedRoom.walls,
         };
       }
-      
+
       return {
         ...detectedRoom,
         roomType: 'other',
         isCustomNamed: false,
       };
     });
-    
+
     // Only update if the rooms have actually changed
-    const roomsChanged = updatedRooms.length !== rooms.length || 
+    const roomsChanged = updatedRooms.length !== rooms.length ||
       updatedRooms.some((room, index) => {
         const existingRoom = rooms[index];
-        return !existingRoom || 
+        return !existingRoom ||
           room.walls.length !== existingRoom.walls.length ||
           room.walls.some(wallId => !existingRoom.walls.includes(wallId));
       });
-    
+
     if (roomsChanged) {
       updateRooms(updatedRooms);
     }
-  }, [walls, updateRooms]);
+  }, [walls, updateRooms, detectedRooms, rooms]);
 
   if (!showRooms || rooms.length === 0) return null;
 
@@ -62,7 +62,7 @@ export default function MaterializedRoomOverlay() {
     <Group>
       {rooms.map((room) => {
         const material = room.materialId ? getMaterialById(room.materialId) : null;
-        
+
         // Get room appearance based on material or fallback
         const getRoomAppearance = () => {
           if (material) {
@@ -82,7 +82,7 @@ export default function MaterializedRoomOverlay() {
               fillPatternRotation: material.texture ? (material.properties.patternRotation || 0) : undefined,
             };
           }
-          
+
           return {
             fill: room.color,
             opacity: 0.2,
@@ -91,7 +91,7 @@ export default function MaterializedRoomOverlay() {
         };
 
         const appearance = getRoomAppearance();
-        
+
         return (
           <Group key={room.id}>
             {/* Room fill with material */}
@@ -101,7 +101,7 @@ export default function MaterializedRoomOverlay() {
               {...appearance}
               listening={false}
             />
-            
+
             {/* Room border */}
             <Line
               points={room.vertices.flatMap(v => [v.x, v.y])}
@@ -112,7 +112,7 @@ export default function MaterializedRoomOverlay() {
               opacity={0.6}
               listening={false}
             />
-            
+
             {/* Material effects for rooms */}
             {material && material.properties.metallic > 0.3 && (
               <Line
@@ -124,7 +124,7 @@ export default function MaterializedRoomOverlay() {
                 listening={false}
               />
             )}
-            
+
             {/* Room center point */}
             <Circle
               x={room.center.x}
@@ -134,7 +134,7 @@ export default function MaterializedRoomOverlay() {
               opacity={0.8}
               listening={false}
             />
-            
+
             {/* Interactive Room Editor */}
             <RoomEditor
               room={room}

@@ -1,3 +1,4 @@
+import * as Konva from 'konva';
 'use client';
 
 import React, { useState, useCallback } from 'react';
@@ -64,31 +65,31 @@ const DimensionLine: React.FC<{
   const dy = endPoint.y - startPoint.y;
   // const length = Math.sqrt(dx * dx + dy * dy); // Removed unused variable
   const angle = Math.atan2(dy, dx);
-  
+
   // Unit vector perpendicular to the measured line
   const perpX = -Math.sin(angle);
   const perpY = Math.cos(angle);
-  
+
   // Offset points for dimension line
   const offsetStartX = startPoint.x + perpX * offset;
   const offsetStartY = startPoint.y + perpY * offset;
   const offsetEndX = endPoint.x + perpX * offset;
   const offsetEndY = endPoint.y + perpY * offset;
-  
+
   // Extension lines
   const extStartX = startPoint.x + perpX * (offset - style.extensionLength);
   const extStartY = startPoint.y + perpY * (offset - style.extensionLength);
   const extEndX = endPoint.x + perpX * (offset - style.extensionLength);
   const extEndY = endPoint.y + perpY * (offset - style.extensionLength);
-  
+
   // Text position (middle of dimension line)
   const textX = (offsetStartX + offsetEndX) / 2;
   const textY = (offsetStartY + offsetEndY) / 2;
-  
+
   // Text rotation to align with dimension line
   const textRotation = angle * 180 / Math.PI;
-  const normalizedRotation = textRotation > 90 || textRotation < -90 
-    ? textRotation + 180 
+  const normalizedRotation = textRotation > 90 || textRotation < -90
+    ? textRotation + 180
     : textRotation;
 
   const handleDragStart = useCallback(() => {
@@ -101,19 +102,19 @@ const DimensionLine: React.FC<{
 
   const handleDragMove = useCallback((e: any) => {
     if (!isDragging) return;
-    
+
     const stage = e.target.getStage();
     const pointerPosition = stage.getPointerPosition();
-    
+
     // Calculate new offset based on mouse position
     const mouseX = pointerPosition.x;
     const mouseY = pointerPosition.y;
-    
+
     // Project mouse position onto perpendicular line
     const toMouseX = mouseX - startPoint.x;
     const toMouseY = mouseY - startPoint.y;
     const newOffset = toMouseX * perpX + toMouseY * perpY;
-    
+
     onUpdate({ offset: Math.max(20, Math.abs(newOffset)) * Math.sign(newOffset || 1) });
   }, [isDragging, startPoint, perpX, perpY, onUpdate]);
 
@@ -134,7 +135,7 @@ const DimensionLine: React.FC<{
         opacity={0.7}
         listening={false}
       />
-      
+
       {/* Main dimension line */}
       <Line
         points={[offsetStartX, offsetStartY, offsetEndX, offsetEndY]}
@@ -142,7 +143,7 @@ const DimensionLine: React.FC<{
         strokeWidth={isSelected ? style.strokeWidth * 1.5 : style.strokeWidth}
         listening={false}
       />
-      
+
       {/* Arrow heads */}
       <Arrow
         points={[offsetStartX, offsetStartY, offsetStartX + Math.cos(angle) * style.arrowSize, offsetStartY + Math.sin(angle) * style.arrowSize]}
@@ -162,7 +163,7 @@ const DimensionLine: React.FC<{
         pointerWidth={style.arrowSize * 0.7}
         listening={false}
       />
-      
+
       {/* Text background */}
       {style.textBackground && (
         <Text
@@ -180,7 +181,7 @@ const DimensionLine: React.FC<{
           listening={false}
         />
       )}
-      
+
       {/* Text */}
       <Text
         x={textX}
@@ -195,7 +196,7 @@ const DimensionLine: React.FC<{
         rotation={normalizedRotation}
         listening={false}
       />
-      
+
       {/* Interactive area for selection and dragging */}
       <Line
         points={[offsetStartX, offsetStartY, offsetEndX, offsetEndY]}
@@ -209,7 +210,7 @@ const DimensionLine: React.FC<{
         draggable={isSelected}
         hitStrokeWidth={20}
       />
-      
+
       {/* Selection indicators */}
       {isSelected && (
         <Group>
@@ -242,7 +243,7 @@ const DimensionLine: React.FC<{
               onUpdate({ endPoint: { x: newX, y: newY } });
             }}
           />
-          
+
           {/* Delete button */}
           <Circle
             x={textX + 20}
@@ -271,10 +272,10 @@ const DimensionLine: React.FC<{
   );
 };
 
-export default function DimensionAnnotations({ 
-  annotations, 
-  onUpdate, 
-  showAll 
+export default function DimensionAnnotations({
+  annotations,
+  onUpdate,
+  showAll
 }: DimensionAnnotationsProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // const { activeTool } = useUIStore(); // Removed unused variable
@@ -285,7 +286,7 @@ export default function DimensionAnnotations({
 
   const handleUpdateAnnotation = useCallback((id: string, updates: Partial<DimensionAnnotation>) => {
     const updatedAnnotations = annotations.map(annotation =>
-      annotation.id === id 
+      annotation.id === id
         ? { ...annotation, ...updates, updatedAt: Date.now() }
         : annotation
     );
@@ -299,7 +300,7 @@ export default function DimensionAnnotations({
   }, [annotations, onUpdate]);
 
   // Filter visible annotations
-  const visibleAnnotations = annotations.filter(annotation => 
+  const visibleAnnotations = annotations.filter(annotation =>
     showAll && annotation.isVisible
   );
 
@@ -328,10 +329,10 @@ export const createDimensionAnnotation = (
   const distance = Math.sqrt(
     Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2)
   );
-  
+
   const style = { ...DEFAULT_STYLE, ...options.style };
   const label = formatDimensionLabel(distance, style);
-  
+
   return {
     id: `dimension-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     startPoint,
@@ -350,7 +351,7 @@ export const createDimensionAnnotation = (
 
 export const formatDimensionLabel = (distance: number, style: DimensionStyle): string => {
   const precision = style.precision;
-  
+
   switch (style.units) {
     case 'metric':
       if (distance > 100) {
@@ -358,26 +359,26 @@ export const formatDimensionLabel = (distance: number, style: DimensionStyle): s
       } else {
         return `${distance.toFixed(precision)}cm`;
       }
-    
+
     case 'imperial':
       const totalInchesImperial = distance / 2.54;
       if (totalInchesImperial > 12) {
         const feet = Math.floor(totalInchesImperial / 12);
         const remainingInches = totalInchesImperial % 12;
-        return remainingInches > 0 
+        return remainingInches > 0
           ? `${feet}'-${remainingInches.toFixed(precision)}"`
           : `${feet}'`;
       } else {
         return `${totalInchesImperial.toFixed(precision)}"`;
       }
-    
+
     case 'both':
     default:
       const cm = distance.toFixed(precision);
       const totalInchesBoth = distance / 2.54;
       const feetBoth = Math.floor(totalInchesBoth / 12);
       const inchesBoth = totalInchesBoth % 12;
-      
+
       if (feetBoth > 0) {
         return `${cm}cm (${feetBoth}'-${inchesBoth.toFixed(precision)}")`;
       } else {
@@ -389,7 +390,7 @@ export const formatDimensionLabel = (distance: number, style: DimensionStyle): s
 // Auto-dimension utilities
 export const createAutoDimensions = (walls: Array<{ id: string; startX: number; startY: number; endX: number; endY: number }>): DimensionAnnotation[] => {
   const annotations: DimensionAnnotation[] = [];
-  
+
   walls.forEach((wall, index) => {
     // Create dimension for each wall
     const annotation = createDimensionAnnotation(
@@ -401,9 +402,9 @@ export const createAutoDimensions = (walls: Array<{ id: string; startX: number; 
         offset: 40 + (index % 3) * 20, // Stagger offsets
       }
     );
-    
+
     annotations.push(annotation);
   });
-  
+
   return annotations;
 };

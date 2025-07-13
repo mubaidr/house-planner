@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
-import { 
-  AlignableElement, 
-  alignLeft, 
-  alignRight, 
-  alignTop, 
-  alignBottom, 
-  alignCenterHorizontal, 
+import {
+  AlignableElement,
+  alignLeft,
+  alignRight,
+  alignTop,
+  alignBottom,
+  alignCenterHorizontal,
   alignCenterVertical,
   distributeHorizontally,
   distributeVertically,
@@ -20,7 +20,7 @@ export const useAlignmentTool = () => {
 
   // Get all selected elements (this would need to be implemented in the design store)
   const getSelectedElements = useCallback((): AlignableElement[] => {
-    // For now, return all elements - in a real implementation, 
+    // For now, return all elements - in a real implementation,
     // you'd track selected elements in the store
     const allElements: AlignableElement[] = [
       ...walls,
@@ -84,7 +84,7 @@ export const useAlignmentTool = () => {
       },
       description,
     });
-  }, [getSelectedElements, executeCommand, updateWall, updateDoor, updateWindow, updateStair, updateRoof, walls, doors, windows, stairs, roofs]);
+  }, [getSelectedElements, executeCommand, updateWall, updateDoor, updateWindow, updateStair, updateRoof, doors, windows, stairs, roofs]);
 
   const alignLeftElements = useCallback(() => {
     applyAlignment(alignLeft, 'Align left');

@@ -25,47 +25,60 @@ export const useWindowTool = () => {
   const { activeTool } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
-  const startPlacement = useCallback((x: number, y: number) => {
-    if (activeTool !== 'window') return;
+  const startPlacement = useCallback(
+    (
+      x: number,
+      y: number,
+      options?: {
+        style?: 'single' | 'double' | 'casement'
+        material?: string
+        color?: string
+        opacity?: number
+      }
+    ) => {
+      if (activeTool !== 'window') return
 
-    const windowWidth = 100; // Default window width
-    const constraintResult = canPlaceWindow(
-      { x, y },
-      windowWidth,
-      walls,
-      doors,
-      windows
-    );
+      const windowWidth = 100 // Default window width
+      const constraintResult = canPlaceWindow(
+        { x, y },
+        windowWidth,
+        walls,
+        doors,
+        windows
+      )
 
-    if (constraintResult.isValid && constraintResult.wallId) {
-      const previewWindow: Window = {
-        id: `window-preview-${Date.now()}`,
-        x: constraintResult.position.x,
-        y: constraintResult.position.y,
-        width: windowWidth,
-        height: 80, // Default window height
-        wallId: constraintResult.wallId,
-        wallAngle: constraintResult.wallSegment?.angle || 0,
-        style: 'single',
-        color: '#4A90E2',
-        opacity: 0.7,
-      };
+      if (constraintResult.isValid && constraintResult.wallId) {
+        const previewWindow: Window = {
+          id: `window-preview-${Date.now()}`,
+          x: constraintResult.position.x,
+          y: constraintResult.position.y,
+          width: windowWidth,
+          height: 80, // Default window height
+          wallId: constraintResult.wallId,
+          wallAngle: constraintResult.wallSegment?.angle || 0,
+          style: options?.style ?? 'single',
+          material: options?.material,
+          color: options?.color ?? '#4A90E2',
+          opacity: options?.opacity ?? 0.7,
+        }
 
-      setPlacementState({
-        isPlacing: true,
-        previewWindow,
-        constraintResult,
-        isValid: true,
-      });
-    } else {
-      setPlacementState({
-        isPlacing: true,
-        previewWindow: null,
-        constraintResult,
-        isValid: false,
-      });
-    }
-  }, [activeTool, walls, doors, windows]);
+        setPlacementState({
+          isPlacing: true,
+          previewWindow,
+          constraintResult,
+          isValid: true,
+        })
+      } else {
+        setPlacementState({
+          isPlacing: true,
+          previewWindow: null,
+          constraintResult,
+          isValid: false,
+        })
+      }
+    },
+    [activeTool, walls, doors, windows]
+  )
 
   const updatePlacement = useCallback((x: number, y: number) => {
     if (!placementState.isPlacing || activeTool !== 'window') return;

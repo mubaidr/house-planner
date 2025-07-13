@@ -39,32 +39,32 @@ export interface FloorActions {
   removeFloor: (floorId: string) => void;
   updateFloor: (floorId: string, updates: Partial<Floor>) => void;
   duplicateFloor: (floorId: string, newName?: string) => Floor;
-  
+
   // Floor navigation
   setCurrentFloor: (floorId: string) => void;
   getCurrentFloor: () => Floor | null;
   getFloorByLevel: (level: number) => Floor | null;
-  
+
   // Floor visibility
   toggleFloorVisibility: (floorId: string) => void;
   setShowAllFloors: (show: boolean) => void;
   setFloorOpacity: (opacity: number) => void;
-  
+
   // Element management per floor
   addElementToFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', element: Wall | Door | Window | Room) => void;
   removeElementFromFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', elementId: string) => void;
   updateElementInFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', elementId: string, updates: Partial<Wall | Door | Window | Room>) => void;
-  
+
   // Floor ordering
   moveFloorUp: (floorId: string) => void;
   moveFloorDown: (floorId: string) => void;
   reorderFloors: (floorIds: string[]) => void;
-  
+
   // Utility functions
   getFloorsOrderedByLevel: () => Floor[];
   getTotalFloors: () => number;
   getFloorElements: (floorId: string) => Floor['elements'] | null;
-  
+
   // Import/Export
   exportFloorData: (floorId: string) => Floor | null;
   importFloorData: (floorData: Floor) => void;
@@ -104,31 +104,31 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
   addFloor: (name?: string) => {
     const state = get();
     const newFloor = createDefaultFloor(state.nextFloorLevel, name);
-    
+
     set((state) => ({
       floors: [...state.floors, newFloor],
       nextFloorLevel: state.nextFloorLevel + 1,
       currentFloorId: newFloor.id, // Switch to new floor
     }));
-    
+
     return newFloor;
   },
 
   removeFloor: (floorId: string) => {
     const state = get();
     const floorToRemove = state.floors.find(f => f.id === floorId);
-    
+
     if (!floorToRemove || state.floors.length <= 1) {
       console.warn('Cannot remove floor: minimum one floor required');
       return;
     }
-    
+
     set((state) => {
       const remainingFloors = state.floors.filter(f => f.id !== floorId);
-      const newCurrentFloorId = state.currentFloorId === floorId 
+      const newCurrentFloorId = state.currentFloorId === floorId
         ? remainingFloors[0]?.id || null
         : state.currentFloorId;
-      
+
       return {
         floors: remainingFloors,
         currentFloorId: newCurrentFloorId,
@@ -140,13 +140,13 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
     set((state) => ({
       floors: state.floors.map(floor =>
         floor.id === floorId
-          ? { 
-              ...floor, 
-              ...updates, 
-              metadata: { 
-                ...floor.metadata, 
+          ? {
+              ...floor,
+              ...updates,
+              metadata: {
+                ...floor.metadata,
                 ...updates.metadata,
-                updatedAt: new Date() 
+                updatedAt: new Date()
               }
             }
           : floor
@@ -157,9 +157,9 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
   duplicateFloor: (floorId: string, newName?: string) => {
     const state = get();
     const floorToDuplicate = state.floors.find(f => f.id === floorId);
-    
+
     if (!floorToDuplicate) return createDefaultFloor(0);
-    
+
     const duplicatedFloor: Floor = {
       ...floorToDuplicate,
       id: `floor-${Date.now()}-${state.nextFloorLevel}`,
@@ -189,13 +189,13 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
         updatedAt: new Date(),
       },
     };
-    
+
     set((state) => ({
       floors: [...state.floors, duplicatedFloor],
       nextFloorLevel: state.nextFloorLevel + 1,
       currentFloorId: duplicatedFloor.id,
     }));
-    
+
     return duplicatedFloor;
   },
 
@@ -259,7 +259,7 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
               ...floor,
               elements: {
                 ...floor.elements,
-                [elementType]: floor.elements[elementType].filter((el: any) => el.id !== elementId),
+                [elementType]: floor.elements[elementType].filter((el: Wall | Door | Window | Room) => el.id !== elementId),
               },
               metadata: { ...floor.metadata, updatedAt: new Date() },
             }
@@ -276,7 +276,7 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
               ...floor,
               elements: {
                 ...floor.elements,
-                [elementType]: floor.elements[elementType].map((el: any) =>
+                [elementType]: floor.elements[elementType].map((el: Wall | Door | Window | Room) =>
                   el.id === elementId ? { ...el, ...updates } : el
                 ),
               },

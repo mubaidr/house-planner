@@ -20,6 +20,8 @@ export default function FloorSwitcher() {
     moveFloorDown,
     getFloorsOrderedByLevel,
     getTotalFloors,
+    reorderFloors,
+    updateFloor,
   } = useFloorStore();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -86,10 +88,10 @@ export default function FloorSwitcher() {
               </div>
             </div>
           </div>
-          <svg 
+          <svg
             className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none" 
-            stroke="currentColor" 
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -100,13 +102,25 @@ export default function FloorSwitcher() {
         {isExpanded && (
           <div className="border-t border-gray-200">
             {/* Floor List */}
-            <div className="max-h-80 overflow-y-auto">
-              {orderedFloors.map((floor) => (
+            <div className="max-h-80 overflow-y-auto" onDragOver={e => e.preventDefault()}>
+              {orderedFloors.map((floor, idx) => (
                 <div
                   key={floor.id}
                   className={`relative group ${
                     currentFloorId === floor.id ? 'bg-blue-50' : 'hover:bg-gray-50'
                   }`}
+                  draggable
+                  onDragStart={e => {
+                    e.dataTransfer.setData('floorIdx', idx.toString())
+                  }}
+                  onDrop={e => {
+                    const fromIdx = Number(e.dataTransfer.getData('floorIdx'))
+                    if (fromIdx === idx) return
+                    const reordered = [...orderedFloors]
+                    const [moved] = reordered.splice(fromIdx, 1)
+                    reordered.splice(idx, 0, moved)
+                    reorderFloors(reordered.map(f => f.id))
+                  }}
                 >
                   <button
                     onClick={() => setCurrentFloor(floor.id)}
@@ -125,13 +139,13 @@ export default function FloorSwitcher() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-1">
                       {/* Visibility Toggle */}
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFloorVisibility(floor.id);
+                        onClick={e => {
+                          e.stopPropagation()
+                          toggleFloorVisibility(floor.id)
                         }}
                         className={`p-1 rounded transition-colors ${
                           floor.isVisible ? 'text-blue-600 hover:bg-blue-100' : 'text-gray-400 hover:bg-gray-100'
@@ -149,9 +163,9 @@ export default function FloorSwitcher() {
 
                       {/* Floor Options Menu */}
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowFloorOptions(showFloorOptions === floor.id ? null : floor.id);
+                        onClick={e => {
+                          e.stopPropagation()
+                          setShowFloorOptions(showFloorOptions === floor.id ? null : floor.id)
                         }}
                         className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                         title="Floor options"
@@ -175,7 +189,16 @@ export default function FloorSwitcher() {
                         </svg>
                         <span>Duplicate</span>
                       </button>
-                      
+                      <button
+                        onClick={() => setShowFloorOptions(`rename-${floor.id}`)}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13h3v3h3v-3h3v-3h-3V7h-3v3H9v3z" />
+                        </svg>
+                        <span>Rename</span>
+                      </button>
+
                       <button
                         onClick={() => moveFloorUp(floor.id)}
                         disabled={floor.level >= getTotalFloors() - 1}
@@ -186,7 +209,7 @@ export default function FloorSwitcher() {
                         </svg>
                         <span>Move Up</span>
                       </button>
-                      
+
                       <button
                         onClick={() => moveFloorDown(floor.id)}
                         disabled={floor.level <= 0}
@@ -197,7 +220,7 @@ export default function FloorSwitcher() {
                         </svg>
                         <span>Move Down</span>
                       </button>
-                      
+
                       {getTotalFloors() > 1 && (
                         <button
                           onClick={() => handleRemoveFloor(floor.id)}
@@ -208,6 +231,41 @@ export default function FloorSwitcher() {
                           </svg>
                           <span>Delete</span>
                         </button>
+                      )}
+                      {showFloorOptions === `rename-${floor.id}` && (
+                        <div className="p-3">
+                          <input
+                            type="text"
+                            defaultValue={floor.name}
+                            className="w-full px-2 py-1 border border-gray-300 rounded"
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                updateFloor(floor.id, { name: (e.target as HTMLInputElement).value })
+                                setShowFloorOptions(null)
+                              }
+                            }}
+                          />
+                          <div className="flex justify-end mt-2 space-x-2">
+                            <button
+                              onClick={() => setShowFloorOptions(null)}
+                              className="px-2 py-1 text-sm border rounded"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={e => {
+                                const input = (e.currentTarget.parentElement?.previousSibling as HTMLInputElement)
+                                if (input) {
+                                  updateFloor(floor.id, { name: input.value })
+                                  setShowFloorOptions(null)
+                                }
+                              }}
+                              className="px-2 py-1 text-sm bg-blue-600 text-white rounded"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}

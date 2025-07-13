@@ -2,26 +2,28 @@
 
 import React from 'react';
 import { Material } from '@/types/materials/Material';
+import { useMaterialStore } from '@/stores/materialStore';
 
 interface MaterialCardProps {
   material: Material;
   isSelected: boolean;
   onSelect: () => void;
   onEdit: () => void;
+  onDuplicate?: () => void;
+  onRemove?: () => void;
 }
 
-export default function MaterialCard({ material, isSelected, onSelect, onEdit }: MaterialCardProps) {
-  // const { applyMaterial } = useMaterialStore(); // TODO: Implement material application
+export default function MaterialCard({ material, isSelected, onSelect, onEdit, onDuplicate, onRemove }: MaterialCardProps) {
 
   const handleDragStart = (e: React.DragEvent) => {
     const dragData = {
       type: 'material',
       materialId: material.id,
     };
-    
+
     e.dataTransfer.setData('application/json', JSON.stringify(dragData));
     e.dataTransfer.effectAllowed = 'copy';
-    
+
     // Store drag data globally for canvas drop handling
     (window as unknown as { currentDragData: typeof dragData }).currentDragData = dragData;
   };
@@ -71,7 +73,7 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
             }}
           />
         )}
-        
+
         {/* Overlay for metallic/reflective materials */}
         {material.properties.metallic > 0.5 && (
           <div
@@ -79,7 +81,7 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
             style={{ opacity: material.properties.metallic * 0.3 }}
           />
         )}
-        
+
         {/* Selection indicator */}
         {isSelected && (
           <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
@@ -92,7 +94,7 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
         )}
 
         {/* Actions overlay */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col space-y-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -103,6 +105,30 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
           >
             <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (typeof onDuplicate === 'function') onDuplicate();
+            }}
+            className="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all"
+            title="Duplicate material"
+          >
+            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 17V5a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H10a2 2 0 01-2-2z" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (typeof onRemove === 'function') onRemove();
+            }}
+            className="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all"
+            title="Remove material"
+          >
+            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -124,7 +150,7 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit }:
         <h3 className="font-medium text-gray-900 text-sm mb-1 truncate" title={material.name}>
           {material.name}
         </h3>
-        
+
         <p className="text-xs text-gray-500 mb-2 line-clamp-2" title={material.metadata.description}>
           {material.metadata.description}
         </p>

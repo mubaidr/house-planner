@@ -3,6 +3,7 @@ import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
 import { Point } from './wallIntersection';
 import { Room } from './roomDetection';
+import { detectRooms } from './roomDetection'
 
 export interface EnhancedRoom extends Room {
   roomType: string;
@@ -190,17 +191,17 @@ const analyzeRoomFeatures = (
 const calculateAccessibility = (features: RoomFeature[]): AccessibilityInfo => {
   const doors = features.filter(f => f.type === 'door');
   const windows = features.filter(f => f.type === 'window');
-  
+
   const hasExternalAccess = doors.length > 0;
   const doorCount = doors.length;
   const windowCount = windows.length;
-  
+
   // Calculate accessibility score
   let accessibilityScore = 0;
   if (hasExternalAccess) accessibilityScore += 0.5;
   if (doorCount >= 1) accessibilityScore += 0.3;
   if (windowCount >= 1) accessibilityScore += 0.2;
-  
+
   const isAccessible = accessibilityScore >= 0.5;
 
   return {
@@ -217,10 +218,10 @@ const calculateAccessibility = (features: RoomFeature[]): AccessibilityInfo => {
  */
 const calculateLighting = (features: RoomFeature[], room: Room): LightingInfo => {
   const windows = features.filter(f => f.type === 'window');
-  
+
   const windowArea = windows.reduce((total, window) => total + (window.size * 100), 0); // Approximate height
   const naturalLight = Math.min(windowArea / room.area, 1);
-  
+
   const orientation = [...new Set(windows.map(w => w.orientation))];
 
   return {
@@ -240,7 +241,7 @@ const classifyRoomType = (
   lighting: LightingInfo
 ): { type: string; confidence: number; suggestedNames: string[] } => {
   const areaInSqFt = room.area / 144; // Convert from sq pixels to sq feet (rough)
-  
+
   const scores = ROOM_TYPE_RULES.map(rule => {
     let score = 0;
     let maxScore = 0;
@@ -271,7 +272,7 @@ const classifyRoomType = (
 
   // Sort by confidence
   scores.sort((a, b) => b.confidence - a.confidence);
-  
+
   const bestMatch = scores[0];
   const suggestedNames = generateRoomNames(bestMatch.type, areaInSqFt);
 
@@ -289,10 +290,10 @@ const calculateAreaScore = (area: number, rule: RoomTypeRule): number => {
   if (area < rule.minArea || area > rule.maxArea) {
     return 0;
   }
-  
+
   const optimalArea = (rule.minArea + rule.maxArea) / 2;
   const deviation = Math.abs(area - optimalArea) / optimalArea;
-  
+
   return Math.max(0, 1 - deviation);
 };
 
@@ -383,7 +384,7 @@ const hasFeature = (
  */
 const generateRoomNames = (type: string, area: number): string[] => {
   const names: string[] = [];
-  
+
   switch (type) {
     case 'bedroom':
       names.push('Master Bedroom', 'Bedroom', 'Guest Bedroom', 'Child\'s Bedroom');
@@ -419,7 +420,7 @@ const generateRoomNames = (type: string, area: number): string[] => {
     default:
       names.push('Room', 'Space', 'Area');
   }
-  
+
   return names;
 };
 
@@ -437,7 +438,7 @@ const getDoorPosition = (door: Door, wall: Wall): Point => {
     Math.pow(wall.endX - wall.startX, 2) + Math.pow(wall.endY - wall.startY, 2)
   );
   const ratio = door.x / wallLength; // Using x coordinate as position along wall
-  
+
   return {
     x: wall.startX + (wall.endX - wall.startX) * ratio,
     y: wall.startY + (wall.endY - wall.startY) * ratio,
@@ -450,7 +451,7 @@ const getWindowPosition = (window: Window, wall: Wall): Point => {
     Math.pow(wall.endX - wall.startX, 2) + Math.pow(wall.endY - wall.startY, 2)
   );
   const ratio = window.x / wallLength; // Using x coordinate as position along wall
-  
+
   return {
     x: wall.startX + (wall.endX - wall.startX) * ratio,
     y: wall.startY + (wall.endY - wall.startY) * ratio,
@@ -461,7 +462,7 @@ const getWallOrientation = (wall: Wall): 'north' | 'south' | 'east' | 'west' => 
   const dx = wall.endX - wall.startX;
   const dy = wall.endY - wall.startY;
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-  
+
   if (angle >= -45 && angle < 45) return 'east';
   if (angle >= 45 && angle < 135) return 'south';
   if (angle >= 135 || angle < -135) return 'west';
@@ -476,19 +477,16 @@ export const detectEnhancedRooms = (
   doors: Door[],
   windows: Window[]
 ): EnhancedRoom[] => {
-  // First, use the existing room detection
-  // Dynamic import to avoid require() - this would need proper implementation
-  // const { detectRooms } = require('./roomDetection');
-  const basicRooms: Room[] = []; // Placeholder - implement proper room detection
-  // const { rooms: basicRooms } = detectRooms(walls); // Commented out due to require issue
-  
+  // Use the actual room detection
+  const { rooms: basicRooms } = detectRooms(walls);
+
   // Enhance each room with additional analysis
   const enhancedRooms: EnhancedRoom[] = basicRooms.map((room: Room) => {
     const features = analyzeRoomFeatures(room, doors, windows);
     const accessibility = calculateAccessibility(features);
     const lighting = calculateLighting(features, room);
     const classification = classifyRoomType(room, features, accessibility, lighting);
-    
+
     return {
       ...room,
       roomType: classification.type,
@@ -499,7 +497,7 @@ export const detectEnhancedRooms = (
       lighting,
     };
   });
-  
+
   return enhancedRooms;
 };
 
@@ -511,7 +509,7 @@ export const getRoomTypeSuggestions = (room: Room, doors: Door[], windows: Windo
   const accessibility = calculateAccessibility(features);
   const lighting = calculateLighting(features, room);
   const classification = classifyRoomType(room, features, accessibility, lighting);
-  
+
   return classification.suggestedNames;
 };
 
@@ -527,14 +525,14 @@ export const analyzeRoomInsights = (room: Room, doors: Door[], windows: Window[]
   const accessibility = calculateAccessibility(features);
   const lighting = calculateLighting(features, room);
   const areaInSqFt = room.area / 144;
-  
+
   const insights: string[] = [];
   const recommendations: string[] = [];
   const warnings: string[] = [];
-  
+
   // Area insights
   insights.push(`Room area: ${areaInSqFt.toFixed(1)} sq ft`);
-  
+
   // Accessibility insights
   if (accessibility.doorCount === 0) {
     warnings.push('No doors detected - room may not be accessible');
@@ -543,7 +541,7 @@ export const analyzeRoomInsights = (room: Room, doors: Door[], windows: Window[]
   } else {
     insights.push(`Multiple access points (${accessibility.doorCount} doors)`);
   }
-  
+
   // Lighting insights
   if (lighting.naturalLight > 0.3) {
     insights.push('Good natural lighting');
@@ -554,13 +552,13 @@ export const analyzeRoomInsights = (room: Room, doors: Door[], windows: Window[]
     insights.push('Limited natural lighting');
     recommendations.push('Add windows or skylights for natural light');
   }
-  
+
   // Size recommendations
   if (areaInSqFt < 50) {
     recommendations.push('Consider if room size meets intended use requirements');
   } else if (areaInSqFt > 500) {
     recommendations.push('Large room - consider dividing or multiple use zones');
   }
-  
+
   return { insights, recommendations, warnings };
 };

@@ -23,7 +23,6 @@ export const useWallEditor = () => {
 
   const { updateWall, removeWall, addWall, walls, selectedElementId, selectedElementType } = useDesignStore();
   const { executeCommand } = useHistoryStore();
-  const { updateWallWithIntersectionHandling } = useWallIntersection();
 
   const startDrag = useCallback((wallId: string, handleType: 'start' | 'end' | 'move', x: number, y: number) => {
     const wall = walls.find(w => w.id === wallId);
@@ -84,7 +83,7 @@ export const useWallEditor = () => {
     if (!currentWall) return;
 
     // Check if wall actually changed
-    const hasChanged = 
+    const hasChanged =
       currentWall.startX !== editState.originalWall.startX ||
       currentWall.startY !== editState.originalWall.startY ||
       currentWall.endX !== editState.originalWall.endX ||
@@ -120,7 +119,7 @@ export const useWallEditor = () => {
       removeWall,
       wall
     );
-    
+
     executeCommand(command);
   }, [selectedElementType, selectedElementId, walls, addWall, removeWall, executeCommand]);
 

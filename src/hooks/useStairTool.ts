@@ -9,7 +9,7 @@ import { snapPoint } from '@/utils/snapping';
 export const useStairTool = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [previewStair, setPreviewStair] = useState<Stair | null>(null);
-  
+
   const { walls, addStair } = useDesignStore();
   const { snapToGrid, gridSize } = useUIStore();
   const { executeCommand } = useHistoryStore();
@@ -27,24 +27,27 @@ export const useStairTool = () => {
       { x: wall.endX, y: wall.endY },
       { x: (wall.startX + wall.endX) / 2, y: (wall.startY + wall.endY) / 2 }
     ]);
-    
+
     const snappedPos = snapPoint(pos, gridSize, snapPoints, snapToGrid);
 
     const newStair: Stair = {
       id: `stair-${Date.now()}`,
       x: snappedPos.x,
       y: snappedPos.y,
-      width: 120, // Default width
-      length: 200, // Default length
-      steps: 12, // Default number of steps
-      stepHeight: 18, // Default step height in cm
-      stepDepth: 25, // Default step depth in cm
+      width: 120,
+      length: 200,
+      steps: 12,
+      stepHeight: 18,
+      stepDepth: 25,
       direction: 'up',
       orientation: 'horizontal',
       type: 'straight',
-      color: '#8B4513', // Brown color for stairs
+      material: 'Concrete',
+      materialId: undefined,
+      color: '#8B4513',
       handrailLeft: true,
       handrailRight: true,
+      floorId: undefined,
     };
 
     setPreviewStair(newStair);
@@ -63,10 +66,10 @@ export const useStairTool = () => {
     // Calculate dimensions based on mouse position
     const width = Math.abs(pos.x - previewStair.x);
     const length = Math.abs(pos.y - previewStair.y);
-    
+
     // Determine orientation based on aspect ratio
     const orientation = width > length ? 'horizontal' : 'vertical';
-    
+
     // Calculate number of steps based on length
     const steps = Math.max(3, Math.min(20, Math.floor(length / 25)));
 

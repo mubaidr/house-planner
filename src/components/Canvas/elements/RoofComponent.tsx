@@ -11,26 +11,26 @@ interface RoofComponentProps {
   onDragEnd?: (e: unknown) => void;
 }
 
-export default function RoofComponent({ 
-  roof, 
-  isSelected = false, 
-  onSelect, 
-  onDragEnd 
+export default function RoofComponent({
+  roof,
+  isSelected = false,
+  onSelect,
+  onDragEnd
 }: RoofComponentProps) {
-  
+
   const renderRoofOutline = () => {
     if (roof.points.length < 3) return null;
 
     // Create the roof outline
     const outlinePoints = roof.points.flatMap(point => [point.x, point.y]);
-    
+
     return (
       <Line
         points={outlinePoints}
         stroke="#654321"
         strokeWidth={3}
         fill={roof.color}
-        fillPatternImage={undefined} // Could add roof texture here
+        fillPatternImage={undefined}
         closed
         opacity={0.8}
       />
@@ -41,7 +41,7 @@ export default function RoofComponent({
     if (roof.points.length < 3) return null;
 
     const elements = [];
-    
+
     // Calculate center point for ridge line
     const centerX = roof.points.reduce((sum, p) => sum + p.x, 0) / roof.points.length;
     const centerY = roof.points.reduce((sum, p) => sum + p.y, 0) / roof.points.length;
@@ -108,7 +108,7 @@ export default function RoofComponent({
 
     // Create overhang outline (larger than main roof)
     const overhangPoints = roof.points.map(point => {
-      const angle = Math.atan2(point.y - (roof.points.reduce((sum, p) => sum + p.y, 0) / roof.points.length), 
+      const angle = Math.atan2(point.y - (roof.points.reduce((sum, p) => sum + p.y, 0) / roof.points.length),
                               point.x - (roof.points.reduce((sum, p) => sum + p.x, 0) / roof.points.length));
       return {
         x: point.x + Math.cos(angle) * roof.overhang,
@@ -124,6 +124,7 @@ export default function RoofComponent({
         stroke="#654321"
         strokeWidth={1}
         fill={roof.color}
+        fillPatternImage={undefined}
         opacity={0.3}
         closed
         dash={[5, 5]}
@@ -133,14 +134,14 @@ export default function RoofComponent({
 
   const getBounds = () => {
     if (roof.points.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
-    
+
     const xs = roof.points.map(p => p.x);
     const ys = roof.points.map(p => p.y);
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
-    
+
     return {
       x: minX,
       y: minY,

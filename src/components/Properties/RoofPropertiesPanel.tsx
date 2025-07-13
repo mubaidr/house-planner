@@ -17,6 +17,9 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
     ridgeHeight: roof.ridgeHeight.toString(),
     gutterHeight: roof.gutterHeight.toString(),
     color: roof.color,
+    material: roof.material ?? '',
+    materialId: roof.materialId ?? '',
+    floorId: roof.floorId ?? '',
   });
 
   useEffect(() => {
@@ -27,6 +30,9 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
       ridgeHeight: roof.ridgeHeight.toString(),
       gutterHeight: roof.gutterHeight.toString(),
       color: roof.color,
+      material: roof.material ?? '',
+      materialId: roof.materialId ?? '',
+      floorId: roof.floorId ?? '',
     });
   }, [roof]);
 
@@ -36,20 +42,29 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
 
   const handleInputBlur = (field: string) => {
     const numericFields = ['height', 'pitch', 'overhang', 'ridgeHeight', 'gutterHeight'];
-    
+
     if (numericFields.includes(field)) {
       const numValue = parseFloat(editValues[field as keyof typeof editValues] as string);
       if (!isNaN(numValue) && numValue >= 0) {
         onUpdate({ [field]: numValue });
       } else {
         // Reset to current value if invalid
-        setEditValues(prev => ({ 
-          ...prev, 
-          [field]: (roof[field as keyof Roof] as number).toString() 
+        setEditValues(prev => ({
+          ...prev,
+          [field]: (roof[field as keyof Roof] as number).toString()
         }));
       }
     } else {
       onUpdate({ [field]: editValues[field as keyof typeof editValues] });
+      if (field === 'materialId') {
+        onUpdate({ materialId: editValues.materialId })
+      }
+      if (field === 'material') {
+        onUpdate({ material: editValues.material })
+      }
+      if (field === 'floorId') {
+        onUpdate({ floorId: editValues.floorId })
+      }
     }
   };
 
@@ -59,12 +74,12 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
 
   const getBounds = () => {
     if (roof.points.length === 0) return { width: 0, height: 0, area: 0 };
-    
+
     const xs = roof.points.map(p => p.x);
     const ys = roof.points.map(p => p.y);
     const width = Math.max(...xs) - Math.min(...xs);
     const height = Math.max(...ys) - Math.min(...ys);
-    
+
     // Simple polygon area calculation (shoelace formula)
     let area = 0;
     for (let i = 0; i < roof.points.length; i++) {
@@ -73,7 +88,7 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
       area -= roof.points[j].x * roof.points[i].y;
     }
     area = Math.abs(area) / 2;
-    
+
     return { width, height, area };
   };
 
@@ -216,6 +231,46 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
             placeholder="#8B4513"
           />
         </div>
+      </div>
+      {/* Material */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Material
+        </label>
+        <input
+          type="text"
+          value={editValues.material}
+          onChange={(e) => handleInputChange('material', e.target.value)}
+          onBlur={() => handleInputBlur('material')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Material name"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Material ID
+        </label>
+        <input
+          type="text"
+          value={editValues.materialId}
+          onChange={(e) => handleInputChange('materialId', e.target.value)}
+          onBlur={() => handleInputBlur('materialId')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Material ID"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Floor ID
+        </label>
+        <input
+          type="text"
+          value={editValues.floorId}
+          onChange={(e) => handleInputChange('floorId', e.target.value)}
+          onBlur={() => handleInputBlur('floorId')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Floor ID"
+        />
       </div>
 
       {/* Roof Information */}

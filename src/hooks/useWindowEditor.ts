@@ -49,6 +49,11 @@ export const useWindowEditor = () => {
         const dragDistance = Math.abs(x - editState.originalWindow.x);
         const newWidth = Math.max(60, Math.min(300, dragDistance * 2)); // Min 60px, max 300px
         updates = { width: newWidth };
+        // Allow editing style, material, color, opacity if present
+        if (editState.originalWindow.style) updates.style = editState.originalWindow.style;
+        if (editState.originalWindow.material) updates.material = editState.originalWindow.material;
+        if (editState.originalWindow.color) updates.color = editState.originalWindow.color;
+        if (editState.originalWindow.opacity !== undefined) updates.opacity = editState.originalWindow.opacity;
         break;
       case 'move':
         // Validate new position against wall constraints
@@ -59,13 +64,18 @@ export const useWindowEditor = () => {
           doors,
           windows.filter(w => w.id !== windowId)
         );
-        
+
         if (constraintResult.isValid && constraintResult.wallId) {
           updates = {
             x: constraintResult.position.x,
             y: constraintResult.position.y,
             wallId: constraintResult.wallId,
           };
+          // Allow editing style, material, color, opacity if present
+          if (editState.originalWindow.style) updates.style = editState.originalWindow.style;
+          if (editState.originalWindow.material) updates.material = editState.originalWindow.material;
+          if (editState.originalWindow.color) updates.color = editState.originalWindow.color;
+          if (editState.originalWindow.opacity !== undefined) updates.opacity = editState.originalWindow.opacity;
         }
         break;
     }
@@ -83,7 +93,7 @@ export const useWindowEditor = () => {
     if (!currentWindow) return;
 
     // Check if window actually changed
-    const hasChanged = 
+    const hasChanged =
       currentWindow.x !== editState.originalWindow.x ||
       currentWindow.y !== editState.originalWindow.y ||
       currentWindow.width !== editState.originalWindow.width ||
@@ -112,7 +122,7 @@ export const useWindowEditor = () => {
             wallId: currentWindow.wallId,
           }
         );
-        
+
         // Reset to original state first, then execute command
         updateWindow(windowId, editState.originalWindow);
         executeCommand(command);
@@ -142,7 +152,7 @@ export const useWindowEditor = () => {
       removeWindow,
       window
     );
-    
+
     executeCommand(command);
   }, [selectedElementType, selectedElementId, windows, addWindow, removeWindow, executeCommand]);
 

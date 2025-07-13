@@ -10,7 +10,7 @@ export const useRoofTool = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [roofPoints, setRoofPoints] = useState<Array<{ x: number; y: number }>>([]);
   const [previewRoof, setPreviewRoof] = useState<Roof | null>(null);
-  
+
   const { walls, addRoof } = useDesignStore();
   const { snapToGrid, gridSize } = useUIStore();
   const { executeCommand } = useHistoryStore();
@@ -27,7 +27,7 @@ export const useRoofTool = () => {
       { x: wall.startX, y: wall.startY },
       { x: wall.endX, y: wall.endY },
     ]);
-    
+
     const snappedPos = snapPoint(pos, gridSize, snapPoints, snapToGrid);
 
     if (!isDrawing) {
@@ -38,7 +38,7 @@ export const useRoofTool = () => {
       // Add point to current roof
       const newPoints = [...roofPoints, snappedPos];
       setRoofPoints(newPoints);
-      
+
       // Update preview
       if (newPoints.length >= 3) {
         const newRoof: Roof = {
@@ -51,6 +51,9 @@ export const useRoofTool = () => {
           color: '#8B4513', // Brown color for roof
           ridgeHeight: 400,
           gutterHeight: 250,
+          material: 'default',
+          materialId: undefined,
+          floorId: undefined,
         };
         setPreviewRoof(newRoof);
       }
@@ -68,7 +71,7 @@ export const useRoofTool = () => {
 
     // Update preview with current mouse position
     const previewPoints = [...roofPoints, pos];
-    
+
     if (previewPoints.length >= 3) {
       const newRoof: Roof = {
         id: `roof-preview`,
@@ -98,10 +101,12 @@ export const useRoofTool = () => {
       color: '#8B4513',
       ridgeHeight: 400,
       gutterHeight: 250,
+      material: 'default',
+      materialId: undefined,
+      floorId: undefined,
     };
 
     executeCommand({
-      type: 'ADD_ROOF',
       execute: () => {
         addRoof(finalRoof);
       },
@@ -134,7 +139,7 @@ export const useRoofTool = () => {
 
     // Simple convex hull algorithm to get outer boundary
     const hull = convexHull(allPoints);
-    
+
     if (hull.length >= 3) {
       const autoRoof: Roof = {
         id: `roof-${Date.now()}`,
@@ -146,10 +151,12 @@ export const useRoofTool = () => {
         color: '#8B4513',
         ridgeHeight: 400,
         gutterHeight: 250,
+        material: 'default',
+        materialId: undefined,
+        floorId: undefined,
       };
 
       executeCommand({
-        type: 'ADD_ROOF',
         execute: () => {
           addRoof(autoRoof);
         },
