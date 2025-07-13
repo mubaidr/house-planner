@@ -1,160 +1,152 @@
-# Task Management Log
+# TASK_MANAGEMENT_SYSTEM
 
-## Project Overview
-This document tracks the progress, completed tasks, and key decisions for the 2D House Planner Web App project.
+## CURRENT_PROJECT_STATUS
+- PROJECT: 2D House Planner - View Switcher Enhancement
+- ACTIVE_PHASE: PREPARATION
+- NEXT_PHASE: PHASE_1_CORE_VIEW_SYSTEM
+- OVERALL_PROGRESS: 0%
 
-## Current Sprint/Phase: Phase 3 - Advanced Features (In Progress)
+## TASK_PROGRESS_TRACKING
 
-### Current Status
-**Phase 1: COMPLETE**
-**Phase 2: COMPLETE** 
-**Current Phase: Phase 3 - Advanced Features (In Progress)**
+### PHASE_1_CORE_VIEW_SYSTEM [0/7 COMPLETE]
+- [ ] TASK_1_1: Implement 2D element types (src/types/elements2D.ts)
+- [ ] TASK_1_2: Create view types and configuration (src/types/views.ts)
+- [ ] TASK_1_3: Build view projection utilities (src/utils/viewProjection.ts)
+- [ ] TASK_1_4: Update ViewSwitcher component for 2D views
+- [ ] TASK_1_5: Integrate undo/redo for view changes
+- [ ] TASK_1_6: Test seamless view switching
+- [ ] TASK_1_7: Verify undo/redo functionality
 
-The application now includes a comprehensive 2D house planner with:
+### PHASE_2_VIEW_RENDERING_SYSTEM [0/7 COMPLETE]
+- [ ] TASK_2_1: Create PlanViewRenderer2D component
+- [ ] TASK_2_2: Create ElevationRenderer2D component
+- [ ] TASK_2_3: Implement material pattern system (src/utils/materialRenderer2D.ts)
+- [ ] TASK_2_4: Build material rendering for plan view
+- [ ] TASK_2_5: Build material rendering for elevation views
+- [ ] TASK_2_6: Test plan view rendering accuracy
+- [ ] TASK_2_7: Test elevation view rendering accuracy
 
-**Phase 1 Achievements:**
-- Complete wall drawing with visual snap indicators
-- Full wall editing with drag handles for endpoints and moving
-- Comprehensive undo/redo system with keyboard shortcuts
-- Enhanced properties panel with live editing
-- Wall deletion with keyboard shortcuts (Delete/Backspace)
-- Professional UI with all planned features
+### PHASE_3_ENHANCED_JOINING_SYSTEM [0/6 COMPLETE]
+- [ ] TASK_3_1: Implement wall joining system (src/utils/wallJoining2D.ts)
+- [ ] TASK_3_2: Create roof-wall integration (src/utils/roofWallIntegration2D.ts)
+- [ ] TASK_3_3: Build opening integration (src/utils/openingIntegration2D.ts)
+- [ ] TASK_3_4: Test wall joins in all views
+- [ ] TASK_3_5: Test roof-wall connections
+- [ ] TASK_3_6: Test opening placements
 
-**Phase 2 Achievements (Recently Completed):**
-- Door placement tool with wall constraint system
-- Window placement tool with wall constraint system  
-- Wall intersection detection and automatic joining
-- Measurement tool for distance/dimension display
-- Element deletion functionality
-- Door animation system with open/close functionality
-- Advanced wall constraint validation
-- Element movement with wall relationships preserved
-- Complete TypeScript type safety
-- ESLint compliance with zero warnings/errors
+### PHASE_4_DIMENSION_ANNOTATION_SYSTEM [0/5 COMPLETE]
+- [ ] TASK_4_1: Create dimension manager (src/utils/dimensionManager2D.ts)
+- [ ] TASK_4_2: Build annotation renderer (src/components/Annotations/AnnotationRenderer2D.tsx)
+- [ ] TASK_4_3: Implement interactive dimension editing
+- [ ] TASK_4_4: Test dimension accuracy in all views
+- [ ] TASK_4_5: Test annotation visibility and editing
 
-**Technical Implementation Details:**
-- 21 React components with full TypeScript support
-- 11 custom hooks for complex state management
-- Zustand stores for design, UI, and history management
-- Command pattern for undo/redo functionality
-- Advanced snapping system with grid and element snapping
-- Wall constraint system preventing invalid door/window placement
-- Konva.js canvas with optimized rendering
-- Auto-save functionality with localStorage persistence
+### PHASE_5_EXPORT_SYSTEM_ENHANCEMENT [0/6 COMPLETE]
+- [ ] TASK_5_1: Create export utilities (src/utils/exportUtils2D.ts)
+- [ ] TASK_5_2: Build drawing sheet layout (src/types/drawingSheet2D.ts)
+- [ ] TASK_5_3: Implement multi-view export
+- [ ] TASK_5_4: Add real-time export preview
+- [ ] TASK_5_5: Implement batch export
+- [ ] TASK_5_6: Test export quality and accuracy
 
-### Current Phase 3 Progress
+## CURRENT_ITERATION_STATUS
+- ACTIVE_TASK: NONE
+- LAST_COMPLETED: NONE
+- NEXT_TASK: TASK_1_1
+- BLOCKERS: NONE
+- ITERATION_COUNT: 0
+- ESTIMATED_COMPLETION: TBD
 
-**Completed in Phase 3:**
-- Fixed all ESLint warnings and TypeScript errors
-- Code quality improvements and optimization
-- Comprehensive documentation updates
+## TASK_COMPLETION_LOG
+### COMPLETED_TASKS
+```
+DATE       | TASK_ID | DESCRIPTION                    | STATUS    | NOTES
+-----------|---------|--------------------------------|-----------|-------
+YYYY-MM-DD | TASK_ID | Task description               | COMPLETE  | Notes
+```
 
-**Phase 3 - Advanced Features (Remaining):**
-- Multi-story support with floor management
-- Material library and texture mapping  
-- Export functionality (PNG, PDF)
-- Advanced alignment and distribution tools
-- Room detection and labeling
-- Dimension annotation system
+### FAILED_TASKS
+```
+DATE       | TASK_ID | DESCRIPTION                    | REASON    | RETRY_PLAN
+-----------|---------|--------------------------------|-----------|------------
+YYYY-MM-DD | TASK_ID | Task description               | Reason    | Retry plan
+```
 
-### Decisions Made
-- Decided to create internal documentation for LLM usage to improve context and accuracy
-- Used Zustand for state management due to its simplicity and TypeScript support
-- Implemented snap-to-grid and snap-to-points for precise drawing
-- Added auto-save functionality to prevent data loss
-- Used Konva.js for canvas rendering with React-Konva wrapper
-- Implemented keyboard shortcuts following common design tool conventions
-- Adopted command pattern for robust undo/redo functionality
-- Implemented wall constraint system for realistic door/window placement
+## DEPENDENCY_MATRIX
+```
+TASK_1_1 -> TASK_1_2 -> TASK_1_3 -> TASK_1_4 -> TASK_1_5
+TASK_1_* -> TASK_2_*
+TASK_2_* -> TASK_3_*
+TASK_3_* -> TASK_4_*
+TASK_4_* -> TASK_5_*
+```
 
-### Recently Completed Tasks
-- Added visual snap indicators with real-time feedback
-- Implemented comprehensive undo/redo system with command pattern
-- Created wall editing with drag handles for start/end points and moving
-- Enhanced properties panel with live property editing (color, thickness, height)
-- Added wall deletion functionality with keyboard shortcuts
-- Integrated position information and length calculation in properties
-- Added proper TypeScript typing throughout the codebase
-- Implemented door placement tool with wall constraints
-- Implemented window placement tool with wall constraints
-- Added wall intersection detection and automatic joining
-- Created measurement tool for distance/dimension display
-- Added element deletion functionality
-- Implemented door animation system with open/close functionality
-- Fixed all ESLint warnings and TypeScript errors
+## TESTING_CHECKLIST
+### AFTER_EACH_TASK
+- [ ] Code compiles without errors
+- [ ] No TypeScript errors
+- [ ] No breaking changes to existing functionality
+- [ ] Manual testing completed
+- [ ] Task marked complete in this document
 
-## Implementation Analysis & Recommendations
+### AFTER_EACH_PHASE
+- [ ] All phase tasks completed
+- [ ] Integration testing passed
+- [ ] Acceptance criteria met
+- [ ] Phase marked complete in this document
 
-### Code Quality Assessment
-**Current Status: EXCELLENT**
-- Zero ESLint warnings/errors
-- Full TypeScript type safety
-- Clean architecture with separation of concerns
-- Comprehensive error handling
-- Consistent code style and patterns
+## ROLLBACK_PLAN
+### IF_TASK_FAILS
+1. Revert changes using git
+2. Analyze failure reason
+3. Update FAILED_TASKS log
+4. Create retry plan
+5. Update BLOCKERS if needed
 
-### Architecture Strengths
-1. **State Management**: Zustand stores provide clean, predictable state management
-2. **Component Architecture**: Well-structured component hierarchy with clear responsibilities
-3. **Custom Hooks**: Excellent separation of business logic from UI components
-4. **Type Safety**: Complete TypeScript coverage with proper interfaces
-5. **Command Pattern**: Robust undo/redo system using command pattern
-6. **Constraint System**: Advanced wall constraint validation prevents invalid placements
+## QUALITY_GATES
+### CODE_QUALITY
+- TypeScript strict mode compliance
+- ESLint rules passing
+- No console.log statements in production
+- Proper error handling implemented
 
-### Performance Optimizations Implemented
-- Efficient canvas rendering with Konva.js
-- Optimized re-renders using React.memo and useCallback
-- Lazy loading of complex calculations
-- Debounced auto-save functionality
-- Minimal state updates with targeted store actions
+### FUNCTIONALITY
+- All acceptance criteria met
+- No regressions in existing features
+- Performance within acceptable limits
 
-### Recommended Improvements & Future Features
+## AUTOMATION_COMMANDS
+### PRE_TASK
+```bash
+npm run lint && npm run type-check && npm run test
+```
 
-#### High Priority Enhancements
-1. **Export System**: Implement PNG/PDF export with proper scaling and print layouts
-2. **Material Library**: Create comprehensive material database with textures and properties
-3. **Room Detection**: Automatic room boundary detection and labeling
-4. **Multi-floor Support**: Floor management system with level switching
+### POST_TASK
+```bash
+npm run build && npm run test && git add . && git commit -m "TASK_[ID]: [DESCRIPTION]"
+```
 
-#### Medium Priority Features
-1. **Advanced Measurements**: Permanent dimension annotations with leader lines
-2. **Alignment Tools**: Object alignment and distribution utilities
-3. **Layer Management**: Separate layers for different element types
-4. **Template System**: Save and load common room/house templates
+### POST_PHASE
+```bash
+npm run build:production && npm run test && git tag "PHASE_[NUMBER]_COMPLETE"
+```
 
-#### Technical Improvements
-1. **Performance**: Implement virtualization for large designs
-2. **Accessibility**: Enhanced keyboard navigation and screen reader support
-3. **Mobile Support**: Touch-friendly interface adaptation
-4. **Collaboration**: Real-time collaborative editing capabilities
+## UPDATE_WORKFLOW
+**MANDATORY**: Update this document after each task completion:
+1. Mark completed task as [x]
+2. Update CURRENT_ITERATION_STATUS
+3. Add entry to TASK_COMPLETION_LOG
+4. Update NEXT_TASK
+5. Note any BLOCKERS
+6. Commit changes to this document
 
-#### Code Maintenance
-1. **Testing**: Add comprehensive unit and integration tests
-2. **Documentation**: API documentation for custom hooks and utilities
-3. **Internationalization**: Multi-language support
-4. **Error Boundaries**: Enhanced error handling and user feedback
+## METRICS_TRACKING
+### VELOCITY
+- TASKS_COMPLETED: 0
+- AVERAGE_TASK_TIME: TBD
+- PHASE_COMPLETION_RATE: 0%
 
-### Development Best Practices Followed
-- Component composition over inheritance
-- Immutable state updates
-- Proper TypeScript typing
-- Consistent naming conventions
-- Modular architecture with clear boundaries
-- Comprehensive error handling
-- Performance-conscious implementations
-
-### Metrics & Statistics
-- **Components**: 21 React components
-- **Custom Hooks**: 11 specialized hooks
-- **Type Definitions**: 6 comprehensive interfaces
-- **Utility Functions**: 8 helper modules
-- **Build Size**: ~213KB first load (optimized)
-- **Code Quality**: 0 ESLint errors, 0 TypeScript errors
-- **Test Coverage**: Ready for comprehensive testing implementation
-
-### Next Development Priorities
-1. **Export Functionality**: High-quality PNG/PDF export system
-2. **Material System**: Comprehensive material library with visual previews
-3. **Room Management**: Automatic room detection and labeling system
-4. **Multi-floor Support**: Floor management with navigation between levels
-5. **Testing Framework**: Comprehensive test suite implementation
+### QUALITY
+- BUGS_INTRODUCED: 0
+- REWORK_PERCENTAGE: 0%
+- TEST_FAILURES: 0
