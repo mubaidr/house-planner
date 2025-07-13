@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Material } from '@/types/materials/Material';
-import { useMaterialStore } from '@/stores/materialStore';
+// import { useMaterialStore } from '@/stores/materialStore';
 
 interface MaterialCardProps {
   material: Material;

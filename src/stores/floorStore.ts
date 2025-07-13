@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
+import { Stair } from '@/types/elements/Stair';
+import { Roof } from '@/types/elements/Roof';
 import { Room } from '@/utils/roomDetection';
 
 export interface Floor {
@@ -15,6 +17,8 @@ export interface Floor {
     walls: Wall[];
     doors: Door[];
     windows: Window[];
+    stairs: Stair[];
+    roofs: Roof[];
     rooms: Room[];
   };
   metadata: {
@@ -51,9 +55,9 @@ export interface FloorActions {
   setFloorOpacity: (opacity: number) => void;
 
   // Element management per floor
-  addElementToFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', element: Wall | Door | Window | Room) => void;
-  removeElementFromFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', elementId: string) => void;
-  updateElementInFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', elementId: string, updates: Partial<Wall | Door | Window | Room>) => void;
+  addElementToFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'stairs' | 'roofs' | 'rooms', element: Wall | Door | Window | Stair | Roof | Room) => void;
+  removeElementFromFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'stairs' | 'roofs' | 'rooms', elementId: string) => void;
+  updateElementInFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'stairs' | 'roofs' | 'rooms', elementId: string, updates: Partial<Wall | Door | Window | Stair | Roof | Room>) => void;
 
   // Floor ordering
   moveFloorUp: (floorId: string) => void;
@@ -82,6 +86,8 @@ const createDefaultFloor = (level: number, name?: string): Floor => ({
     walls: [],
     doors: [],
     windows: [],
+    stairs: [],
+    roofs: [],
     rooms: [],
   },
   metadata: {
@@ -234,7 +240,7 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
   },
 
   // Element management per floor
-  addElementToFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', element: Wall | Door | Window | Room) => {
+  addElementToFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'stairs' | 'roofs' | 'rooms', element: Wall | Door | Window | Stair | Roof | Room) => {
     set((state) => ({
       floors: state.floors.map(floor =>
         floor.id === floorId
@@ -249,9 +255,20 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
           : floor
       ),
     }));
+    
+    // Auto-sync design store if this is the current floor
+    const state = get();
+    if (floorId === state.currentFloorId) {
+      // Trigger design store sync
+      setTimeout(() => {
+        import('./designStore').then(({ useDesignStore }) => {
+          useDesignStore.getState().syncWithCurrentFloor();
+        });
+      }, 0);
+    }
   },
 
-  removeElementFromFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', elementId: string) => {
+  removeElementFromFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'stairs' | 'roofs' | 'rooms', elementId: string) => {
     set((state) => ({
       floors: state.floors.map(floor =>
         floor.id === floorId
@@ -268,7 +285,7 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
     }));
   },
 
-  updateElementInFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'rooms', elementId: string, updates: Partial<Wall | Door | Window | Room>) => {
+  updateElementInFloor: (floorId: string, elementType: 'walls' | 'doors' | 'windows' | 'stairs' | 'roofs' | 'rooms', elementId: string, updates: Partial<Wall | Door | Window | Stair | Roof | Room>) => {
     set((state) => ({
       floors: state.floors.map(floor =>
         floor.id === floorId

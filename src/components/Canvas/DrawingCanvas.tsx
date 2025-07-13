@@ -136,6 +136,7 @@ export default function DrawingCanvas() {
     const scaleBy = 1.1;
     const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
+    if (!pointer) return;
 
     if (!pointer) return;
 
@@ -477,12 +478,16 @@ export default function DrawingCanvas() {
               isSelected={selectedElementId === wall.id && selectedElementType === 'wall'}
               onSelect={() => selectElement(wall.id, 'wall')}
               onStartDrag={(e: KonvaEventObject<DragEvent>) => {
-                const pos = e.target.getStage().getPointerPosition();
-                handleWallStartDrag(wall.id, 'move', pos.x, pos.y);
+                const pos = e.target.getStage()?.getPointerPosition();
+                if (pos) {
+                  handleWallStartDrag(wall.id, 'move', pos.x, pos.y);
+                }
               }}
               onDrag={(e: KonvaEventObject<DragEvent>) => {
-                const pos = e.target.getStage().getPointerPosition();
-                handleWallDrag(wall.id, 'move', pos.x, pos.y);
+                const pos = e.target.getStage()?.getPointerPosition();
+                if (pos) {
+                  handleWallDrag(wall.id, 'move', pos.x, pos.y);
+                }
               }}
               onEndDrag={() => handleWallEndDrag(wall.id)}
             />

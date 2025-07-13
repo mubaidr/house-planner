@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Door } from '@/types/elements/Door';
 import { canPlaceDoor, WallConstraintResult } from '@/utils/wallConstraints';
-import { AddDoorCommand } from '@/utils/history';
+// import { AddDoorCommand } from '@/utils/history'; // Removed - using floor store as single source of truth
 
 interface DoorPlacementState {
   isPlacing: boolean;
@@ -21,8 +22,9 @@ export const useDoorTool = () => {
     isValid: false,
   });
 
-  const { addDoor, removeDoor, walls, doors, windows } = useDesignStore();
-  const { activeTool } = useUIStore();
+  const { addDoor, removeDoor, walls, doors, windows, selectElement } = useDesignStore();
+  const { currentFloorId, addElementToFloor } = useFloorStore();
+  const { activeTool, setActiveTool } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
   const startPlacement = useCallback((x: number, y: number) => {
@@ -119,14 +121,14 @@ export const useDoorTool = () => {
       id: `door-${Date.now()}`,
     };
 
-    // Use command pattern for undo/redo support
-    const command = new AddDoorCommand(
-      newDoor.id,
-      addDoor,
-      removeDoor,
-      newDoor
-    );
-    executeCommand(command);
+    // Add to current floor (single source of truth)
+    if (currentFloorId) {
+      addElementToFloor(currentFloorId, 'doors', newDoor);
+    }
+
+    // Switch to select tool and select the new door
+    setActiveTool('select');
+    selectElement(newDoor.id, 'door');
 
     setPlacementState({
       isPlacing: false,
@@ -134,7 +136,7 @@ export const useDoorTool = () => {
       constraintResult: null,
       isValid: false,
     });
-  }, [placementState, addDoor, removeDoor, executeCommand]);
+  }, [placementState, addDoor, removeDoor, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
 
   const cancelPlacement = useCallback(() => {
     setPlacementState({

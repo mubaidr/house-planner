@@ -1,4 +1,3 @@
-import * as Konva from 'konva';
 'use client';
 
 import React, { useState, useCallback } from 'react';
@@ -105,6 +104,7 @@ const DimensionLine: React.FC<{
 
     const stage = e.target.getStage();
     const pointerPosition = stage.getPointerPosition();
+    if (!pointerPosition) return;
 
     // Calculate new offset based on mouse position
     const mouseX = pointerPosition.x;

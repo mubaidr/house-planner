@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Window } from '@/types/elements/Window';
 import { canPlaceWindow, WallConstraintResult } from '@/utils/wallConstraints';
-import { AddWindowCommand } from '@/utils/history';
+// import { AddWindowCommand } from '@/utils/history'; // Removed - using floor store as single source of truth
 
 interface WindowPlacementState {
   isPlacing: boolean;
@@ -21,8 +22,9 @@ export const useWindowTool = () => {
     isValid: false,
   });
 
-  const { addWindow, removeWindow, walls, doors, windows } = useDesignStore();
-  const { activeTool } = useUIStore();
+  const { addWindow, removeWindow, walls, doors, windows, selectElement } = useDesignStore();
+  const { currentFloorId, addElementToFloor } = useFloorStore();
+  const { activeTool, setActiveTool } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
   const startPlacement = useCallback(
@@ -132,14 +134,14 @@ export const useWindowTool = () => {
       id: `window-${Date.now()}`,
     };
 
-    // Use command pattern for undo/redo support
-    const command = new AddWindowCommand(
-      newWindow.id,
-      addWindow,
-      removeWindow,
-      newWindow
-    );
-    executeCommand(command);
+    // Add to current floor (single source of truth)
+    if (currentFloorId) {
+      addElementToFloor(currentFloorId, 'windows', newWindow);
+    }
+
+    // Switch to select tool and select the new window
+    setActiveTool('select');
+    selectElement(newWindow.id, 'window');
 
     setPlacementState({
       isPlacing: false,
@@ -147,7 +149,7 @@ export const useWindowTool = () => {
       constraintResult: null,
       isValid: false,
     });
-  }, [placementState, addWindow, removeWindow, executeCommand]);
+  }, [placementState, addWindow, removeWindow, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
 
   const cancelPlacement = useCallback(() => {
     setPlacementState({

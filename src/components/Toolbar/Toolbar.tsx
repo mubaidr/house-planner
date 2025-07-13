@@ -18,7 +18,7 @@ interface ToolbarProps {
 
 export default function Toolbar({ stageRef }: ToolbarProps) {
   const { activeTool, setActiveTool, toggleSidebar, togglePropertiesPanel } = useUIStore();
-  const { walls, doors, windows, clearAll } = useDesignStore();
+  const { walls, doors, windows, stairs, roofs, clearAll, addWall, addDoor, addWindow } = useDesignStore();
   const { undo, redo, canUndo, canRedo, getUndoDescription, getRedoDescription } = useHistoryStore();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
@@ -26,7 +26,9 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
 
   const tools: { id: Tool; label: string; icon: string; shortcut?: string }[] = [
     { id: 'select', label: 'Select', icon: '↖', shortcut: 'V' },
-    { id: 'measure', label: 'Measure', icon: '📏', shortcut: 'M' },
+    { id: 'measure', label: 'Measure', icon: '📐', shortcut: 'M' },
+    { id: 'dimension', label: 'Dimension', icon: '📏', shortcut: 'I' },
+    { id: 'align', label: 'Align', icon: '⚖', shortcut: 'A' },
   ];
 
   const handleSave = () => {
@@ -35,7 +37,7 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
       return;
     }
 
-    const designData = { walls, doors, windows };
+    const designData = { walls, doors, windows, stairs, roofs };
     saveDesign(designName, designData);
     setShowSaveDialog(false);
     setDesignName('');
@@ -46,9 +48,9 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
     const design = loadDesign(designId);
     if (design) {
       clearAll();
-      design.data.walls.forEach(wall => addWall(wall));
-      design.data.doors.forEach(door => addDoor(door));
-      design.data.windows.forEach(window => addWindow(window));
+      design.data.walls?.forEach(wall => addWall(wall));
+      design.data.doors?.forEach(door => addDoor(door));
+      design.data.windows?.forEach(window => addWindow(window));
       setShowLoadDialog(false);
       alert('Design loaded successfully!');
     }
@@ -58,9 +60,9 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
     const autoSaveData = loadAutoSave();
     if (autoSaveData) {
       clearAll();
-      autoSaveData.walls.forEach(wall => addWall(wall));
-      autoSaveData.doors.forEach(door => addDoor(door));
-      autoSaveData.windows.forEach(window => addWindow(window));
+      autoSaveData.walls?.forEach(wall => addWall(wall));
+      autoSaveData.doors?.forEach(door => addDoor(door));
+      autoSaveData.windows?.forEach(window => addWindow(window));
       alert('Auto-save loaded successfully!');
     } else {
       alert('No auto-save data found.');
@@ -138,38 +140,33 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
         <button
           onClick={() => setShowSaveDialog(true)}
           className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-          title="Save Design"
         >
           Save
         </button>
 
         <button
           onClick={() => setShowLoadDialog(true)}
-          className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-          title="Load Design"
+          className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
         >
           Load
         </button>
 
-        {/* Materials Button */}
-        <MaterialsButton />
-
-        {/* Templates Button */}
-        <TemplatesButton />
-        
-        {/* Alignment Tools */}
-        <AlignmentTools />
-
-        {/* Export Button */}
-        <ExportButton stage={stageRef?.current} />
-
         <button
           onClick={handleLoadAutoSave}
           className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
-          title="Load Auto-save"
         >
-          Auto-save
+          Auto-Save
         </button>
+
+        <div className="w-px h-6 bg-gray-300 mx-2" />
+
+        <ExportButton stageRef={stageRef} />
+        <MaterialsButton />
+        <TemplatesButton />
+
+        <div className="w-px h-6 bg-gray-300 mx-2" />
+
+        <AlignmentTools />
 
         <div className="w-px h-6 bg-gray-300 mx-2" />
 
@@ -178,7 +175,7 @@ export default function Toolbar({ stageRef }: ToolbarProps) {
           className="p-2 rounded hover:bg-gray-100 transition-colors"
           title="Toggle Properties Panel"
         >
-          ⚙️
+          ⚙
         </button>
       </div>
 

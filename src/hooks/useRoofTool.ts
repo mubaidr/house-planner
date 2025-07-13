@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Roof } from '@/types/elements/Roof';
@@ -11,8 +12,9 @@ export const useRoofTool = () => {
   const [roofPoints, setRoofPoints] = useState<Array<{ x: number; y: number }>>([]);
   const [previewRoof, setPreviewRoof] = useState<Roof | null>(null);
 
-  const { walls, addRoof } = useDesignStore();
-  const { snapToGrid, gridSize } = useUIStore();
+  const { walls, addRoof, selectElement } = useDesignStore();
+  const { currentFloorId, addElementToFloor } = useFloorStore();
+  const { snapToGrid, gridSize, setActiveTool } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
   const startDrawing = useCallback((e: KonvaEventObject<MouseEvent>) => {
@@ -108,6 +110,10 @@ export const useRoofTool = () => {
 
     executeCommand({
       execute: () => {
+        // Add to current floor first
+        if (currentFloorId) {
+          addElementToFloor(currentFloorId, 'roofs', finalRoof);
+        }
         addRoof(finalRoof);
       },
       undo: () => {
@@ -116,10 +122,14 @@ export const useRoofTool = () => {
       description: 'Add roof',
     });
 
+    // Switch to select tool and select the new roof
+    setActiveTool('select');
+    selectElement(finalRoof.id, 'roof');
+
     setIsDrawing(false);
     setRoofPoints([]);
     setPreviewRoof(null);
-  }, [isDrawing, roofPoints, addRoof, executeCommand]);
+  }, [isDrawing, roofPoints, addRoof, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
 
   const cancelDrawing = useCallback(() => {
     setIsDrawing(false);

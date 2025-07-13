@@ -1,12 +1,15 @@
 import { useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Wall } from '@/types/elements/Wall';
 import { calculateWallJoining, WallJoinResult } from '@/utils/wallIntersection';
 import { AddWallCommand, UpdateWallCommand, BatchCommand } from '@/utils/history';
 
 export const useWallIntersection = () => {
-  const { addWall, updateWall, removeWall, walls } = useDesignStore();
+  const { addWall, updateWall, removeWall, walls, selectElement } = useDesignStore();
+  const { currentFloorId, addElementToFloor } = useFloorStore();
+  const { setActiveTool } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
   const addWallWithIntersectionHandling = useCallback((newWall: Wall) => {
@@ -14,8 +17,15 @@ export const useWallIntersection = () => {
 
     if (!joinResult.shouldJoin) {
       // No intersections, just add the wall normally
-      const command = new AddWallCommand(newWall.id, addWall, removeWall, newWall);
-      executeCommand(command);
+      if (currentFloorId) {
+        addElementToFloor(currentFloorId, 'walls', newWall);
+      }
+      
+      // Switch to select tool and select the new wall
+      setActiveTool('select');
+      selectElement(newWall.id, 'wall');
+      
+      // Note: addWall will be called by the command, but the floor store is the source of truth
       return;
     }
 
@@ -50,8 +60,22 @@ export const useWallIntersection = () => {
       commands,
       `Add wall with intersection handling (${commands.length} operations)`
     );
+    // Add all new walls to current floor first
+    if (currentFloorId) {
+      addElementToFloor(currentFloorId, 'walls', newWall);
+      if (joinResult.newWalls) {
+        joinResult.newWalls.forEach(wall => {
+          addElementToFloor(currentFloorId, 'walls', wall);
+        });
+      }
+    }
+    
     executeCommand(batchCommand);
-  }, [walls, addWall, updateWall, removeWall, executeCommand]);
+    
+    // Switch to select tool and select the main new wall
+    setActiveTool('select');
+    selectElement(newWall.id, 'wall');
+  }, [walls, addWall, updateWall, removeWall, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
 
   const updateWallWithIntersectionHandling = useCallback((
     wallId: string,

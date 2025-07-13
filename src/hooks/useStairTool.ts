@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Stair } from '@/types/elements/Stair';
@@ -10,8 +11,9 @@ export const useStairTool = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [previewStair, setPreviewStair] = useState<Stair | null>(null);
 
-  const { walls, addStair } = useDesignStore();
-  const { snapToGrid, gridSize } = useUIStore();
+  const { walls, addStair, selectElement } = useDesignStore();
+  const { currentFloorId, addElementToFloor } = useFloorStore();
+  const { snapToGrid, gridSize, setActiveTool } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
   const startDrawing = useCallback((e: KonvaEventObject<MouseEvent>) => {
@@ -88,6 +90,10 @@ export const useStairTool = () => {
     executeCommand({
       type: 'ADD_STAIR',
       execute: () => {
+        // Add to current floor first
+        if (currentFloorId) {
+          addElementToFloor(currentFloorId, 'stairs', previewStair);
+        }
         addStair(previewStair);
       },
       undo: () => {
@@ -96,9 +102,13 @@ export const useStairTool = () => {
       description: 'Add stair',
     });
 
+    // Switch to select tool and select the new stair
+    setActiveTool('select');
+    selectElement(previewStair.id, 'stair');
+
     setIsDrawing(false);
     setPreviewStair(null);
-  }, [isDrawing, previewStair, addStair, executeCommand]);
+  }, [isDrawing, previewStair, addStair, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
 
   const cancelDrawing = useCallback(() => {
     setIsDrawing(false);
