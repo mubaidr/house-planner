@@ -23,6 +23,7 @@ export const useWallTool = () => {
 
   const { walls } = useDesignStore();
   const { snapToGrid, gridSize, activeTool } = useUIStore();
+  const { addWallWithIntersectionHandling } = useWallIntersection();
 
   const startDrawing = useCallback((x: number, y: number) => {
     if (activeTool !== 'wall') return;

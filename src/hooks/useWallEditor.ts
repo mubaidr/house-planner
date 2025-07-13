@@ -23,6 +23,7 @@ export const useWallEditor = () => {
 
   const { updateWall, removeWall, addWall, walls, selectedElementId, selectedElementType } = useDesignStore();
   const { executeCommand } = useHistoryStore();
+  const { updateWallWithIntersectionHandling } = useWallIntersection();
 
   const startDrag = useCallback((wallId: string, handleType: 'start' | 'end' | 'move', x: number, y: number) => {
     const wall = walls.find(w => w.id === wallId);
