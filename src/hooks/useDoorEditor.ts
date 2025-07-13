@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Door } from '@/types/elements/Door';
 import { canPlaceDoor } from '@/utils/wallConstraints';
@@ -21,6 +22,7 @@ export const useDoorEditor = () => {
   });
 
   const { updateDoor, removeDoor, addDoor, doors, windows, walls, selectedElementId, selectedElementType } = useDesignStore();
+  const { currentFloorId, updateElementInFloor } = useFloorStore();
   const { executeCommand } = useHistoryStore();
 
   const startDrag = useCallback((doorId: string, handleType: 'resize' | 'move', x: number, y: number) => {
@@ -73,8 +75,12 @@ export const useDoorEditor = () => {
     // Apply updates immediately for live feedback
     if (Object.keys(updates).length > 0) {
       updateDoor(doorId, updates);
+      // Also update in floor store for visual rendering
+      if (currentFloorId) {
+        updateElementInFloor(currentFloorId, 'doors', doorId, updates);
+      }
     }
-  }, [editState, doors, walls, windows, updateDoor]);
+  }, [editState, doors, walls, windows, updateDoor, currentFloorId, updateElementInFloor]);
 
   const endDrag = useCallback((doorId: string) => {
     if (!editState.isDragging || !editState.originalDoor) return;

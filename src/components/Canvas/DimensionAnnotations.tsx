@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Group, Line, Text, Circle, Arrow } from 'react-konva';
+import { KonvaEventObject } from 'konva/lib/Node';
 // import { useUIStore } from '@/stores/uiStore'; // Removed unused import
 
 export interface DimensionAnnotation {
@@ -99,10 +100,11 @@ const DimensionLine: React.FC<{
     setIsDragging(false);
   }, []);
 
-  const handleDragMove = useCallback((e: any) => {
+  const handleDragMove = useCallback((e: KonvaEventObject<DragEvent>) => {
     if (!isDragging) return;
 
     const stage = e.target.getStage();
+    if (!stage) return;
     const pointerPosition = stage.getPointerPosition();
     if (!pointerPosition) return;
 

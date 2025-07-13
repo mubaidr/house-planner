@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useMaterialStore } from '@/stores/materialStore';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { MaterialApplication } from '@/types/materials/Material';
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
@@ -76,6 +77,7 @@ const isPointInRoom = (x: number, y: number, room: Room): boolean => {
 export const useMaterialApplication = () => {
   const { applyMaterial, getMaterialApplication, removeMaterialApplication } = useMaterialStore();
   const { walls, doors, windows, rooms, updateWall, updateDoor, updateWindow, updateRoom } = useDesignStore();
+  const { currentFloorId, updateElementInFloor } = useFloorStore();
 
   const applyMaterialToElement = useCallback((
     elementId: string,
@@ -99,18 +101,27 @@ export const useMaterialApplication = () => {
         const wall = walls.find(w => w.id === elementId);
         if (wall) {
           updateWall(elementId, { materialId });
+          if (currentFloorId) {
+            updateElementInFloor(currentFloorId, 'walls', elementId, { materialId });
+          }
         }
         break;
       case 'door':
         const door = doors.find(d => d.id === elementId);
         if (door) {
           updateDoor(elementId, { materialId });
+          if (currentFloorId) {
+            updateElementInFloor(currentFloorId, 'doors', elementId, { materialId });
+          }
         }
         break;
       case 'window':
         const window = windows.find(w => w.id === elementId);
         if (window) {
           updateWindow(elementId, { materialId });
+          if (currentFloorId) {
+            updateElementInFloor(currentFloorId, 'windows', elementId, { materialId });
+          }
         }
         break;
       case 'room':
@@ -120,7 +131,7 @@ export const useMaterialApplication = () => {
         }
         break;
     }
-  }, [applyMaterial, walls, doors, windows, rooms, updateWall, updateDoor, updateWindow, updateRoom]);
+  }, [applyMaterial, walls, doors, windows, rooms, updateWall, updateDoor, updateWindow, updateRoom, currentFloorId, updateElementInFloor]);
 
   const removeMaterialFromElement = useCallback((
     elementId: string,
@@ -132,18 +143,27 @@ export const useMaterialApplication = () => {
     switch (elementType) {
       case 'wall':
         updateWall(elementId, { materialId: undefined });
+        if (currentFloorId) {
+          updateElementInFloor(currentFloorId, 'walls', elementId, { materialId: undefined });
+        }
         break;
       case 'door':
         updateDoor(elementId, { materialId: undefined });
+        if (currentFloorId) {
+          updateElementInFloor(currentFloorId, 'doors', elementId, { materialId: undefined });
+        }
         break;
       case 'window':
         updateWindow(elementId, { materialId: undefined });
+        if (currentFloorId) {
+          updateElementInFloor(currentFloorId, 'windows', elementId, { materialId: undefined });
+        }
         break;
       case 'room':
         updateRoom(elementId, { materialId: undefined });
         break;
     }
-  }, [removeMaterialApplication, updateWall, updateDoor, updateWindow, updateRoom]);
+  }, [removeMaterialApplication, updateWall, updateDoor, updateWindow, updateRoom, currentFloorId, updateElementInFloor]);
 
   const getElementMaterial = useCallback((
     elementId: string,

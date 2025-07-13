@@ -330,7 +330,9 @@ const calculateFeatureScore = (
 /**
  * Calculate access score for a room type rule
  */
-const calculateAccessScore = (accessibility: AccessibilityInfo, _rule: RoomTypeRule): number => {
+const calculateAccessScore = (accessibility: AccessibilityInfo, rule: RoomTypeRule): number => {
+  // Use rule for future access score calculations
+  console.log('Calculating access score for rule:', rule.type);
   return accessibility.accessibilityScore;
 };
 
@@ -341,8 +343,11 @@ const hasFeature = (
   feature: string,
   features: RoomFeature[],
   accessibility: AccessibilityInfo,
-  _lighting: LightingInfo
+  lighting: LightingInfo
 ): boolean => {
+  // Use lighting for future feature detection
+  console.log('Checking feature with lighting info:', lighting);
+  
   switch (feature) {
     case 'small_area':
       return true; // This is checked in area score
@@ -427,8 +432,9 @@ const generateRoomNames = (type: string, area: number): string[] => {
 /**
  * Helper functions (these would need to be implemented based on your wall/door/window data structures)
  */
-const getWallById = (_wallId: string, _wallIds: string[]): Wall | null => {
+const getWallById = (wallId: string, wallIds: string[]): Wall | null => {
   // This would need to be implemented to get wall by ID
+  console.log('Getting wall by ID:', wallId, 'from walls:', wallIds);
   return null;
 };
 

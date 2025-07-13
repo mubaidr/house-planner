@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { useWallIntersection } from '@/hooks/useWallIntersection';
 import { Wall } from '@/types/elements/Wall';
@@ -22,6 +23,7 @@ export const useWallEditor = () => {
   });
 
   const { updateWall, removeWall, addWall, walls, selectedElementId, selectedElementType } = useDesignStore();
+  const { currentFloorId, updateElementInFloor } = useFloorStore();
   const { executeCommand } = useHistoryStore();
   const { updateWallWithIntersectionHandling } = useWallIntersection();
 
@@ -74,8 +76,12 @@ export const useWallEditor = () => {
     // Apply updates immediately for live visual feedback
     if (Object.keys(updates).length > 0) {
       updateWall(wallId, updates);
+      // Also update in floor store for visual rendering
+      if (currentFloorId) {
+        updateElementInFloor(currentFloorId, 'walls', wallId, updates);
+      }
     }
-  }, [editState, walls, updateWall]);
+  }, [editState, walls, updateWall, currentFloorId, updateElementInFloor]);
 
   const endDrag = useCallback((wallId: string) => {
     if (!editState.isDragging || !editState.originalWall) return;

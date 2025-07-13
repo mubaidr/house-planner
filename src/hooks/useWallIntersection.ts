@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useFloorStore } from '@/stores/floorStore';
+import { useUIStore } from '@/stores/uiStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Wall } from '@/types/elements/Wall';
 import { calculateWallJoining, WallJoinResult } from '@/utils/wallIntersection';
@@ -8,7 +9,7 @@ import { AddWallCommand, UpdateWallCommand, BatchCommand } from '@/utils/history
 
 export const useWallIntersection = () => {
   const { addWall, updateWall, removeWall, walls, selectElement } = useDesignStore();
-  const { currentFloorId, addElementToFloor } = useFloorStore();
+  const { currentFloorId, addElementToFloor, updateElementInFloor } = useFloorStore();
   const { setActiveTool } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
@@ -72,10 +73,32 @@ export const useWallIntersection = () => {
     
     executeCommand(batchCommand);
     
+    // Also update all affected walls in floor store for visual rendering
+    if (currentFloorId) {
+      updateElementInFloor(currentFloorId, 'walls', wallId, {
+        startX: updatedWall.startX,
+        startY: updatedWall.startY,
+        endX: updatedWall.endX,
+        endY: updatedWall.endY,
+      });
+      
+      // Update other affected walls in floor store
+      joinResult.wallsToUpdate.forEach(({ wallId: affectedWallId, updates: wallUpdates }) => {
+        updateElementInFloor(currentFloorId, 'walls', affectedWallId, wallUpdates);
+      });
+      
+      // Add new split walls to floor store
+      if (joinResult.newWalls) {
+        joinResult.newWalls.forEach(wall => {
+          updateElementInFloor(currentFloorId, 'walls', wall.id, wall);
+        });
+      }
+    }
+    
     // Switch to select tool and select the main new wall
     setActiveTool('select');
     selectElement(newWall.id, 'wall');
-  }, [walls, addWall, updateWall, removeWall, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
+  }, [walls, addWall, updateWall, removeWall, executeCommand, currentFloorId, addElementToFloor, updateElementInFloor, setActiveTool, selectElement]);
 
   const updateWallWithIntersectionHandling = useCallback((
     wallId: string,
@@ -92,6 +115,11 @@ export const useWallIntersection = () => {
       // No intersections, just update normally
       const command = new UpdateWallCommand(wallId, updateWall, existingWall, updates);
       executeCommand(command);
+      
+      // Also update in floor store for visual rendering
+      if (currentFloorId) {
+        updateElementInFloor(currentFloorId, 'walls', wallId, updates);
+      }
       return;
     }
 
@@ -127,7 +155,7 @@ export const useWallIntersection = () => {
       `Update wall with intersection handling (${commands.length} operations)`
     );
     executeCommand(batchCommand);
-  }, [walls, updateWall, addWall, removeWall, executeCommand]);
+  }, [walls, updateWall, addWall, removeWall, executeCommand, currentFloorId, updateElementInFloor]);
 
   const checkWallIntersections = useCallback((wall: Wall): WallJoinResult => {
     const otherWalls = walls.filter(w => w.id !== wall.id);

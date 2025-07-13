@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import {
   AlignableElement,
@@ -16,6 +17,7 @@ import {
 
 export const useAlignmentTool = () => {
   const { walls, doors, windows, stairs, roofs, updateWall, updateDoor, updateWindow, updateStair, updateRoof } = useDesignStore();
+  const { currentFloorId, updateElementInFloor } = useFloorStore();
   const { executeCommand } = useHistoryStore();
 
   // Get all selected elements (this would need to be implemented in the design store)
@@ -55,14 +57,29 @@ export const useAlignmentTool = () => {
           if ('startX' in element && element.startX !== undefined) {
             // Wall element
             updateWall(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'walls', element.id, element);
+            }
           } else if (doors.find(d => d.id === element.id)) {
             updateDoor(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'doors', element.id, element);
+            }
           } else if (windows.find(w => w.id === element.id)) {
             updateWindow(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'windows', element.id, element);
+            }
           } else if (stairs.find(s => s.id === element.id)) {
             updateStair(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'stairs', element.id, element);
+            }
           } else if (roofs.find(r => r.id === element.id)) {
             updateRoof(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'roofs', element.id, element);
+            }
           }
         });
       },
@@ -71,20 +88,35 @@ export const useAlignmentTool = () => {
           if ('startX' in element && element.startX !== undefined) {
             // Wall element
             updateWall(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'walls', element.id, element);
+            }
           } else if (doors.find(d => d.id === element.id)) {
             updateDoor(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'doors', element.id, element);
+            }
           } else if (windows.find(w => w.id === element.id)) {
             updateWindow(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'windows', element.id, element);
+            }
           } else if (stairs.find(s => s.id === element.id)) {
             updateStair(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'stairs', element.id, element);
+            }
           } else if (roofs.find(r => r.id === element.id)) {
             updateRoof(element.id, element);
+            if (currentFloorId) {
+              updateElementInFloor(currentFloorId, 'roofs', element.id, element);
+            }
           }
         });
       },
       description,
     });
-  }, [getSelectedElements, executeCommand, updateWall, updateDoor, updateWindow, updateStair, updateRoof, doors, windows, stairs, roofs]);
+  }, [getSelectedElements, executeCommand, updateWall, updateDoor, updateWindow, updateStair, updateRoof, doors, windows, stairs, roofs, currentFloorId, updateElementInFloor]);
 
   const alignLeftElements = useCallback(() => {
     applyAlignment(alignLeft, 'Align left');
