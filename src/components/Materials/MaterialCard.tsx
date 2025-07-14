@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Material } from '@/types/materials/Material';
+import { MaterialPatternUtils } from '@/utils/materialRenderer2D';
 // import { useMaterialStore } from '@/stores/materialStore';
 
 interface MaterialCardProps {
@@ -14,6 +15,25 @@ interface MaterialCardProps {
 }
 
 export default function MaterialCard({ material, isSelected, onSelect, onEdit, onDuplicate, onRemove }: MaterialCardProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Generate pattern preview using our advanced material system
+  useEffect(() => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Generate pattern preview
+        const previewCanvas = MaterialPatternUtils.generatePatternPreview(material, 128);
+        
+        // Draw the pattern preview to our canvas
+        ctx.drawImage(previewCanvas, 0, 0, canvas.width, canvas.height);
+      }
+    }
+  }, [material]);
 
   const handleDragStart = (e: React.DragEvent) => {
     const dragData = {
@@ -50,29 +70,26 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit, o
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      {/* Material Preview */}
+      {/* Advanced Material Pattern Preview */}
       <div className="aspect-square rounded-t-lg overflow-hidden relative">
-        {material.texture ? (
-          <div
-            className="w-full h-full"
-            style={{
-              backgroundColor: material.color,
-              backgroundImage: `url(${material.texture})`,
-              backgroundRepeat: 'repeat',
-              backgroundSize: `${(material.properties.patternScale || 1) * 32}px`,
-              transform: `rotate(${material.properties.patternRotation || 0}deg)`,
-              opacity: material.properties.opacity,
-            }}
-          />
-        ) : (
-          <div
-            className="w-full h-full"
-            style={{
-              backgroundColor: material.color,
-              opacity: material.properties.opacity,
-            }}
-          />
-        )}
+        <canvas
+          ref={canvasRef}
+          width={128}
+          height={128}
+          className="w-full h-full object-cover"
+          style={{
+            imageRendering: 'pixelated', // Crisp pattern rendering
+          }}
+        />
+        
+        {/* Fallback for when canvas is loading */}
+        <div
+          className="absolute inset-0 w-full h-full -z-10"
+          style={{
+            backgroundColor: material.color,
+            opacity: material.properties.opacity,
+          }}
+        />
 
         {/* Overlay for metallic/reflective materials */}
         {material.properties.metallic > 0.5 && (
@@ -170,20 +187,27 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit, o
           </div>
         )}
 
-        {/* Properties indicators */}
-        <div className="flex items-center space-x-1 mt-2">
-          {material.properties.metallic > 0.5 && (
-            <div className="w-4 h-4 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full" title="Metallic" />
-          )}
-          {material.properties.reflectivity > 0.5 && (
-            <div className="w-4 h-4 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full" title="Reflective" />
-          )}
-          {material.texture && (
-            <div className="w-4 h-4 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full" title="Textured" />
-          )}
-          {material.properties.fireResistance === 'A' && (
-            <div className="w-4 h-4 bg-red-500 rounded-full" title="Fire Resistant" />
-          )}
+        {/* Enhanced Properties indicators with pattern info */}
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center space-x-1">
+            {material.properties.metallic > 0.5 && (
+              <div className="w-4 h-4 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full" title="Metallic" />
+            )}
+            {material.properties.reflectivity > 0.5 && (
+              <div className="w-4 h-4 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full" title="Reflective" />
+            )}
+            {material.texture && (
+              <div className="w-4 h-4 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full" title="Textured" />
+            )}
+            {material.properties.fireResistance === 'A' && (
+              <div className="w-4 h-4 bg-red-500 rounded-full" title="Fire Resistant" />
+            )}
+          </div>
+          
+          {/* Pattern type indicator */}
+          <div className="text-xs text-gray-400 font-mono">
+            {material.properties.seamless ? 'SEAMLESS' : 'PATTERN'}
+          </div>
         </div>
       </div>
 

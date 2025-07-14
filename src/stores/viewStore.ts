@@ -1,93 +1,124 @@
 import { create } from 'zustand';
+import { ViewType2D } from '@/types/views';
+import { Point2D } from '@/types/elements2D';
+import { Command, ChangeViewCommand, ChangeViewTransformCommand, ToggleLayerVisibilityCommand } from '@/utils/history';
 
-export type ViewMode = '2D' | 'isometric' | 'front' | 'back' | 'left' | 'right';
-
-export interface ViewTransform {
-  scale: { x: number; y: number };
+export interface ViewTransform2D {
+  pan: Point2D;
+  zoom: number;
   rotation: number;
-  offset: { x: number; y: number };
-  perspective?: {
-    skewX: number;
-    skewY: number;
-  };
 }
 
 export interface ViewState {
-  currentView: ViewMode;
-  transforms: Record<ViewMode, ViewTransform>;
+  currentView: ViewType2D;
+  viewStates: Record<ViewType2D, ViewTransform2D>;
   isTransitioning: boolean;
   transitionDuration: number;
+  layerVisibility: Record<ViewType2D, Record<string, boolean>>;
 }
 
 export interface ViewActions {
-  setView: (view: ViewMode) => void;
-  getViewTransform: (view: ViewMode) => ViewTransform;
+  setView: (view: ViewType2D) => void;
+  setViewWithHistory: (view: ViewType2D, executeCommand?: (command: Command) => void) => void;
+  getViewTransform: (view: ViewType2D) => ViewTransform2D;
+  setViewTransform: (view: ViewType2D, transform: Partial<ViewTransform2D>) => void;
+  setViewTransformWithHistory: (view: ViewType2D, transform: Partial<ViewTransform2D>, executeCommand?: (command: Command) => void) => void;
   setTransitioning: (transitioning: boolean) => void;
   resetView: () => void;
+  toggleLayerVisibility: (view: ViewType2D, layer: string) => void;
+  toggleLayerVisibilityWithHistory: (view: ViewType2D, layer: string, executeCommand?: (command: Command) => void) => void;
+  setLayerVisibility: (view: ViewType2D, layer: string, visible: boolean) => void;
 }
 
-const DEFAULT_TRANSFORMS: Record<ViewMode, ViewTransform> = {
-  '2D': {
-    scale: { x: 1, y: 1 },
+const DEFAULT_VIEW_TRANSFORMS: Record<ViewType2D, ViewTransform2D> = {
+  plan: {
+    pan: { x: 0, y: 0 },
+    zoom: 1,
     rotation: 0,
-    offset: { x: 0, y: 0 },
   },
-  'isometric': {
-    scale: { x: 1, y: 0.866 }, // cos(30°) for isometric
-    rotation: 30,
-    offset: { x: 0, y: 0 },
-    perspective: {
-      skewX: 30,
-      skewY: 0,
-    },
-  },
-  'front': {
-    scale: { x: 1, y: 1 },
+  front: {
+    pan: { x: 0, y: 0 },
+    zoom: 1,
     rotation: 0,
-    offset: { x: 0, y: 0 },
-    perspective: {
-      skewX: 0,
-      skewY: 0,
-    },
   },
-  'back': {
-    scale: { x: -1, y: 1 }, // Flip horizontally
+  back: {
+    pan: { x: 0, y: 0 },
+    zoom: 1,
     rotation: 0,
-    offset: { x: 0, y: 0 },
-    perspective: {
-      skewX: 0,
-      skewY: 0,
-    },
   },
-  'left': {
-    scale: { x: 0.3, y: 1 }, // Compressed side view
+  left: {
+    pan: { x: 0, y: 0 },
+    zoom: 1,
     rotation: 0,
-    offset: { x: 0, y: 0 },
-    perspective: {
-      skewX: 0,
-      skewY: 15,
-    },
   },
-  'right': {
-    scale: { x: -0.3, y: 1 }, // Compressed side view, flipped
+  right: {
+    pan: { x: 0, y: 0 },
+    zoom: 1,
     rotation: 0,
-    offset: { x: 0, y: 0 },
-    perspective: {
-      skewX: 0,
-      skewY: -15,
-    },
+  },
+};
+
+const DEFAULT_LAYER_VISIBILITY: Record<ViewType2D, Record<string, boolean>> = {
+  plan: {
+    walls: true,
+    doors: true,
+    windows: true,
+    stairs: true,
+    rooms: true,
+    furniture: true,
+    electrical: false,
+    plumbing: false,
+    dimensions: true,
+    annotations: true,
+  },
+  front: {
+    walls: true,
+    doors: true,
+    windows: true,
+    roof: true,
+    'exterior-materials': true,
+    dimensions: true,
+    annotations: true,
+  },
+  back: {
+    walls: true,
+    doors: true,
+    windows: true,
+    roof: true,
+    'exterior-materials': true,
+    dimensions: true,
+    annotations: true,
+  },
+  left: {
+    walls: true,
+    doors: true,
+    windows: true,
+    roof: true,
+    'exterior-materials': true,
+    dimensions: true,
+    annotations: true,
+  },
+  right: {
+    walls: true,
+    doors: true,
+    windows: true,
+    roof: true,
+    'exterior-materials': true,
+    dimensions: true,
+    annotations: true,
   },
 };
 
 export const useViewStore = create<ViewState & ViewActions>((set, get) => ({
   // State
-  currentView: '2D',
-  transforms: DEFAULT_TRANSFORMS,
+  currentView: 'plan',
+  viewStates: DEFAULT_VIEW_TRANSFORMS,
   isTransitioning: false,
   transitionDuration: 300,
+  layerVisibility: DEFAULT_LAYER_VISIBILITY,
 
   // Actions
-  setView: (view: ViewMode) => {
+  setView: (view: ViewType2D) => {
     const state = get();
     if (state.currentView === view) return;
 
@@ -102,9 +133,72 @@ export const useViewStore = create<ViewState & ViewActions>((set, get) => ({
     }, state.transitionDuration);
   },
 
-  getViewTransform: (view: ViewMode) => {
+  setViewWithHistory: (view: ViewType2D, executeCommand?: (command: Command) => void) => {
     const state = get();
-    return state.transforms[view];
+    if (state.currentView === view) return;
+
+    if (executeCommand) {
+      const command = new ChangeViewCommand(
+        state.currentView,
+        view,
+        (newView: ViewType2D) => {
+          set({ isTransitioning: true });
+          setTimeout(() => {
+            set({ 
+              currentView: newView,
+              isTransitioning: false 
+            });
+          }, state.transitionDuration);
+        }
+      );
+      executeCommand(command);
+    } else {
+      // Fallback to direct execution if no history system available
+      get().setView(view);
+    }
+  },
+
+  getViewTransform: (view: ViewType2D) => {
+    const state = get();
+    return state.viewStates[view];
+  },
+
+  setViewTransform: (view: ViewType2D, transform: Partial<ViewTransform2D>) => {
+    set((state) => ({
+      viewStates: {
+        ...state.viewStates,
+        [view]: {
+          ...state.viewStates[view],
+          ...transform,
+        },
+      },
+    }));
+  },
+
+  setViewTransformWithHistory: (view: ViewType2D, transform: Partial<ViewTransform2D>, executeCommand?: (command: Command) => void) => {
+    const state = get();
+    const oldTransform = state.viewStates[view];
+    const newTransform = { ...oldTransform, ...transform };
+
+    if (executeCommand) {
+      const command = new ChangeViewTransformCommand(
+        view,
+        oldTransform,
+        newTransform,
+        (targetView: ViewType2D, targetTransform: ViewTransform2D) => {
+          set((currentState) => ({
+            viewStates: {
+              ...currentState.viewStates,
+              [targetView]: targetTransform,
+            },
+          }));
+        }
+      );
+      executeCommand(command);
+    } else {
+      // Fallback to direct execution if no history system available
+      get().setViewTransform(view, transform);
+    }
   },
 
   setTransitioning: (transitioning: boolean) => {
@@ -113,8 +207,64 @@ export const useViewStore = create<ViewState & ViewActions>((set, get) => ({
 
   resetView: () => {
     set({ 
-      currentView: '2D',
-      isTransitioning: false 
+      currentView: 'plan',
+      viewStates: DEFAULT_VIEW_TRANSFORMS,
+      isTransitioning: false,
+      layerVisibility: DEFAULT_LAYER_VISIBILITY,
     });
+  },
+
+  toggleLayerVisibility: (view: ViewType2D, layer: string) => {
+    set((state) => ({
+      layerVisibility: {
+        ...state.layerVisibility,
+        [view]: {
+          ...state.layerVisibility[view],
+          [layer]: !state.layerVisibility[view][layer],
+        },
+      },
+    }));
+  },
+
+  toggleLayerVisibilityWithHistory: (view: ViewType2D, layer: string, executeCommand?: (command: Command) => void) => {
+    const state = get();
+    const oldVisibility = state.layerVisibility[view][layer];
+    const newVisibility = !oldVisibility;
+
+    if (executeCommand) {
+      const command = new ToggleLayerVisibilityCommand(
+        view,
+        layer,
+        oldVisibility,
+        newVisibility,
+        (targetView: ViewType2D, targetLayer: string, visible: boolean) => {
+          set((currentState) => ({
+            layerVisibility: {
+              ...currentState.layerVisibility,
+              [targetView]: {
+                ...currentState.layerVisibility[targetView],
+                [targetLayer]: visible,
+              },
+            },
+          }));
+        }
+      );
+      executeCommand(command);
+    } else {
+      // Fallback to direct execution if no history system available
+      get().toggleLayerVisibility(view, layer);
+    }
+  },
+
+  setLayerVisibility: (view: ViewType2D, layer: string, visible: boolean) => {
+    set((state) => ({
+      layerVisibility: {
+        ...state.layerVisibility,
+        [view]: {
+          ...state.layerVisibility[view],
+          [layer]: visible,
+        },
+      },
+    }));
   },
 }));

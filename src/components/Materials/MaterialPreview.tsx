@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Material } from '@/types/materials/Material';
 import { useMaterialStore } from '@/stores/materialStore';
+import { MaterialRenderer2D, MaterialPatternUtils, MATERIAL_PATTERNS } from '@/utils/materialRenderer2D';
+import { ViewType2D } from '@/types/views';
 
 interface MaterialPreviewProps {
   material: Material;
@@ -12,6 +14,50 @@ interface MaterialPreviewProps {
 
 export default function MaterialPreview({ material, onEdit, onClose }: MaterialPreviewProps) {
   const { duplicateMaterial, removeMaterial } = useMaterialStore();
+  const [selectedView, setSelectedView] = useState<ViewType2D | 'plan'>('plan');
+  
+  // Canvas refs for different view previews
+  const planCanvasRef = useRef<HTMLCanvasElement>(null);
+  const elevationCanvasRef = useRef<HTMLCanvasElement>(null);
+  const patternCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Generate pattern previews for different views
+  useEffect(() => {
+    // Plan view preview
+    if (planCanvasRef.current) {
+      const canvas = planCanvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const previewCanvas = MaterialPatternUtils.generatePatternPreview(material, 200);
+        ctx.drawImage(previewCanvas, 0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // Elevation view preview
+    if (elevationCanvasRef.current) {
+      const canvas = elevationCanvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const renderer = new MaterialRenderer2D('front');
+        const pattern = renderer.getMaterialPattern(material);
+        const previewCanvas = renderer['generatePatternCanvas'](pattern, 1);
+        ctx.drawImage(previewCanvas, 0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // Large pattern detail preview
+    if (patternCanvasRef.current) {
+      const canvas = patternCanvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const previewCanvas = MaterialPatternUtils.generatePatternPreview(material, 300);
+        ctx.drawImage(previewCanvas, 0, 0, canvas.width, canvas.height);
+      }
+    }
+  }, [material]);
 
   const handleDuplicate = () => {
     duplicateMaterial(material.id);
@@ -33,6 +79,21 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
     return `$${material.cost.pricePerUnit.toFixed(2)} per ${material.cost.unit}`;
   };
 
+  // Get pattern information
+  const getPatternInfo = () => {
+    const renderer = new MaterialRenderer2D('plan');
+    const pattern = renderer.getMaterialPattern(material);
+    return {
+      type: pattern.type,
+      hasTexture: !!material.texture,
+      isSeamless: material.properties.seamless !== false,
+      scale: material.properties.patternScale || 1,
+      rotation: material.properties.patternRotation || 0,
+    };
+  };
+
+  const patternInfo = getPatternInfo();
+
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
@@ -51,30 +112,62 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
         <p className="text-sm text-gray-600">{material.metadata.description}</p>
       </div>
 
-      {/* Large Preview */}
+      {/* Enhanced Pattern Preview */}
       <div className="p-4 bg-white border-b border-gray-200">
-        <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 relative">
-          {material.texture ? (
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundColor: material.color,
-                backgroundImage: `url(${material.texture})`,
-                backgroundRepeat: 'repeat',
-                backgroundSize: `${(material.properties.patternScale || 1) * 64}px`,
-                transform: `rotate(${material.properties.patternRotation || 0}deg)`,
-                opacity: material.properties.opacity,
-              }}
-            />
-          ) : (
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundColor: material.color,
-                opacity: material.properties.opacity,
-              }}
-            />
-          )}
+        {/* View Switcher */}
+        <div className="flex items-center space-x-2 mb-4">
+          <span className="text-sm font-medium text-gray-700">View:</span>
+          <div className="flex bg-gray-100 rounded-md p-1">
+            <button
+              onClick={() => setSelectedView('plan')}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                selectedView === 'plan'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Plan
+            </button>
+            <button
+              onClick={() => setSelectedView('front')}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                selectedView === 'front'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Elevation
+            </button>
+          </div>
+        </div>
+
+        {/* Large Pattern Preview */}
+        <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 relative bg-white">
+          <canvas
+            ref={patternCanvasRef}
+            width={300}
+            height={300}
+            className="w-full h-full object-cover"
+            style={{
+              imageRendering: 'pixelated',
+            }}
+          />
+          
+          {/* Fallback background */}
+          <div
+            className="absolute inset-0 w-full h-full -z-10"
+            style={{
+              backgroundColor: material.color,
+              opacity: material.properties.opacity,
+            }}
+          />
+          
+          {/* Pattern Type Badge */}
+          <div className="absolute top-2 left-2">
+            <span className="px-2 py-1 bg-black bg-opacity-70 text-white text-xs rounded-md font-mono">
+              {patternInfo.type.toUpperCase()}
+            </span>
+          </div>
           
           {/* Metallic overlay */}
           {material.properties.metallic > 0.5 && (
@@ -83,6 +176,59 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
               style={{ opacity: material.properties.metallic * 0.3 }}
             />
           )}
+        </div>
+        
+        {/* View Comparison */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="text-center">
+            <div className="aspect-square rounded border border-gray-200 overflow-hidden mb-2">
+              <canvas
+                ref={planCanvasRef}
+                width={100}
+                height={100}
+                className="w-full h-full object-cover"
+                style={{ imageRendering: 'pixelated' }}
+              />
+            </div>
+            <span className="text-xs text-gray-500">Plan View</span>
+          </div>
+          <div className="text-center">
+            <div className="aspect-square rounded border border-gray-200 overflow-hidden mb-2">
+              <canvas
+                ref={elevationCanvasRef}
+                width={100}
+                height={100}
+                className="w-full h-full object-cover"
+                style={{ imageRendering: 'pixelated' }}
+              />
+            </div>
+            <span className="text-xs text-gray-500">Elevation View</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Pattern Analysis */}
+      <div className="p-4 bg-white border-b border-gray-200">
+        <h4 className="font-medium text-gray-900 mb-3">Pattern Analysis</h4>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-gray-500">Type:</span>
+            <span className="ml-2 font-mono text-blue-600">{patternInfo.type}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Scale:</span>
+            <span className="ml-2 font-mono">{patternInfo.scale}x</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Rotation:</span>
+            <span className="ml-2 font-mono">{patternInfo.rotation}°</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Seamless:</span>
+            <span className={`ml-2 font-mono ${patternInfo.isSeamless ? 'text-green-600' : 'text-orange-600'}`}>
+              {patternInfo.isSeamless ? 'Yes' : 'No'}
+            </span>
+          </div>
         </div>
       </div>
 

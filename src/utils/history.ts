@@ -1,6 +1,8 @@
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
+import { ViewType2D } from '@/types/views';
+import { ViewTransform2D } from '@/stores/viewStore';
 
 export interface Command {
   execute(): void;
@@ -216,5 +218,77 @@ export class BatchCommand implements Command {
 
   get description(): string {
     return this.batchDescription;
+  }
+}
+
+/**
+ * Command for changing the current view
+ */
+export class ChangeViewCommand implements Command {
+  constructor(
+    private fromView: ViewType2D,
+    private toView: ViewType2D,
+    private setView: (view: ViewType2D) => void
+  ) {}
+
+  execute(): void {
+    this.setView(this.toView);
+  }
+
+  undo(): void {
+    this.setView(this.fromView);
+  }
+
+  get description(): string {
+    return `Change view from ${this.fromView} to ${this.toView}`;
+  }
+}
+
+/**
+ * Command for changing view transform (pan, zoom, rotation)
+ */
+export class ChangeViewTransformCommand implements Command {
+  constructor(
+    private view: ViewType2D,
+    private oldTransform: ViewTransform2D,
+    private newTransform: ViewTransform2D,
+    private setViewTransform: (view: ViewType2D, transform: ViewTransform2D) => void
+  ) {}
+
+  execute(): void {
+    this.setViewTransform(this.view, this.newTransform);
+  }
+
+  undo(): void {
+    this.setViewTransform(this.view, this.oldTransform);
+  }
+
+  get description(): string {
+    return `Change ${this.view} view transform`;
+  }
+}
+
+/**
+ * Command for toggling layer visibility
+ */
+export class ToggleLayerVisibilityCommand implements Command {
+  constructor(
+    private view: ViewType2D,
+    private layer: string,
+    private oldVisibility: boolean,
+    private newVisibility: boolean,
+    private setLayerVisibility: (view: ViewType2D, layer: string, visible: boolean) => void
+  ) {}
+
+  execute(): void {
+    this.setLayerVisibility(this.view, this.layer, this.newVisibility);
+  }
+
+  undo(): void {
+    this.setLayerVisibility(this.view, this.layer, this.oldVisibility);
+  }
+
+  get description(): string {
+    return `${this.newVisibility ? 'Show' : 'Hide'} ${this.layer} layer in ${this.view} view`;
   }
 }

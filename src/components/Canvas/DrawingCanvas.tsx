@@ -98,14 +98,14 @@ export default function DrawingCanvas() {
 
   // Apply view-specific transformations to the stage
   const getStageProps = () => {
-    const baseProps = {
+    return {
       width: canvasWidth,
       height: canvasHeight,
-      scaleX: zoomLevel * viewTransform.scale.x,
-      scaleY: zoomLevel * viewTransform.scale.y,
+      scaleX: zoomLevel * viewTransform.zoom,
+      scaleY: zoomLevel * viewTransform.zoom,
       rotation: viewTransform.rotation,
-      offsetX: viewTransform.offset.x,
-      offsetY: viewTransform.offset.y,
+      offsetX: viewTransform.pan.x,
+      offsetY: viewTransform.pan.y,
       draggable: activeTool === 'select',
       onWheel: handleWheel,
       onMouseDown: handleStageMouseDown,
@@ -113,17 +113,6 @@ export default function DrawingCanvas() {
       onMouseUp: handleStageMouseUp,
       className: "bg-white",
     };
-
-    // Add perspective transformations for 3D-like views
-    if (viewTransform.perspective) {
-      return {
-        ...baseProps,
-        skewX: viewTransform.perspective.skewX,
-        skewY: viewTransform.perspective.skewY,
-      };
-    }
-
-    return baseProps;
   };
 
   // Handle wheel zoom
