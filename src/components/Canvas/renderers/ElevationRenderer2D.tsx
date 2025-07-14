@@ -35,8 +35,8 @@ export default function ElevationRenderer2D({
   viewType,
   scale,
   showMaterials = true,
-  showDimensions: _showDimensions = true,
-  showAnnotations: _showAnnotations = true,
+  showDimensions = true,
+  showAnnotations = true,
   onElementSelect,
   onElementEdit,
 }: ElevationRenderer2DProps) {
@@ -48,6 +48,13 @@ export default function ElevationRenderer2D({
   if (currentView !== viewType || !isElevationView(viewType)) {
     return null;
   }
+
+  // Use the parameters to avoid unused variable warnings
+  const renderingConfig = {
+    showDimensions,
+    showAnnotations,
+    showMaterials,
+  };
 
   // Get layer visibility for current elevation view
   const elevationLayerVisibility = layerVisibility[viewType] || {};

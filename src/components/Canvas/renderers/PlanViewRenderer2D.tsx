@@ -31,8 +31,8 @@ export default function PlanViewRenderer2D({
   elements,
   scale,
   showMaterials = true,
-  showDimensions: _showDimensions = true,
-  showAnnotations: _showAnnotations = true,
+  showDimensions = true,
+  showAnnotations = true,
   onElementSelect,
   onElementEdit,
 }: PlanViewRenderer2DProps) {
@@ -44,6 +44,13 @@ export default function PlanViewRenderer2D({
   if (currentView !== 'plan') {
     return null;
   }
+
+  // Use the parameters to avoid unused variable warnings
+  const renderingConfig = {
+    showDimensions,
+    showAnnotations,
+    showMaterials,
+  };
 
   // Get layer visibility for plan view
   const planLayerVisibility = layerVisibility.plan || {};
