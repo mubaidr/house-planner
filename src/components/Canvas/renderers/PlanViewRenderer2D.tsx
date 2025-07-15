@@ -23,8 +23,12 @@ interface PlanViewRenderer2DProps {
   showMaterials?: boolean;
   showDimensions?: boolean;
   showAnnotations?: boolean;
-  onElementSelect?: (elementId: string, elementType: string) => void;
+  onElementSelect?: (elementId: string, element: Element2D) => void;
   onElementEdit?: (elementId: string, updates: Partial<Element2D>) => void;
+  // Wall editing callbacks
+  onWallStartDrag?: (wallId: string, handleType: 'start' | 'end' | 'move', x: number, y: number) => void;
+  onWallDrag?: (wallId: string, handleType: 'start' | 'end' | 'move', x: number, y: number) => void;
+  onWallEndDrag?: (wallId: string, handleType: 'start' | 'end' | 'move') => void;
 }
 
 export default function PlanViewRenderer2D({
@@ -35,6 +39,9 @@ export default function PlanViewRenderer2D({
   showAnnotations = true,
   onElementSelect,
   onElementEdit,
+  onWallStartDrag,
+  onWallDrag,
+  onWallEndDrag,
 }: PlanViewRenderer2DProps) {
   const { currentView, layerVisibility } = useViewStore();
   const { selectedElementId, selectedElementType } = useDesignStore();
@@ -46,7 +53,8 @@ export default function PlanViewRenderer2D({
   }
 
   // Use the parameters to avoid unused variable warnings
-  const renderingConfig = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _renderingConfig = {
     showDimensions,
     showAnnotations,
     showMaterials,
@@ -90,8 +98,8 @@ export default function PlanViewRenderer2D({
     'annotations'
   ];
 
-  const handleElementSelect = (elementId: string, elementType: string) => {
-    onElementSelect?.(elementId, elementType);
+  const handleElementSelect = (elementId: string, element: Element2D) => {
+    onElementSelect?.(elementId, element);
   };
 
   const handleElementEdit = (elementId: string, updates: Partial<Element2D>) => {
@@ -117,7 +125,10 @@ export default function PlanViewRenderer2D({
                 showMaterials,
                 getMaterialById,
                 handleElementSelect,
-                handleElementEdit
+                handleElementEdit,
+                onWallStartDrag,
+                onWallDrag,
+                onWallEndDrag
               );
             })}
           </Group>
@@ -215,7 +226,10 @@ function renderElementByType(
   showMaterials: boolean,
   getMaterialById: (id: string) => Material | undefined,
   onSelect: (elementId: string, elementType: string) => void,
-  onEdit: (elementId: string, updates: Partial<Element2D>) => void
+  onEdit: (elementId: string, updates: Partial<Element2D>) => void,
+  onWallStartDrag?: (wallId: string, handleType: 'start' | 'end' | 'move', x: number, y: number) => void,
+  onWallDrag?: (wallId: string, handleType: 'start' | 'end' | 'move', x: number, y: number) => void,
+  onWallEndDrag?: (wallId: string, handleType: 'start' | 'end' | 'move') => void
 ): React.ReactNode {
   const commonProps = {
     key: element.id,
@@ -224,7 +238,7 @@ function renderElementByType(
     scale,
     showMaterials,
     getMaterialById,
-    onSelect: () => onSelect(element.id, getElementTypeString(element.type)),
+    onSelect: () => onSelect(element.id, element),
     onEdit: (updates: Partial<Element2D>) => onEdit(element.id, updates),
   };
 
@@ -242,6 +256,9 @@ function renderElementByType(
         <PlanWallRenderer2D
           {...commonProps}
           wall={element as Wall2D}
+          onWallStartDrag={onWallStartDrag ? (handleType, x, y) => onWallStartDrag(element.id, handleType, x, y) : undefined}
+          onWallDrag={onWallDrag ? (handleType, x, y) => onWallDrag(element.id, handleType, x, y) : undefined}
+          onWallEndDrag={onWallEndDrag ? (handleType) => onWallEndDrag(element.id, handleType) : undefined}
         />
       );
     

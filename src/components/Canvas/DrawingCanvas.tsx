@@ -35,6 +35,11 @@ import DoorFloatingControls from './DoorFloatingControls';
 import MaterializedRoomOverlay from './MaterializedRoomOverlay';
 import MaterializedWallComponent from './MaterializedWallComponent';
 import MaterializedDoorComponent from './MaterializedDoorComponent';
+// Import new view renderers
+import PlanViewRenderer2D from './renderers/PlanViewRenderer2D';
+import ElevationRenderer2D from './renderers/ElevationRenderer2D';
+// Import element converter utilities
+import { convertElementsToElement2D, getElementTypeFromElement2D } from '@/utils/elementTypeConverter';
 
 export default function DrawingCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -95,6 +100,11 @@ export default function DrawingCanvas() {
 
   // Get current view transform
   const viewTransform = getViewTransform(currentView);
+  
+  // Debug: Log current view changes
+  React.useEffect(() => {
+    console.log('DrawingCanvas: Current view changed to:', currentView);
+  }, [currentView]);
 
   // Apply view-specific transformations to the stage
   const getStageProps = () => {
@@ -422,6 +432,61 @@ export default function DrawingCanvas() {
 
         {/* Elements Layer */}
         <Layer>
+          {/* New View-Based Rendering System */}
+          {currentView === 'plan' ? (
+            <PlanViewRenderer2D
+              elements={convertElementsToElement2D(
+                currentFloorElements.walls,
+                currentFloorElements.doors,
+                currentFloorElements.windows,
+                currentFloorElements.stairs,
+                [], // roofs not shown in plan view
+                currentFloorElements.rooms || [],
+                currentFloorId ?? ''
+              )}
+              scale={zoomLevel}
+              showMaterials={true}
+              showDimensions={true}
+              showAnnotations={true}
+              onElementSelect={(elementId, element2D) => {
+                const elementType = getElementTypeFromElement2D(element2D);
+                selectElement(elementId, elementType as any);
+              }}
+              onElementEdit={(elementId, updates) => {
+                console.log('Edit element:', elementId, updates);
+              }}
+              onWallStartDrag={handleWallStartDrag}
+              onWallDrag={handleWallDrag}
+              onWallEndDrag={handleWallEndDrag}
+            />
+          ) : (
+            <ElevationRenderer2D
+              elements={convertElementsToElement2D(
+                currentFloorElements.walls,
+                currentFloorElements.doors,
+                currentFloorElements.windows,
+                currentFloorElements.stairs,
+                currentFloorElements.roofs || [],
+                [], // rooms not shown in elevation views
+                currentFloorId ?? ''
+              )}
+              viewType={currentView as any}
+              scale={zoomLevel}
+              showMaterials={true}
+              showDimensions={true}
+              showAnnotations={true}
+              onElementSelect={(elementId, element2D) => {
+                const elementType = getElementTypeFromElement2D(element2D);
+                selectElement(elementId, elementType as any);
+              }}
+              onElementEdit={(elementId, updates) => {
+                console.log('Edit element:', elementId, updates);
+              }}
+            />
+          )}
+
+          {/* Legacy Rendering - COMMENTED OUT for view switching */}
+          {/*
           {/* Render Walls with Materials */}
           {/* Render Ghost Floors (if enabled) */}
           {showAllFloors && allFloors.map((floor) =>
@@ -630,6 +695,7 @@ export default function DrawingCanvas() {
 
           {/* Room Detection Overlay with Materials */}
           <MaterializedRoomOverlay />
+          {/* */}
         </Layer>
       </Stage>
 

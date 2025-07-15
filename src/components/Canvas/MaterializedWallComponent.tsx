@@ -14,6 +14,10 @@ interface MaterializedWallComponentProps {
   onStartDrag: (e: KonvaEventObject<DragEvent>) => void;
   onDrag: (e: KonvaEventObject<DragEvent>) => void;
   onEndDrag: (e: KonvaEventObject<DragEvent>) => void;
+  // Wall editor callbacks for handles
+  onWallStartDrag?: (handleType: 'start' | 'end' | 'move', x: number, y: number) => void;
+  onWallDrag?: (handleType: 'start' | 'end' | 'move', x: number, y: number) => void;
+  onWallEndDrag?: (handleType: 'start' | 'end' | 'move') => void;
 }
 
 export default function MaterializedWallComponent({
@@ -23,6 +27,9 @@ export default function MaterializedWallComponent({
   onStartDrag,
   onDrag,
   onEndDrag,
+  onWallStartDrag,
+  onWallDrag,
+  onWallEndDrag,
 }: MaterializedWallComponentProps) {
   const { getMaterialById } = useMaterialStore();
   
@@ -133,13 +140,15 @@ export default function MaterializedWallComponent({
       />
 
       {/* Editing handles */}
-      <WallHandles
-        wall={wall}
-        isSelected={isSelected}
-        onStartDrag={onStartDrag}
-        onDrag={onDrag}
-        onEndDrag={onEndDrag}
-      />
+      {onWallStartDrag && onWallDrag && onWallEndDrag && (
+        <WallHandles
+          wall={wall}
+          isSelected={isSelected}
+          onStartDrag={onWallStartDrag}
+          onDrag={onWallDrag}
+          onEndDrag={onWallEndDrag}
+        />
+      )}
     </>
   );
 }

@@ -5,7 +5,7 @@ import { Group, Line, Arc, Rect, Text } from 'react-konva';
 import { Door2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
 import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
-import { MaterialRenderer2D, MaterialPatternUtils } from '@/utils/materialRenderer2D';
+import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 
 interface PlanDoorRenderer2DProps {
   door: Door2D;

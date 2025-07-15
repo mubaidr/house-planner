@@ -26,7 +26,7 @@ interface ElevationRenderer2DProps {
   showMaterials?: boolean;
   showDimensions?: boolean;
   showAnnotations?: boolean;
-  onElementSelect?: (elementId: string, elementType: string) => void;
+  onElementSelect?: (elementId: string, element: Element2D) => void;
   onElementEdit?: (elementId: string, updates: Partial<Element2D>) => void;
 }
 
@@ -50,7 +50,8 @@ export default function ElevationRenderer2D({
   }
 
   // Use the parameters to avoid unused variable warnings
-  const renderingConfig = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _renderingConfig = {
     showDimensions,
     showAnnotations,
     showMaterials,
@@ -94,8 +95,8 @@ export default function ElevationRenderer2D({
     'annotations' // Foreground
   ];
 
-  const handleElementSelect = (elementId: string, elementType: string) => {
-    onElementSelect?.(elementId, elementType);
+  const handleElementSelect = (elementId: string, element: Element2D) => {
+    onElementSelect?.(elementId, element);
   };
 
   const handleElementEdit = (elementId: string, updates: Partial<Element2D>) => {
@@ -238,7 +239,7 @@ function renderElementByType(
     scale,
     showMaterials,
     getMaterialById,
-    onSelect: () => onSelect(element.id, getElementTypeString(element.type)),
+    onSelect: () => onSelect(element.id, element),
     onEdit: (updates: Partial<Element2D>) => onEdit(element.id, updates),
   };
 

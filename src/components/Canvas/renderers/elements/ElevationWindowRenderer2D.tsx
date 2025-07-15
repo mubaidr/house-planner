@@ -6,7 +6,7 @@ import { Window2D, Element2D } from '@/types/elements2D';
 import { ViewType2D } from '@/types/views';
 import { Material } from '@/types/materials/Material';
 import { ELEVATION_VIEW_CONFIG } from '../ElevationRenderer2D';
-import { MaterialRenderer2D, MaterialPatternUtils } from '@/utils/materialRenderer2D';
+import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 
 interface ElevationWindowRenderer2DProps {
   window: Window2D;

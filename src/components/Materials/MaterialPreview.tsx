@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Material } from '@/types/materials/Material';
 import { useMaterialStore } from '@/stores/materialStore';
-import { MaterialRenderer2D, MaterialPatternUtils, MATERIAL_PATTERNS } from '@/utils/materialRenderer2D';
+import { MaterialRenderer2D, MaterialPatternUtils } from '@/utils/materialRenderer2D';
 import { ViewType2D } from '@/types/views';
 
 interface MaterialPreviewProps {

@@ -5,7 +5,7 @@ import { Group, Rect, Text } from 'react-konva';
 import { Room2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
 import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
-import { MaterialRenderer2D, MaterialPatternUtils } from '@/utils/materialRenderer2D';
+import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 
 interface PlanRoomRenderer2DProps {
   room: Room2D;
