@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Group, Line, Rect } from 'react-konva';
+import { Line, Rect } from 'react-konva';
 import { Wall2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
 import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
-import { MaterialRenderer2D, MaterialPatternUtils } from '@/utils/materialRenderer2D';
+import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 import MaterializedWallComponent from '../../MaterializedWallComponent';
 
 interface PlanWallRenderer2DProps {
@@ -29,22 +29,19 @@ export default function PlanWallRenderer2D({
   showMaterials,
   getMaterialById,
   onSelect,
-  onEdit: _onEdit,
+  onEdit,
   onWallStartDrag,
   onWallDrag,
   onWallEndDrag,
 }: PlanWallRenderer2DProps) {
+  // Suppress unused variable warning
+  void onEdit;
   const material = wall.materialId ? getMaterialById(wall.materialId) : undefined;
   
   // Initialize material renderer for plan view
   const materialRenderer = React.useMemo(() => new MaterialRenderer2D('plan'), []);
   
   // Calculate wall properties for plan view
-  const length = Math.sqrt(
-    Math.pow(wall.endPoint.x - wall.startPoint.x, 2) + 
-    Math.pow(wall.endPoint.y - wall.startPoint.y, 2)
-  );
-  
   const angle = Math.atan2(
     wall.endPoint.y - wall.startPoint.y, 
     wall.endPoint.x - wall.startPoint.x
@@ -73,18 +70,8 @@ export default function PlanWallRenderer2D({
     };
   };
 
-  const appearance = getWallAppearance();
-
-  // Handle wall selection
-  const handleClick = () => {
-    onSelect();
-  };
-
-  // Handle wall editing (double-click)
-  const handleDoubleClick = () => {
-    // Could trigger wall properties dialog
-    console.log('Edit wall:', wall.id);
-  };
+  // Get wall appearance (computed but not used in current implementation)
+  getWallAppearance();
 
   // Convert Wall2D to Wall format for MaterializedWallComponent
   const wallForComponent = {
@@ -93,6 +80,8 @@ export default function PlanWallRenderer2D({
     startY: wall.startPoint.y,
     endX: wall.endPoint.x,
     endY: wall.endPoint.y,
+    // Include calculated angle for proper orientation
+    angle: angleDegrees,
   };
 
   return (

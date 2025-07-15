@@ -123,7 +123,7 @@ export interface StepDefinition2D {
  */
 export interface Roof2D extends Element2D {
   type: 'roof2d';
-  roofType: 'gable' | 'hip' | 'shed' | 'flat' | 'gambrel';
+  roofType: 'gable' | 'hip' | 'shed' | 'flat' | 'gambrel' | 'mansard' | 'butterfly' | 'saltbox' | 'monitor' | 'sawtooth' | 'shed-dormer';
   pitch: number; // Degrees
   overhang: number;
   ridgeHeight: number;

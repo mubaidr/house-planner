@@ -6,7 +6,7 @@ import { Roof2D, Element2D } from '@/types/elements2D';
 import { ViewType2D } from '@/types/views';
 import { Material } from '@/types/materials/Material';
 import { ELEVATION_VIEW_CONFIG } from '../ElevationRenderer2D';
-import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
+// import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 
 interface ElevationRoofRenderer2DProps {
   roof: Roof2D;
@@ -21,14 +21,17 @@ interface ElevationRoofRenderer2DProps {
 
 export default function ElevationRoofRenderer2D({
   roof,
-  viewType: _viewType,
+  viewType,
   isSelected,
   scale,
   showMaterials,
   getMaterialById,
   onSelect,
-  onEdit: _onEdit,
+  onEdit,
 }: ElevationRoofRenderer2DProps) {
+  // Suppress unused variable warnings
+  void viewType;
+  void onEdit;
   const material = roof.materialId ? getMaterialById(roof.materialId) : undefined;
   const position = roof.transform.position;
 
@@ -81,6 +84,18 @@ export default function ElevationRoofRenderer2D({
         return renderFlatRoof();
       case 'gambrel':
         return renderGambrelRoof();
+      case 'mansard':
+        return renderMansardRoof();
+      case 'butterfly':
+        return renderButterflyRoof();
+      case 'saltbox':
+        return renderSaltboxRoof();
+      case 'monitor':
+        return renderMonitorRoof();
+      case 'sawtooth':
+        return renderSawtoothRoof();
+      case 'shed-dormer':
+        return renderShedDormerRoof();
       default:
         return renderGableRoof();
     }
@@ -223,28 +238,415 @@ export default function ElevationRoofRenderer2D({
     const breakOffset = roofWidth * 0.25;
     
     return (
-      <Line
-        points={[
-          roofX,
-          roofBaseY,
-          roofX + breakOffset,
-          breakY,
-          ridgeX,
-          ridgeY,
-          roofX + roofWidth - breakOffset,
-          breakY,
-          roofX + roofWidth,
-          roofBaseY,
-        ]}
-        fill={appearance.fill}
-        stroke={appearance.stroke}
-        strokeWidth={appearance.strokeWidth}
-        closed
-        onClick={handleClick}
-        onTap={handleClick}
-        onDblClick={handleDoubleClick}
-        onDblTap={handleDoubleClick}
-      />
+      <Group>
+        {/* Main gambrel profile */}
+        <Line
+          points={[
+            roofX,
+            roofBaseY,
+            roofX + breakOffset,
+            breakY,
+            ridgeX,
+            ridgeY,
+            roofX + roofWidth - breakOffset,
+            breakY,
+            roofX + roofWidth,
+            roofBaseY,
+          ]}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        
+        {/* Break lines to show gambrel structure */}
+        <Line
+          points={[roofX + breakOffset, breakY, roofX + breakOffset, breakY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.2}
+          listening={false}
+        />
+        <Line
+          points={[roofX + roofWidth - breakOffset, breakY, roofX + roofWidth - breakOffset, breakY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.2}
+          listening={false}
+        />
+        
+        {/* Ridge line */}
+        <Line
+          points={[ridgeX, ridgeY, ridgeX, ridgeY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.5}
+          listening={false}
+        />
+      </Group>
+    );
+  };
+
+  const renderMansardRoof = () => {
+    const centerX = roofX + roofWidth / 2;
+    const mansardHeight = ridgeHeight * 0.8;
+    const flatWidth = roofWidth * 0.4;
+    const flatX = centerX - flatWidth / 2;
+    const steepY = roofBaseY - mansardHeight;
+    const flatY = roofBaseY - ridgeHeight;
+    
+    return (
+      <Group>
+        {/* Mansard profile with steep lower section and flat upper section */}
+        <Line
+          points={[
+            roofX,
+            roofBaseY,
+            flatX,
+            steepY,
+            flatX,
+            flatY,
+            flatX + flatWidth,
+            flatY,
+            flatX + flatWidth,
+            steepY,
+            roofX + roofWidth,
+            roofBaseY,
+          ]}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        
+        {/* Transition lines to show mansard structure */}
+        <Line
+          points={[flatX, steepY, flatX, flatY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.2}
+          listening={false}
+        />
+        <Line
+          points={[flatX + flatWidth, steepY, flatX + flatWidth, flatY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.2}
+          listening={false}
+        />
+        
+        {/* Flat section outline */}
+        <Line
+          points={[flatX, flatY, flatX + flatWidth, flatY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.5}
+          listening={false}
+        />
+      </Group>
+    );
+  };
+
+  const renderButterflyRoof = () => {
+    // Butterfly roof - inverted V shape (valley in center)
+    const centerX = roofX + roofWidth / 2;
+    const valleyY = roofBaseY - ridgeHeight * 0.3; // Valley is lower than edges
+    const edgeY = roofBaseY - ridgeHeight;
+    
+    return (
+      <Group>
+        {/* Butterfly profile - inverted V */}
+        <Line
+          points={[
+            roofX,
+            edgeY,
+            centerX,
+            valleyY,
+            roofX + roofWidth,
+            edgeY,
+            roofX + roofWidth,
+            roofBaseY,
+            roofX,
+            roofBaseY,
+          ]}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        
+        {/* Valley line */}
+        <Line
+          points={[centerX, valleyY, centerX, valleyY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.5}
+          listening={false}
+        />
+        
+        {/* Drainage indicator */}
+        <Line
+          points={[centerX, valleyY, centerX, valleyY + 10 * scale]}
+          stroke="#0066cc"
+          strokeWidth={2 * scale}
+          listening={false}
+        />
+      </Group>
+    );
+  };
+
+  const renderSaltboxRoof = () => {
+    // Saltbox roof - asymmetrical gable with one long slope
+    const ridgeX = roofX + roofWidth * 0.35; // Ridge offset to one side
+    const ridgeY = roofBaseY - ridgeHeight;
+    
+    return (
+      <Group>
+        {/* Saltbox profile - asymmetrical */}
+        <Line
+          points={[
+            roofX,
+            roofBaseY,
+            ridgeX,
+            ridgeY,
+            roofX + roofWidth,
+            roofBaseY,
+          ]}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        
+        {/* Ridge line */}
+        <Line
+          points={[ridgeX, ridgeY, ridgeX, ridgeY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.5}
+          listening={false}
+        />
+        
+        {/* Asymmetry indicator */}
+        <Line
+          points={[ridgeX, ridgeY - 5 * scale, ridgeX, ridgeY + 5 * scale]}
+          stroke="#ff6b35"
+          strokeWidth={2 * scale}
+          dash={[3 * scale, 3 * scale]}
+          listening={false}
+        />
+      </Group>
+    );
+  };
+
+  const renderMonitorRoof = () => {
+    // Monitor roof - raised center section with clerestory windows
+    const monitorWidth = roofWidth * 0.6;
+    const monitorX = roofX + (roofWidth - monitorWidth) / 2;
+    const lowerRidgeY = roofBaseY - ridgeHeight * 0.7;
+    const upperRidgeY = roofBaseY - ridgeHeight;
+    
+    return (
+      <Group>
+        {/* Lower roof sections */}
+        <Line
+          points={[
+            roofX,
+            roofBaseY,
+            monitorX,
+            lowerRidgeY,
+            monitorX,
+            upperRidgeY,
+            monitorX + monitorWidth,
+            upperRidgeY,
+            monitorX + monitorWidth,
+            lowerRidgeY,
+            roofX + roofWidth,
+            roofBaseY,
+          ]}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        
+        {/* Monitor section outline */}
+        <Line
+          points={[
+            monitorX,
+            upperRidgeY,
+            monitorX + monitorWidth,
+            upperRidgeY,
+          ]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.5}
+          listening={false}
+        />
+        
+        {/* Clerestory windows indication */}
+        <Line
+          points={[
+            monitorX + monitorWidth * 0.2,
+            upperRidgeY,
+            monitorX + monitorWidth * 0.2,
+            lowerRidgeY,
+          ]}
+          stroke="#87ceeb"
+          strokeWidth={3 * scale}
+          listening={false}
+        />
+        <Line
+          points={[
+            monitorX + monitorWidth * 0.8,
+            upperRidgeY,
+            monitorX + monitorWidth * 0.8,
+            lowerRidgeY,
+          ]}
+          stroke="#87ceeb"
+          strokeWidth={3 * scale}
+          listening={false}
+        />
+      </Group>
+    );
+  };
+
+  const renderSawtoothRoof = () => {
+    // Sawtooth roof - series of ridges and valleys
+    const numTeeth = 3;
+    const toothWidth = roofWidth / numTeeth;
+    const ridgeY = roofBaseY - ridgeHeight;
+    const valleyY = roofBaseY - ridgeHeight * 0.6;
+    
+    const points: number[] = [];
+    
+    // Build sawtooth profile
+    for (let i = 0; i <= numTeeth; i++) {
+      const x = roofX + i * toothWidth;
+      if (i === 0) {
+        points.push(x, roofBaseY);
+      } else {
+        points.push(x - toothWidth * 0.7, ridgeY); // Ridge
+        points.push(x, valleyY); // Valley
+      }
+    }
+    points.push(roofX + roofWidth, roofBaseY);
+    points.push(roofX, roofBaseY);
+    
+    return (
+      <Group>
+        {/* Sawtooth profile */}
+        <Line
+          points={points}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        
+        {/* Glazing indicators (north-facing slopes) */}
+        {Array.from({ length: numTeeth }, (_, i) => (
+          <Line
+            key={i}
+            points={[
+              roofX + i * toothWidth + toothWidth * 0.3,
+              valleyY,
+              roofX + (i + 1) * toothWidth,
+              valleyY,
+            ]}
+            stroke="#87ceeb"
+            strokeWidth={4 * scale}
+            listening={false}
+          />
+        ))}
+      </Group>
+    );
+  };
+
+  const renderShedDormerRoof = () => {
+    // Shed dormer roof - main gable with shed dormer
+    const ridgeX = roofX + roofWidth / 2;
+    const ridgeY = roofBaseY - ridgeHeight;
+    const dormerWidth = roofWidth * 0.4;
+    const dormerX = roofX + roofWidth * 0.3;
+    const dormerTopY = roofBaseY - ridgeHeight * 0.8;
+    const dormerBottomY = roofBaseY - ridgeHeight * 0.4;
+    
+    return (
+      <Group>
+        {/* Main gable roof */}
+        <Line
+          points={[
+            roofX,
+            roofBaseY,
+            ridgeX,
+            ridgeY,
+            roofX + roofWidth,
+            roofBaseY,
+          ]}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        
+        {/* Shed dormer */}
+        <Line
+          points={[
+            dormerX,
+            dormerBottomY,
+            dormerX,
+            dormerTopY,
+            dormerX + dormerWidth,
+            dormerBottomY,
+          ]}
+          fill={appearance.fill}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth}
+          closed
+          listening={false}
+        />
+        
+        {/* Dormer window */}
+        <Line
+          points={[
+            dormerX + dormerWidth * 0.2,
+            dormerTopY,
+            dormerX + dormerWidth * 0.8,
+            dormerTopY,
+          ]}
+          stroke="#87ceeb"
+          strokeWidth={4 * scale}
+          listening={false}
+        />
+        
+        {/* Ridge line */}
+        <Line
+          points={[ridgeX, ridgeY, ridgeX, ridgeY]}
+          stroke={appearance.stroke}
+          strokeWidth={appearance.strokeWidth * 1.5}
+          listening={false}
+        />
+      </Group>
     );
   };
 

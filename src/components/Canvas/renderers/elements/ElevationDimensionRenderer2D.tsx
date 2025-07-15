@@ -20,14 +20,19 @@ interface ElevationDimensionRenderer2DProps {
 
 export default function ElevationDimensionRenderer2D({
   dimension,
-  viewType: _viewType,
+  viewType,
   isSelected,
   scale,
-  showMaterials: _showMaterials,
-  getMaterialById: _getMaterialById,
+  showMaterials,
+  getMaterialById,
   onSelect,
   onEdit,
 }: ElevationDimensionRenderer2DProps) {
+  // Suppress unused variable warnings
+  void viewType;
+  void showMaterials;
+  void getMaterialById;
+  void onEdit;
   const startPoint = dimension.startPoint;
   const endPoint = dimension.endPoint;
   const dimensionLine = dimension.dimensionLine;

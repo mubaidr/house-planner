@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Roof } from '@/types/elements/Roof';
+import RoofMaterialCalculator, { RoofMaterialQuantities } from '@/utils/roofMaterialCalculations';
 
 interface RoofPropertiesPanelProps {
   roof: Roof;
@@ -21,6 +22,11 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
     materialId: roof.materialId ?? '',
     floorId: roof.floorId ?? '',
   });
+
+  const [showMaterialCalculations, setShowMaterialCalculations] = useState(false);
+  const [materialType, setMaterialType] = useState<'asphalt' | 'metal' | 'tile' | 'slate' | 'wood' | 'membrane'>('asphalt');
+  const [materialQuantities, setMaterialQuantities] = useState<RoofMaterialQuantities | null>(null);
+  const [climate, setClimate] = useState<'temperate' | 'cold' | 'hot' | 'coastal'>('temperate');
 
   useEffect(() => {
     setEditValues({
@@ -94,6 +100,36 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
 
   const bounds = getBounds();
 
+  const calculateMaterials = () => {
+    const calculator = new RoofMaterialCalculator({
+      materialType,
+      climate,
+      complexity: ['gambrel', 'mansard', 'butterfly', 'monitor', 'sawtooth', 'shed-dormer'].includes(roof.type) ? 'complex' : 'moderate'
+    });
+
+    let quantities: RoofMaterialQuantities;
+    
+    if (roof.type === 'gambrel') {
+      quantities = calculator.calculateGambrelMaterials(roof);
+    } else if (roof.type === 'mansard') {
+      quantities = calculator.calculateMansardMaterials(roof);
+    } else if (['butterfly', 'saltbox', 'monitor', 'sawtooth', 'shed-dormer'].includes(roof.type)) {
+      quantities = calculator.calculateComplexRoofMaterials(roof);
+    } else {
+      quantities = calculator.calculateMaterials(roof);
+    }
+    
+    setMaterialQuantities(quantities);
+    setShowMaterialCalculations(true);
+  };
+
+  const getMaterialRecommendations = () => {
+    const calculator = new RoofMaterialCalculator();
+    return calculator.getMaterialRecommendations(roof.type, roof.pitch, climate);
+  };
+
+  const recommendations = getMaterialRecommendations();
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -111,8 +147,8 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Roof Type
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          {(['gable', 'hip', 'shed', 'flat', 'mansard'] as const).map((type) => (
+        <div className="grid grid-cols-3 gap-2">
+          {(['gable', 'hip', 'shed', 'flat', 'gambrel', 'mansard', 'butterfly', 'saltbox', 'monitor', 'sawtooth', 'shed-dormer'] as const).map((type) => (
             <button
               key={type}
               onClick={() => handleTypeChange(type)}
@@ -122,7 +158,7 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               }`}
             >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {type === 'shed-dormer' ? 'Shed Dormer' : type.charAt(0).toUpperCase() + type.slice(1)}
             </button>
           ))}
         </div>
@@ -284,6 +320,159 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
         </div>
       </div>
 
+      {/* Material Recommendations */}
+      <div className="pt-3 border-t border-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Material Recommendations</h4>
+        <div className="space-y-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Climate</label>
+            <select
+              value={climate}
+              onChange={(e) => setClimate(e.target.value as any)}
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="temperate">Temperate</option>
+              <option value="cold">Cold/Snow</option>
+              <option value="hot">Hot/Dry</option>
+              <option value="coastal">Coastal</option>
+            </select>
+          </div>
+          
+          {recommendations.recommended.length > 0 && (
+            <div>
+              <span className="text-xs font-medium text-green-600">Recommended:</span>
+              <div className="text-xs text-gray-600">
+                {recommendations.recommended.join(', ')}
+              </div>
+            </div>
+          )}
+          
+          {recommendations.suitable.length > 0 && (
+            <div>
+              <span className="text-xs font-medium text-blue-600">Suitable:</span>
+              <div className="text-xs text-gray-600">
+                {recommendations.suitable.join(', ')}
+              </div>
+            </div>
+          )}
+          
+          {recommendations.notRecommended.length > 0 && (
+            <div>
+              <span className="text-xs font-medium text-red-600">Not Recommended:</span>
+              <div className="text-xs text-gray-600">
+                {recommendations.notRecommended.join(', ')}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Material Calculations */}
+      <div className="pt-3 border-t border-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Material Calculator</h4>
+        <div className="space-y-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Material Type</label>
+            <select
+              value={materialType}
+              onChange={(e) => setMaterialType(e.target.value as any)}
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="asphalt">Asphalt Shingles</option>
+              <option value="metal">Metal Roofing</option>
+              <option value="tile">Clay/Concrete Tile</option>
+              <option value="slate">Slate</option>
+              <option value="wood">Wood Shingles</option>
+              <option value="membrane">Membrane (Flat)</option>
+            </select>
+          </div>
+          
+          <button
+            onClick={calculateMaterials}
+            className="w-full px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Calculate Materials
+          </button>
+        </div>
+      </div>
+
+      {/* Material Quantities Display */}
+      {showMaterialCalculations && materialQuantities && (
+        <div className="pt-3 border-t border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium text-gray-700">Material Quantities</h4>
+            <button
+              onClick={() => setShowMaterialCalculations(false)}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div className="space-y-2 text-xs">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="font-medium text-gray-600">Roof Area:</span>
+                <div>{Math.round(materialQuantities.roofingArea)} sq ft</div>
+              </div>
+              <div>
+                <span className="font-medium text-gray-600">Material:</span>
+                <div>{Math.round(materialQuantities.roofingMaterial)} units</div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="font-medium text-gray-600">Underlayment:</span>
+                <div>{Math.round(materialQuantities.underlayment)} rolls</div>
+              </div>
+              <div>
+                <span className="font-medium text-gray-600">Gutters:</span>
+                <div>{Math.round(materialQuantities.gutterLength)} ft</div>
+              </div>
+            </div>
+            
+            {materialQuantities.nails > 0 && (
+              <div>
+                <span className="font-medium text-gray-600">Nails:</span>
+                <span className="ml-1">{Math.round(materialQuantities.nails)} lbs</span>
+              </div>
+            )}
+            
+            {materialQuantities.screws > 0 && (
+              <div>
+                <span className="font-medium text-gray-600">Screws:</span>
+                <span className="ml-1">{materialQuantities.screws} count</span>
+              </div>
+            )}
+            
+            <div className="pt-2 border-t border-gray-100">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="font-medium text-gray-600">Material Cost:</span>
+                  <div>${Math.round(materialQuantities.materialCost).toLocaleString()}</div>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">Labor Cost:</span>
+                  <div>${Math.round(materialQuantities.laborCost).toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="mt-1">
+                <span className="font-medium text-gray-700">Total Cost:</span>
+                <span className="ml-1 font-bold text-green-600">
+                  ${Math.round(materialQuantities.totalCost).toLocaleString()}
+                </span>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-500 pt-1">
+              Waste Factor: {Math.round(materialQuantities.wasteFactor * 100)}% | 
+              Complexity: {materialQuantities.complexityFactor}x
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div className="pt-3 border-t border-gray-200">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Quick Actions</h4>
@@ -295,16 +484,52 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
             Standard Gable (30°)
           </button>
           <button
+            onClick={() => onUpdate({ pitch: 45, type: 'gambrel' })}
+            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+          >
+            Gambrel Roof (45°)
+          </button>
+          <button
+            onClick={() => onUpdate({ pitch: 50, type: 'mansard' })}
+            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+          >
+            Mansard Roof (50°)
+          </button>
+          <button
             onClick={() => onUpdate({ pitch: 0, type: 'flat' })}
             className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
           >
             Flat Roof (0°)
           </button>
           <button
-            onClick={() => onUpdate({ pitch: 45, type: 'hip' })}
+            onClick={() => onUpdate({ pitch: 15, type: 'butterfly' })}
             className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
           >
-            Hip Roof (45°)
+            Butterfly Roof (15°)
+          </button>
+          <button
+            onClick={() => onUpdate({ pitch: 35, type: 'saltbox' })}
+            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+          >
+            Saltbox Roof (35°)
+          </button>
+          <button
+            onClick={() => onUpdate({ pitch: 25, type: 'monitor' })}
+            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+          >
+            Monitor Roof (25°)
+          </button>
+          <button
+            onClick={() => onUpdate({ pitch: 30, type: 'sawtooth' })}
+            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+          >
+            Sawtooth Roof (30°)
+          </button>
+          <button
+            onClick={() => onUpdate({ pitch: 35, type: 'shed-dormer' })}
+            className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+          >
+            Shed Dormer (35°)
           </button>
         </div>
       </div>

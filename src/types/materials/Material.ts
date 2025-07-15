@@ -51,6 +51,7 @@ export type MaterialCategory =
   | 'wall'
   | 'floor'
   | 'ceiling'
+  | 'roof'
   | 'door'
   | 'window'
   | 'trim'
@@ -69,7 +70,7 @@ export type FireRating = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'none';
 
 export interface MaterialApplication {
   elementId: string;
-  elementType: 'wall' | 'door' | 'window' | 'room';
+  elementType: 'wall' | 'door' | 'window' | 'room' | 'roof';
   materialId: string;
   appliedAt: Date;
   coverage?: number; // Percentage of element covered (0-100)

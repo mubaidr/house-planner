@@ -23,8 +23,10 @@ export default function PlanStairRenderer2D({
   showMaterials,
   getMaterialById,
   onSelect,
-  onEdit: _onEdit,
+  onEdit,
 }: PlanStairRenderer2DProps) {
+  // Suppress unused variable warning
+  void onEdit;
   const material = stair.materialId ? getMaterialById(stair.materialId) : undefined;
   const position = stair.transform.position;
   const rotation = stair.transform.rotation;

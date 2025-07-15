@@ -27,8 +27,10 @@ export default function ElevationWallRenderer2D({
   showMaterials,
   getMaterialById,
   onSelect,
-  onEdit: _onEdit,
+  onEdit,
 }: ElevationWallRenderer2DProps) {
+  // Suppress unused variable warning
+  void onEdit;
   const material = wall.materialId ? getMaterialById(wall.materialId) : undefined;
   
   // Initialize material renderer for elevation view

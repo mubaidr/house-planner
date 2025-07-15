@@ -19,14 +19,19 @@ interface ElevationAnnotationRenderer2DProps {
 
 export default function ElevationAnnotationRenderer2D({
   annotation,
-  viewType: _viewType,
+  viewType,
   isSelected,
   scale,
-  showMaterials: _showMaterials,
-  getMaterialById: _getMaterialById,
+  showMaterials,
+  getMaterialById,
   onSelect,
   onEdit,
 }: ElevationAnnotationRenderer2DProps) {
+  // Suppress unused variable warnings
+  void viewType;
+  void showMaterials;
+  void getMaterialById;
+  void onEdit;
   const position = annotation.transform.position;
   const rotation = annotation.transform.rotation;
 

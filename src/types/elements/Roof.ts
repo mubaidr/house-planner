@@ -4,7 +4,7 @@ export interface Roof {
   height: number;
   pitch: number; // Roof pitch in degrees
   overhang: number; // Overhang distance
-  type: 'gable' | 'hip' | 'shed' | 'flat' | 'mansard';
+  type: 'gable' | 'hip' | 'shed' | 'flat' | 'gambrel' | 'mansard' | 'butterfly' | 'saltbox' | 'monitor' | 'sawtooth' | 'shed-dormer';
   material?: string;
   materialId?: string;
   color: string;
@@ -18,7 +18,7 @@ export interface RoofCreateData {
   height?: number;
   pitch?: number;
   overhang?: number;
-  type?: 'gable' | 'hip' | 'shed' | 'flat' | 'mansard';
+  type?: 'gable' | 'hip' | 'shed' | 'flat' | 'gambrel' | 'mansard' | 'butterfly' | 'saltbox' | 'monitor' | 'sawtooth' | 'shed-dormer';
   material?: string;
   color?: string;
   ridgeHeight?: number;

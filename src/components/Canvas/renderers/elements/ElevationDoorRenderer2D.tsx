@@ -21,18 +21,20 @@ interface ElevationDoorRenderer2DProps {
 
 export default function ElevationDoorRenderer2D({
   door,
-  viewType: _viewType,
+  viewType,
   isSelected,
   scale,
   showMaterials,
   getMaterialById,
   onSelect,
-  onEdit: _onEdit,
+  onEdit,
 }: ElevationDoorRenderer2DProps) {
+  // Suppress unused variable warnings
+  void onEdit;
   const material = door.materialId ? getMaterialById(door.materialId) : undefined;
   
   // Initialize material renderer for elevation view
-  const materialRenderer = React.useMemo(() => new MaterialRenderer2D(_viewType), [_viewType]);
+  const materialRenderer = React.useMemo(() => new MaterialRenderer2D(viewType), [viewType]);
   
   // Get door appearance
   const getDoorAppearance = () => {

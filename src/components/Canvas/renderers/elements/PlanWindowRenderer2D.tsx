@@ -24,8 +24,10 @@ export default function PlanWindowRenderer2D({
   showMaterials,
   getMaterialById,
   onSelect,
-  onEdit: _onEdit,
+  onEdit,
 }: PlanWindowRenderer2DProps) {
+  // Suppress unused variable warning
+  void onEdit;
   const material = window.materialId ? getMaterialById(window.materialId) : undefined;
   
   // Initialize material renderer for plan view
