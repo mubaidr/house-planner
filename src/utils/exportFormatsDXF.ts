@@ -355,7 +355,7 @@ ENDSEC
  * Convert Konva layer to DXF entities
  */
 async function convertLayerToDXF(
-  layer: any,
+  layer: KonvaNode,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -374,7 +374,7 @@ async function convertLayerToDXF(
  * Convert Konva node to DXF entity
  */
 function convertNodeToDXF(
-  node: any,
+  node: KonvaNode,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -401,7 +401,7 @@ function convertNodeToDXF(
  * Convert Konva Line to DXF LINE or POLYLINE
  */
 function convertLineToDXF(
-  line: any,
+  line: KonvaNode,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -430,7 +430,7 @@ function convertLineToDXF(
  * Convert Konva Rect to DXF POLYLINE (rectangle)
  */
 function convertRectToDXF(
-  rect: any,
+  rect: KonvaNode,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -456,7 +456,7 @@ function convertRectToDXF(
  * Convert Konva Circle to DXF CIRCLE
  */
 function convertCircleToDXF(
-  circle: any,
+  circle: KonvaNode,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -473,7 +473,7 @@ function convertCircleToDXF(
  * Convert Konva Text to DXF TEXT
  */
 function convertTextToDXF(
-  text: any,
+  text: KonvaNode,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -491,7 +491,7 @@ function convertTextToDXF(
  * Convert Konva Group to DXF entities
  */
 function convertGroupToDXF(
-  group: any,
+  group: KonvaNode,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -660,7 +660,7 @@ function getLayerColor(layerName: string): number {
 /**
  * Get appropriate layer name for a node
  */
-function getNodeLayer(node: any, options: DXFExportOptions): string {
+function getNodeLayer(node: KonvaNode, options: DXFExportOptions): string {
   // Try to determine layer based on node properties or name
   const nodeName = node.name() || '';
   const className = node.className || '';

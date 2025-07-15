@@ -226,9 +226,13 @@ export const useMaterialApplication = () => {
           hitResult.type,
           dropData.materialId
         );
-        console.log(`Applied material "${dropData.materialId}" to ${hitResult.type} ${hitResult.element.id}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Applied material "${dropData.materialId}" to ${hitResult.type} ${hitResult.element.id}`);
+        }
       } else {
-        console.log('No element found at drop position');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('No element found at drop position');
+        }
       }
     } catch (error) {
       console.error('Error handling material drop:', error);

@@ -56,7 +56,9 @@ export default function MaterialDropZone({
         const material = getMaterialById(dragData.materialId);
         if (material) {
           applyMaterialToElement(elementId, elementType, dragData.materialId);
-          console.log(`Applied material "${material.name}" to ${elementType} ${elementId}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Applied material "${material.name}" to ${elementType} ${elementId}`);
+          }
         }
       }
     } catch (error) {

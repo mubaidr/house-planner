@@ -232,7 +232,7 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
     }
     
     // Fallback to current state if no floor system
-    const state = get();
+    const state = useDesignStore.getState();
     return {
       walls: state.walls,
       doors: state.doors,

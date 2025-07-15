@@ -16,6 +16,9 @@ import {
   exportMultiViewToPDF,
   generateExportPreview,
   DEFAULT_MULTI_VIEW_OPTIONS,
+  batchExport,
+  downloadBatchAsZip,
+  BatchExportItem
 } from '@/utils/exportUtils2D';
 import {
   ExportTemplate,
@@ -25,6 +28,9 @@ import {
 } from '@/utils/exportTemplates';
 import { ViewType2D } from '@/types/views';
 import { useViewStore } from '@/stores/viewStore';
+import { useFloorStore } from '@/stores/floorStore';
+import { useExportProgressStore } from '@/stores/exportProgressStore';
+import ExportPreview from './ExportPreview';
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -35,10 +41,18 @@ interface ExportDialogProps {
 
 export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportDialogProps) {
   const { currentView } = useViewStore();
+  const { floors } = useFloorStore();
+  const { 
+    startExport,
+    updateProgress,
+    setError,
+    finishExport
+  } = useExportProgressStore();
   
-  const [exportMode, setExportMode] = useState<'single' | 'multi' | 'template'>('single');
+  const [exportMode, setExportMode] = useState<'single' | 'multi' | 'template' | 'batch'>('single');
   const [selectedTemplate, setSelectedTemplate] = useState<ExportTemplate | null>(null);
   const [templateCategory, setTemplateCategory] = useState<'residential' | 'commercial' | 'technical' | 'presentation'>('residential');
+  const [selectedFloors, setSelectedFloors] = useState<string[]>(floors.map(f => f.id));
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'png',
     quality: 0.9,
@@ -61,7 +75,59 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
   const [isExporting, setIsExporting] = useState(false);
   const [preview, setPreview] = useState<string>('');
   const [exportError, setExportError] = useState<string>('');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const previewRef = useRef<HTMLImageElement>(null);
+
+  // Utility functions for updating options
+  const updateOption = (key: keyof ExportOptions, value: unknown) => {
+    setExportOptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateMultiViewOption = (key: keyof MultiViewExportOptions, value: unknown) => {
+    setMultiViewOptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Implement batch export functionality
+  const handleBatchExport = async () => {
+    if (!stages || selectedFloors.length === 0) return;
+    
+    try {
+      setIsExporting(true);
+      startExport();
+      
+      const batchItems: BatchExportItem[] = selectedFloors.map(floorId => {
+        const floor = floors.find(f => f.id === floorId);
+        return {
+          id: floorId,
+          name: floor?.name || `Floor-${floorId}`,
+          stages,
+          options: multiViewOptions,
+        };
+      });
+
+      const results = await batchExport(batchItems, (completed, total, currentItem) => {
+        updateProgress(Math.round((completed / total) * 100));
+      });
+
+      await downloadBatchAsZip(results, 'house-plans-batch');
+      finishExport();
+      onClose();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Batch export failed');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Handle floor selection for batch export
+  const handleFloorSelection = (floorId: string, selected: boolean) => {
+    setSelectedFloors(prev => 
+      selected 
+        ? [...prev, floorId]
+        : prev.filter(id => id !== floorId)
+    );
+  };
+
 
   // Template handling
   const availableTemplates = React.useMemo(() => 
@@ -184,19 +250,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
     }
   };
 
-  const updateOption = <K extends keyof ExportOptions>(
-    key: K,
-    value: ExportOptions[K]
-  ) => {
-    setExportOptions(prev => ({ ...prev, [key]: value }));
-  };
 
-  const updateMultiViewOption = <K extends keyof MultiViewExportOptions>(
-    key: K,
-    value: MultiViewExportOptions[K]
-  ) => {
-    setMultiViewOptions(prev => ({ ...prev, [key]: value }));
-  };
 
   // Check if multi-view export is available
   const isMultiViewAvailable = stages && Object.values(stages).some(stage => stage !== null);
@@ -230,7 +284,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
                     type="radio"
                     value="single"
                     checked={exportMode === 'single'}
-                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template')}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template' | 'batch')}
                     className="mr-2"
                   />
                   Single View ({currentView})
@@ -240,7 +294,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
                     type="radio"
                     value="multi"
                     checked={exportMode === 'multi'}
-                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template')}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template' | 'batch')}
                     className="mr-2"
                   />
                   Multi-View Layout
@@ -250,10 +304,20 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
                     type="radio"
                     value="template"
                     checked={exportMode === 'template'}
-                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template')}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template' | 'batch')}
                     className="mr-2"
                   />
                   Professional Templates
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="batch"
+                    checked={exportMode === 'batch'}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template' | 'batch')}
+                    className="mr-2"
+                  />
+                  Batch Export
                 </label>
               </div>
             </div>
@@ -335,9 +399,21 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
 
           {/* Preview */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
-              Preview {exportMode === 'multi' ? '(Multi-View Layout)' : `(${currentView} view)`}
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-700">
+                Preview {exportMode === 'multi' ? '(Multi-View Layout)' : `(${currentView} view)`}
+              </h3>
+              <button
+                onClick={() => setIsPreviewOpen(true)}
+                className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors flex items-center"
+                title="Open fullscreen preview"
+              >
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+                Fullscreen
+              </button>
+            </div>
             <div className="flex justify-center">
               {preview ? (
                 <Image
@@ -346,8 +422,9 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
                   alt="Export preview"
                   width={300}
                   height={200}
-                  className="max-w-full h-auto border border-gray-300 rounded shadow-sm object-contain"
+                  className="max-w-full h-auto border border-gray-300 rounded shadow-sm object-contain cursor-pointer"
                   style={{ maxHeight: '200px' }}
+                  onClick={() => setIsPreviewOpen(true)}
                 />
               ) : (
                 <div className="w-64 h-40 bg-gray-200 rounded flex items-center justify-center">
@@ -730,6 +807,12 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
           </button>
         </div>
       </div>
+      
+      {/* Export Preview Modal */}
+      <ExportPreview
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+      />
     </div>
   );
 }

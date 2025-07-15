@@ -212,7 +212,9 @@ export default function DrawingCanvas() {
   
   // Debug: Log current view changes
   React.useEffect(() => {
-    console.log('DrawingCanvas: Current view changed to:', currentView);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('DrawingCanvas: Current view changed to:', currentView);
+    }
   }, [currentView]);
 
   // Apply view-specific transformations to the stage

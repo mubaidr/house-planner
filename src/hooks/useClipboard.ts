@@ -64,7 +64,9 @@ export const useClipboard = () => {
       // Store in localStorage for persistence across sessions
       localStorage.setItem('house-planner-clipboard', JSON.stringify(clipboardData));
       
-      console.log(`Copied ${selectedElementType} to clipboard`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Copied ${selectedElementType} to clipboard`);
+      }
       return clipboardData;
     }
 

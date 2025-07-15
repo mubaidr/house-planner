@@ -8,6 +8,33 @@
 import { ViewType2D } from './views';
 
 /**
+ * Simple drawing sheet interface as requested
+ */
+export interface DrawingSheet {
+  id: string;
+  title: string;
+  size: 'A4' | 'A3' | 'A2' | 'Letter';
+  orientation: 'portrait' | 'landscape';
+  margin: number;
+  views: SheetViewPlacement[];
+}
+
+/**
+ * Sheet view placement interface
+ */
+export interface SheetViewPlacement {
+  id: string;
+  viewType: 'front' | 'back' | 'left' | 'right' | 'top' | 'bottom' | 'isometric' | 'section' | 'detail';
+  position: {
+    x: number;
+    y: number;
+  };
+  scale: number;
+  title?: string;
+  notes?: string;
+}
+
+/**
  * Standard paper sizes in points (72 DPI)
  */
 export interface PaperSize {
@@ -509,10 +536,225 @@ export class DrawingSheetUtils {
   }
 }
 
+/**
+ * Default drawing sheets using the simple DrawingSheet interface
+ */
+export const DEFAULT_SHEETS: DrawingSheet[] = [
+  {
+    id: 'sheet-a4-portrait',
+    title: 'A4 Portrait Sheet',
+    size: 'A4',
+    orientation: 'portrait',
+    margin: 20,
+    views: [
+      {
+        id: 'main-view',
+        viewType: 'front',
+        position: { x: 100, y: 100 },
+        scale: 1.0,
+        title: 'Front View'
+      },
+      {
+        id: 'side-view',
+        viewType: 'right',
+        position: { x: 400, y: 100 },
+        scale: 1.0,
+        title: 'Side View'
+      },
+      {
+        id: 'top-view',
+        viewType: 'top',
+        position: { x: 100, y: 400 },
+        scale: 1.0,
+        title: 'Top View'
+      }
+    ]
+  },
+  {
+    id: 'sheet-a4-landscape',
+    title: 'A4 Landscape Sheet',
+    size: 'A4',
+    orientation: 'landscape',
+    margin: 20,
+    views: [
+      {
+        id: 'main-view',
+        viewType: 'front',
+        position: { x: 100, y: 100 },
+        scale: 1.0,
+        title: 'Front View'
+      },
+      {
+        id: 'side-view',
+        viewType: 'right',
+        position: { x: 400, y: 100 },
+        scale: 1.0,
+        title: 'Side View'
+      },
+      {
+        id: 'iso-view',
+        viewType: 'isometric',
+        position: { x: 600, y: 100 },
+        scale: 0.8,
+        title: 'Isometric View'
+      }
+    ]
+  },
+  {
+    id: 'sheet-a3-landscape',
+    title: 'A3 Landscape Sheet',
+    size: 'A3',
+    orientation: 'landscape',
+    margin: 25,
+    views: [
+      {
+        id: 'main-view',
+        viewType: 'front',
+        position: { x: 150, y: 150 },
+        scale: 1.2,
+        title: 'Front View'
+      },
+      {
+        id: 'side-view',
+        viewType: 'right',
+        position: { x: 500, y: 150 },
+        scale: 1.2,
+        title: 'Side View'
+      },
+      {
+        id: 'top-view',
+        viewType: 'top',
+        position: { x: 150, y: 400 },
+        scale: 1.2,
+        title: 'Top View'
+      },
+      {
+        id: 'iso-view',
+        viewType: 'isometric',
+        position: { x: 700, y: 150 },
+        scale: 1.0,
+        title: 'Isometric View'
+      }
+    ]
+  },
+  {
+    id: 'sheet-a2-landscape',
+    title: 'A2 Landscape Sheet',
+    size: 'A2',
+    orientation: 'landscape',
+    margin: 30,
+    views: [
+      {
+        id: 'main-view',
+        viewType: 'front',
+        position: { x: 200, y: 200 },
+        scale: 1.5,
+        title: 'Front View'
+      },
+      {
+        id: 'back-view',
+        viewType: 'back',
+        position: { x: 600, y: 200 },
+        scale: 1.5,
+        title: 'Back View'
+      },
+      {
+        id: 'left-view',
+        viewType: 'left',
+        position: { x: 200, y: 500 },
+        scale: 1.5,
+        title: 'Left View'
+      },
+      {
+        id: 'right-view',
+        viewType: 'right',
+        position: { x: 600, y: 500 },
+        scale: 1.5,
+        title: 'Right View'
+      },
+      {
+        id: 'top-view',
+        viewType: 'top',
+        position: { x: 1000, y: 200 },
+        scale: 1.2,
+        title: 'Top View'
+      },
+      {
+        id: 'iso-view',
+        viewType: 'isometric',
+        position: { x: 1000, y: 500 },
+        scale: 1.0,
+        title: 'Isometric View'
+      }
+    ]
+  },
+  {
+    id: 'sheet-letter-portrait',
+    title: 'Letter Portrait Sheet',
+    size: 'Letter',
+    orientation: 'portrait',
+    margin: 20,
+    views: [
+      {
+        id: 'main-view',
+        viewType: 'front',
+        position: { x: 100, y: 100 },
+        scale: 1.0,
+        title: 'Front View'
+      },
+      {
+        id: 'side-view',
+        viewType: 'right',
+        position: { x: 350, y: 100 },
+        scale: 1.0,
+        title: 'Side View'
+      },
+      {
+        id: 'top-view',
+        viewType: 'top',
+        position: { x: 100, y: 350 },
+        scale: 1.0,
+        title: 'Top View'
+      }
+    ]
+  },
+  {
+    id: 'sheet-letter-landscape',
+    title: 'Letter Landscape Sheet',
+    size: 'Letter',
+    orientation: 'landscape',
+    margin: 20,
+    views: [
+      {
+        id: 'main-view',
+        viewType: 'front',
+        position: { x: 100, y: 100 },
+        scale: 1.0,
+        title: 'Front View'
+      },
+      {
+        id: 'side-view',
+        viewType: 'right',
+        position: { x: 350, y: 100 },
+        scale: 1.0,
+        title: 'Side View'
+      },
+      {
+        id: 'detail-view',
+        viewType: 'detail',
+        position: { x: 550, y: 100 },
+        scale: 2.0,
+        title: 'Detail View'
+      }
+    ]
+  }
+];
+
 const DrawingSheetExports = {
   STANDARD_PAPER_SIZES,
   DEFAULT_LAYOUT_TEMPLATES,
   DEFAULT_TITLE_BLOCK_FIELDS,
+  DEFAULT_SHEETS,
   DrawingSheetUtils,
 };
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { DrawingSheet } from '@/types/drawingSheet2D';
 
 export type Tool = 'select' | 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'measure' | 'dimension' | 'align' | 'text-annotation' | 'area-annotation' | 'material-callout';
 
@@ -17,6 +18,7 @@ export interface UIState {
   gridVisible?: boolean;
   isExportDialogOpen: boolean;
   isImportDialogOpen: boolean;
+  selectedSheet: DrawingSheet | null;
 }
 
 export interface UIActions {
@@ -32,6 +34,7 @@ export interface UIActions {
   toggleRooms: () => void;
   setExportDialogOpen: (isOpen: boolean) => void;
   setImportDialogOpen: (isOpen: boolean) => void;
+  setSelectedSheet: (sheet: DrawingSheet | null) => void;
 }
 
 export const useUIStore = create<UIState & UIActions>((set, get) => ({
@@ -49,6 +52,7 @@ export const useUIStore = create<UIState & UIActions>((set, get) => ({
   showRooms: true,
   isExportDialogOpen: false,
   isImportDialogOpen: false,
+  selectedSheet: null,
   get gridVisible() {
     return get().showGrid
   },
@@ -106,4 +110,5 @@ export const useUIStore = create<UIState & UIActions>((set, get) => ({
     })),
   setExportDialogOpen: (isOpen) => set({ isExportDialogOpen: isOpen }),
   setImportDialogOpen: (isOpen) => set({ isImportDialogOpen: isOpen }),
+  setSelectedSheet: (sheet) => set({ selectedSheet: sheet }),
 }));

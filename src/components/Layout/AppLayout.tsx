@@ -42,7 +42,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const handleExportAnnotations = () => {
     // Logic to handle exporting annotations
-    console.log('Exporting annotations...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Exporting annotations...');
+    }
+    // TODO: Implement annotation export functionality
   };
 
   return (

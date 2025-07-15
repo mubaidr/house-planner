@@ -437,7 +437,9 @@ export function useEnhancedAnnotations(options: UseEnhancedAnnotationsOptions): 
   
   const filterAnnotationsByCategory = useCallback((category: string) => {
     // Implementation for filtering - could be used for display purposes
-    console.log(`Filtering annotations by category: ${category}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Filtering annotations by category: ${category}`);
+    }
   }, []);
   
   return {
