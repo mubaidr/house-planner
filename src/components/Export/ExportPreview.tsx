@@ -5,6 +5,9 @@ import { useUIStore } from '@/stores/uiStore';
 import { useDebounce } from '@/hooks/useDebounce';
 import { composeSheet } from '@/utils/exportUtils2D';
 import { DrawingSheet, DEFAULT_SHEETS } from '@/types/drawingSheet2D';
+import pdfMake from 'pdfmake/build/pdfmake'
+import pdfFonts from 'pdfmake/build/vfs_fonts'
+pdfMake.vfs = pdfFonts.pdfMake.vfs
 
 interface ExportPreviewProps {
   isOpen: boolean;
@@ -27,12 +30,13 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
     offsetX: 0,
     offsetY: 0,
   });
-  
+  const [pdfError, setPdfError] = useState<string | null>(null)
+
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
+
   // Debounce the selected sheet to avoid excessive re-renders
   const debouncedSelectedSheet = useDebounce(selectedSheet, 300);
 
@@ -54,14 +58,14 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
 
   const generatePreview = useCallback(async (sheet: DrawingSheet) => {
     if (!sheet) return;
-    
+
     setIsGenerating(true);
     setError(null);
-    
+
     try {
       const composedCanvas = await composeSheet(sheet);
       setCanvas(composedCanvas);
-      
+
       // Reset zoom controls when new preview is generated
       setZoomControls({
         scale: 1,
@@ -75,6 +79,30 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
       setIsGenerating(false);
     }
   }, []);
+
+  // PDF Export Handler
+  const handlePdfExport = async () => {
+    setPdfError(null)
+    try {
+      if (!canvas) throw new Error('No preview available')
+      // Convert canvas to data URL
+      const imgData = canvas.toDataURL('image/png')
+      // Build PDF document definition
+      const docDefinition = {
+        content: [
+          {
+            image: imgData,
+            width: 500
+          }
+        ],
+        pageSize: selectedSheet?.size || 'A4',
+        pageOrientation: selectedSheet?.orientation?.toLowerCase() || 'portrait'
+      }
+      pdfMake.createPdf(docDefinition).download('design-export.pdf')
+    } catch (err) {
+      setPdfError(err instanceof Error ? err.message : 'PDF export failed')
+    }
+  }
 
   // Zoom controls
   const handleZoomIn = () => {
@@ -101,15 +129,15 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
 
   const handleZoomFit = () => {
     if (!canvas || !containerRef.current) return;
-    
+
     const container = containerRef.current;
     const containerWidth = container.clientWidth - 40; // Account for padding
     const containerHeight = container.clientHeight - 40;
-    
+
     const scaleX = containerWidth / canvas.width;
     const scaleY = containerHeight / canvas.height;
     const fitScale = Math.min(scaleX, scaleY);
-    
+
     setZoomControls({
       scale: fitScale,
       offsetX: 0,
@@ -125,7 +153,7 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-    
+
     setZoomControls(prev => ({
       ...prev,
       offsetX: e.clientX - dragStart.x,
@@ -148,7 +176,7 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging || e.touches.length !== 1) return;
-    
+
     e.preventDefault();
     const touch = e.touches[0];
     setZoomControls(prev => ({
@@ -182,11 +210,22 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="export-preview-title"
+    >
       <div className="bg-white rounded-lg shadow-xl w-full h-full max-w-6xl max-h-[90vh] mx-4 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Export Preview</h2>
+          <h2
+            id="export-preview-title"
+            className="text-xl font-semibold text-gray-800"
+            aria-label="Export Preview"
+          >
+            Export Preview
+          </h2>
           <div className="flex items-center space-x-2">
             {/* Zoom Controls */}
             <div className="flex items-center space-x-1 bg-gray-100 rounded-md p-1">
@@ -194,44 +233,49 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
                 onClick={handleZoomOut}
                 className="p-1 hover:bg-gray-200 rounded"
                 title="Zoom Out"
+                aria-label="Zoom Out"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                 </svg>
               </button>
-              <span className="text-sm font-mono min-w-12 text-center">
+              <span className="text-sm font-mono min-w-12 text-center" aria-live="polite">
                 {Math.round(zoomControls.scale * 100)}%
               </span>
               <button
                 onClick={handleZoomIn}
                 className="p-1 hover:bg-gray-200 rounded"
                 title="Zoom In"
+                aria-label="Zoom In"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </button>
             </div>
-            
+
             <button
               onClick={handleZoomReset}
               className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
               title="Reset Zoom"
+              aria-label="Reset Zoom"
             >
               1:1
             </button>
-            
+
             <button
               onClick={handleZoomFit}
               className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
               title="Fit to Screen"
+              aria-label="Fit to Screen"
             >
               Fit
             </button>
-            
+
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close Export Preview"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -241,7 +285,7 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
         </div>
 
         {/* Preview Area */}
-        <div 
+        <div
           ref={containerRef}
           className="flex-1 overflow-hidden bg-gray-50 relative"
           onMouseMove={handleMouseMove}
@@ -271,7 +315,7 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
               </div>
             </div>
           ) : canvas ? (
-            <div 
+            <div
               className="absolute inset-0 flex items-center justify-center overflow-hidden"
               style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
             >
@@ -314,6 +358,12 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
                 Use mouse/touch to pan • Scroll to zoom
               </div>
               <button
+                onClick={handlePdfExport}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Export PDF
+              </button>
+              <button
                 onClick={onClose}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
@@ -321,6 +371,9 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
               </button>
             </div>
           </div>
+          {pdfError && (
+            <div className="mt-2 text-sm text-red-600">{pdfError}</div>
+          )}
         </div>
       </div>
     </div>
