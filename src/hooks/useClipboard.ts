@@ -151,7 +151,7 @@ export const useClipboard = () => {
         execute: () => {
           // Add to current floor first
           if (currentFloorId) {
-            addElementToFloor(currentFloorId, `${type}s` as any, newElement);
+            addElementToFloor(currentFloorId, `${type}s` as 'walls' | 'doors' | 'windows' | 'stairs' | 'roofs', newElement);
           }
 
           // Add to design store

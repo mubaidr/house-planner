@@ -43,7 +43,7 @@ export const useWallTool = () => {
       currentPoint: { x: snapResult.x, y: snapResult.y },
       currentSnapResult: snapResult,
     });
-  }, [activeTool, walls, gridSize, snapToGrid, getWallSnapPointsWithIntersections]);
+  }, [activeTool, walls, gridSize, snapToGrid]);
 
   const updateDrawing = useCallback((x: number, y: number) => {
     if (!drawingState.isDrawing || activeTool !== 'wall') return;
@@ -62,7 +62,7 @@ export const useWallTool = () => {
       currentPoint: { x: snapResult.x, y: snapResult.y },
       currentSnapResult: snapResult,
     }));
-  }, [drawingState.isDrawing, activeTool, walls, gridSize, snapToGrid, getWallSnapPointsWithIntersections]);
+  }, [drawingState.isDrawing, activeTool, walls, gridSize, snapToGrid]);
 
   const finishDrawing = useCallback(() => {
     if (!drawingState.isDrawing || !drawingState.startPoint || !drawingState.currentPoint) {

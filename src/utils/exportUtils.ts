@@ -2,7 +2,7 @@ import { Stage } from 'konva/lib/Stage';
 import jsPDF from 'jspdf';
 
 export interface ExportOptions {
-  format: 'png' | 'pdf';
+  format: 'png' | 'pdf' | 'svg' | 'dxf';
   quality: number; // 0.1 to 1.0 for PNG, DPI for PDF
   includeGrid: boolean;
   includeRooms: boolean;
@@ -12,6 +12,9 @@ export interface ExportOptions {
   scale?: number; // Scale factor for export
   title?: string;
   description?: string;
+  // Additional options for new formats
+  units?: 'mm' | 'cm' | 'in' | 'ft';
+  precision?: number;
 }
 
 export interface ExportResult {

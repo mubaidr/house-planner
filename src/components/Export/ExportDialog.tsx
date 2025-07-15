@@ -16,8 +16,13 @@ import {
   exportMultiViewToPDF,
   generateExportPreview,
   DEFAULT_MULTI_VIEW_OPTIONS,
-  PAPER_SIZES
 } from '@/utils/exportUtils2D';
+import {
+  ExportTemplate,
+  getTemplatesByCategory,
+  applyTemplate,
+  generateTemplatePreview
+} from '@/utils/exportTemplates';
 import { ViewType2D } from '@/types/views';
 import { useViewStore } from '@/stores/viewStore';
 
@@ -31,7 +36,9 @@ interface ExportDialogProps {
 export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportDialogProps) {
   const { currentView } = useViewStore();
   
-  const [exportMode, setExportMode] = useState<'single' | 'multi'>('single');
+  const [exportMode, setExportMode] = useState<'single' | 'multi' | 'template'>('single');
+  const [selectedTemplate, setSelectedTemplate] = useState<ExportTemplate | null>(null);
+  const [templateCategory, setTemplateCategory] = useState<'residential' | 'commercial' | 'technical' | 'presentation'>('residential');
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'png',
     quality: 0.9,
@@ -55,6 +62,17 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
   const [preview, setPreview] = useState<string>('');
   const [exportError, setExportError] = useState<string>('');
   const previewRef = useRef<HTMLImageElement>(null);
+
+  // Template handling
+  const availableTemplates = React.useMemo(() => 
+    getTemplatesByCategory(templateCategory), [templateCategory]);
+
+  const handleTemplateSelect = React.useCallback((template: ExportTemplate) => {
+    setSelectedTemplate(template);
+    const templateOptions = applyTemplate(template, multiViewOptions);
+    setMultiViewOptions(templateOptions);
+    setExportMode('template');
+  }, [multiViewOptions]);
 
   const generatePreview = React.useCallback(async () => {
     if (exportMode === 'single' && !stage) return;
@@ -93,6 +111,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
   const handleExport = async () => {
     if (exportMode === 'single' && !stage) return;
     if (exportMode === 'multi' && !stages) return;
+    if (exportMode === 'template' && (!selectedTemplate || !stages)) return;
 
     setIsExporting(true);
     setExportError('');
@@ -134,6 +153,23 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
         
         blob = await exportMultiViewToPDF(validStages, multiViewOptions);
         filename = generateFilename('pdf', multiViewOptions.title);
+      } else if (exportMode === 'template' && selectedTemplate && stages) {
+        // Template export
+        const validStages: Record<ViewType2D, Stage> = {};
+        selectedTemplate.views.forEach(viewType => {
+          if (stages[viewType]) {
+            validStages[viewType] = stages[viewType]!;
+          }
+        });
+        
+        if (Object.keys(validStages).length === 0) {
+          setExportError('No valid views available for template export');
+          return;
+        }
+        
+        const templateOptions = applyTemplate(selectedTemplate, multiViewOptions);
+        blob = await exportMultiViewToPDF(validStages, templateOptions);
+        filename = generateFilename('pdf', templateOptions.title || selectedTemplate.name);
       } else {
         setExportError('Invalid export configuration');
         return;
@@ -194,7 +230,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
                     type="radio"
                     value="single"
                     checked={exportMode === 'single'}
-                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi')}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template')}
                     className="mr-2"
                   />
                   Single View ({currentView})
@@ -204,12 +240,96 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
                     type="radio"
                     value="multi"
                     checked={exportMode === 'multi'}
-                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi')}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template')}
                     className="mr-2"
                   />
                   Multi-View Layout
                 </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="template"
+                    checked={exportMode === 'template'}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi' | 'template')}
+                    className="mr-2"
+                  />
+                  Professional Templates
+                </label>
               </div>
+            </div>
+          )}
+
+          {/* Template Selection */}
+          {exportMode === 'template' && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-700">Professional Templates</h3>
+              
+              {/* Template Category Selection */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Category</label>
+                <select
+                  value={templateCategory}
+                  onChange={(e) => setTemplateCategory(e.target.value as HTMLSelectElement['value'])}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="residential">Residential</option>
+                  <option value="commercial">Commercial</option>
+                  <option value="technical">Technical</option>
+                  <option value="presentation">Presentation</option>
+                </select>
+              </div>
+
+              {/* Template Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                {availableTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    onClick={() => handleTemplateSelect(template)}
+                    className={`border-2 rounded-lg p-3 cursor-pointer transition-all ${
+                      selectedTemplate?.id === template.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="aspect-video bg-gray-100 rounded mb-2 flex items-center justify-center">
+                      <Image
+                        src={generateTemplatePreview(template)}
+                        alt={`${template.name} preview`}
+                        layout="fill"
+                        objectFit="contain"
+                      />
+                    </div>
+                    <h4 className="font-medium text-sm text-gray-800">{template.name}</h4>
+                    <p className="text-xs text-gray-600 mt-1">{template.description}</p>
+                    <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                      <span>{template.paperSize} {template.orientation}</span>
+                      <span>{template.views.length} views</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Selected Template Details */}
+              {selectedTemplate && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-800 mb-2">{selectedTemplate.name}</h4>
+                  <p className="text-sm text-gray-600 mb-3">{selectedTemplate.description}</p>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Paper Size:</span> {selectedTemplate.paperSize}
+                    </div>
+                    <div>
+                      <span className="font-medium">Orientation:</span> {selectedTemplate.orientation}
+                    </div>
+                    <div>
+                      <span className="font-medium">Views:</span> {selectedTemplate.views.join(', ')}
+                    </div>
+                    <div>
+                      <span className="font-medium">Category:</span> {selectedTemplate.category}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -371,7 +491,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
                   <label className="block text-sm text-gray-600 mb-2">Paper Size</label>
                   <select
                     value={multiViewOptions.paperSize}
-                    onChange={(e) => updateMultiViewOption('paperSize', e.target.value as any)}
+                    onChange={(e) => updateMultiViewOption('paperSize', e.target.value as MultiViewExportOptions['paperSize'])}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="A4">A4 (210 × 297 mm)</option>
@@ -589,7 +709,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
           </button>
           <button
             onClick={handleExport}
-            disabled={isExporting || (exportMode === 'single' && !stage) || (exportMode === 'multi' && (!stages || multiViewOptions.views.length === 0))}
+            disabled={isExporting || (exportMode === 'single' && !stage) || (exportMode === 'multi' && (!stages || multiViewOptions.views.length === 0)) || (exportMode === 'template' && (!selectedTemplate || !stages))}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
           >
             {isExporting ? (
@@ -602,6 +722,8 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
               </>
             ) : exportMode === 'single' ? (
               `Export ${exportOptions.format.toUpperCase()}`
+            ) : exportMode === 'template' ? (
+              `Export Template: ${selectedTemplate?.name || 'Select Template'}`
             ) : (
               `Export Multi-View PDF (${multiViewOptions.views.length} views)`
             )}

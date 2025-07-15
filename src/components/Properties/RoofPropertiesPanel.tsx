@@ -328,7 +328,7 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
             <label className="block text-xs font-medium text-gray-600 mb-1">Climate</label>
             <select
               value={climate}
-              onChange={(e) => setClimate(e.target.value as any)}
+              onChange={(e) => setClimate(e.target.value as 'temperate' | 'cold' | 'hot' | 'coastal')}
               className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="temperate">Temperate</option>
@@ -375,7 +375,7 @@ export default function RoofPropertiesPanel({ roof, onUpdate, onDelete }: RoofPr
             <label className="block text-xs font-medium text-gray-600 mb-1">Material Type</label>
             <select
               value={materialType}
-              onChange={(e) => setMaterialType(e.target.value as any)}
+              onChange={(e) => setMaterialType(e.target.value as 'asphalt' | 'metal' | 'tile' | 'slate' | 'wood' | 'membrane')}
               className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="asphalt">Asphalt Shingles</option>

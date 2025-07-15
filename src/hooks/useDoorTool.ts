@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useFloorStore } from '@/stores/floorStore';
 import { useUIStore } from '@/stores/uiStore';
-import { useHistoryStore } from '@/stores/historyStore';
 import { Door } from '@/types/elements/Door';
 import { canPlaceDoor, WallConstraintResult } from '@/utils/wallConstraints';
 // import { AddDoorCommand } from '@/utils/history'; // Removed - using floor store as single source of truth
@@ -22,10 +21,9 @@ export const useDoorTool = () => {
     isValid: false,
   });
 
-  const { addDoor, removeDoor, walls, doors, windows, selectElement } = useDesignStore();
+  const { walls, doors, windows, selectElement } = useDesignStore();
   const { currentFloorId, addElementToFloor } = useFloorStore();
   const { activeTool, setActiveTool } = useUIStore();
-  const { executeCommand } = useHistoryStore();
 
   const startPlacement = useCallback((x: number, y: number) => {
     if (activeTool !== 'door') return;
@@ -136,7 +134,7 @@ export const useDoorTool = () => {
       constraintResult: null,
       isValid: false,
     });
-  }, [placementState, addDoor, removeDoor, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
+  }, [placementState, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
 
   const cancelPlacement = useCallback(() => {
     setPlacementState({

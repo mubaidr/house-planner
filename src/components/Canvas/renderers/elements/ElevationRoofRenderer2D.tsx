@@ -103,6 +103,8 @@ export default function ElevationRoofRenderer2D({
 
   const renderGableRoof = () => {
     const ridgeX = roofX + roofWidth / 2;
+    void ridgeX;
+    
     const ridgeY = roofBaseY - ridgeHeight;
     
     return (
@@ -140,6 +142,8 @@ export default function ElevationRoofRenderer2D({
 
   const renderHipRoof = () => {
     const ridgeX = roofX + roofWidth / 2;
+    void ridgeX;
+    void ridgeX;
     const ridgeY = roofBaseY - ridgeHeight;
     const hipOffset = roofWidth * 0.1; // Hip offset from edges
     
@@ -233,6 +237,8 @@ export default function ElevationRoofRenderer2D({
 
   const renderGambrelRoof = () => {
     const ridgeX = roofX + roofWidth / 2;
+    void ridgeX;
+    void ridgeX;
     const ridgeY = roofBaseY - ridgeHeight;
     const breakY = roofBaseY - ridgeHeight * 0.6;
     const breakOffset = roofWidth * 0.25;
@@ -403,6 +409,7 @@ export default function ElevationRoofRenderer2D({
   const renderSaltboxRoof = () => {
     // Saltbox roof - asymmetrical gable with one long slope
     const ridgeX = roofX + roofWidth * 0.35; // Ridge offset to one side
+    void ridgeX;
     const ridgeY = roofBaseY - ridgeHeight;
     
     return (

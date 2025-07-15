@@ -509,9 +509,11 @@ export class DrawingSheetUtils {
   }
 }
 
-export default {
+const DrawingSheetExports = {
   STANDARD_PAPER_SIZES,
   DEFAULT_LAYOUT_TEMPLATES,
   DEFAULT_TITLE_BLOCK_FIELDS,
   DrawingSheetUtils,
 };
+
+export default DrawingSheetExports;

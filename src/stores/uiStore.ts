@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Tool = 'select' | 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'measure' | 'dimension' | 'align';
+export type Tool = 'select' | 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'measure' | 'dimension' | 'align' | 'text-annotation' | 'area-annotation' | 'material-callout';
 
 export interface UIState {
   activeTool: Tool;
@@ -15,6 +15,8 @@ export interface UIState {
   mouseCoordinates: { x: number; y: number };
   showRooms: boolean;
   gridVisible?: boolean;
+  isExportDialogOpen: boolean;
+  isImportDialogOpen: boolean;
 }
 
 export interface UIActions {
@@ -28,6 +30,8 @@ export interface UIActions {
   togglePropertiesPanel: () => void;
   setMouseCoordinates: (x: number, y: number) => void;
   toggleRooms: () => void;
+  setExportDialogOpen: (isOpen: boolean) => void;
+  setImportDialogOpen: (isOpen: boolean) => void;
 }
 
 export const useUIStore = create<UIState & UIActions>((set, get) => ({
@@ -43,6 +47,8 @@ export const useUIStore = create<UIState & UIActions>((set, get) => ({
   propertiesPanelCollapsed: false,
   mouseCoordinates: { x: 0, y: 0 },
   showRooms: true,
+  isExportDialogOpen: false,
+  isImportDialogOpen: false,
   get gridVisible() {
     return get().showGrid
   },
@@ -98,4 +104,6 @@ export const useUIStore = create<UIState & UIActions>((set, get) => ({
     set((state) => ({
       showRooms: !state.showRooms,
     })),
+  setExportDialogOpen: (isOpen) => set({ isExportDialogOpen: isOpen }),
+  setImportDialogOpen: (isOpen) => set({ isImportDialogOpen: isOpen }),
 }));

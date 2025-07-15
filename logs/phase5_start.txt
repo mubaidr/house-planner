@@ -1,0 +1,247 @@
+Lint Errors:
+
+./src/components/Canvas/renderers/elements/PlanWallRenderer2D.tsx
+4:10  Error: 'Line' is defined but never used.  @typescript-eslint/no-unused-vars
+4:16  Error: 'Rect' is defined but never used.  @typescript-eslint/no-unused-vars
+7:10  Error: 'PLAN_VIEW_CONFIG' is defined but never used.  @typescript-eslint/no-unused-vars
+28:3  Error: 'scale' is defined but never used.  @typescript-eslint/no-unused-vars
+29:3  Error: 'showMaterials' is defined but never used.  @typescript-eslint/no-unused-vars
+39:9  Error: 'material' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+42:9  Error: 'materialRenderer' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Toolbar/EnhancedAnnotationToolbar.tsx
+24:3  Error: 'EyeOff' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Toolbar/ExportButton.tsx
+30:9  Error: 'hiddenStageRefs' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+43:6  Warning: React Hook useEffect has a missing dependency: 'generateMultiViewStages'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/hooks/useClipboard.ts
+154:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/hooks/useDoorTool.ts
+139:6  Warning: React Hook useCallback has unnecessary dependencies: 'addDoor', 'executeCommand', and 'removeDoor'. Either exclude them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/hooks/useEnhancedAnnotations.ts
+13:33  Error: 'useMemo' is defined but never used.  @typescript-eslint/no-unused-vars
+13:42  Error: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+26:30  Error: 'Wall2D' is defined but never used.  @typescript-eslint/no-unused-vars
+39:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+40:11  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:79  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+42:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+69:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+70:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+421:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+432:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/hooks/useRoofWallIntegration2D.ts
+9:10  Error: 'useHistoryStore' is defined but never used.  @typescript-eslint/no-unused-vars
+39:73  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:81  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:6  Warning: React Hook useMemo has a missing dependency: 'config'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+170:92  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+199:6  Warning: React Hook useEffect has missing dependencies: 'analyzeIntegration', 'roofs2D.length', and 'walls2D.length'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/hooks/useWallJoining2D.ts
+9:10  Error: 'useHistoryStore' is defined but never used.  @typescript-eslint/no-unused-vars
+53:6  Warning: React Hook useMemo has a missing dependency: 'config'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+158:6  Warning: React Hook useEffect has missing dependencies: 'analyzeWalls' and 'walls2D.length'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/hooks/useWallTool.ts
+46:6  Warning: React Hook useCallback has an unnecessary dependency: 'getWallSnapPointsWithIntersections'. Either exclude it or remove the dependency array. Outer scope values like 'getWallSnapPointsWithIntersections' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+65:6  Warning: React Hook useCallback has an unnecessary dependency: 'getWallSnapPointsWithIntersections'. Either exclude it or remove the dependency array. Outer scope values like 'getWallSnapPointsWithIntersections' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./src/hooks/useWindowTool.ts
+152:6  Warning: React Hook useCallback has unnecessary dependencies: 'addWindow', 'executeCommand', and 'removeWindow'. Either exclude them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/types/drawingSheet2D.ts
+512:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./src/utils/elementTypeConverter.ts
+164:84  Error: '_' is defined but never used.  @typescript-eslint/no-unused-vars
+164:87  Error: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/utils/exportFormatsDXF.ts
+10:10  Error: 'Element2D' is defined but never used.  @typescript-eslint/no-unused-vars
+209:40  Error: 'key' is defined but never used.  @typescript-eslint/no-unused-vars
+291:42  Error: 'key' is defined but never used.  @typescript-eslint/no-unused-vars
+359:10  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+378:9  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+405:9  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+434:9  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+460:11  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+477:9  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+495:10  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+664:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/utils/exportFormatsSVG.ts
+10:10  Error: 'Element2D' is defined but never used.  @typescript-eslint/no-unused-vars
+97:7  Error: 'svg' is never reassigned. Use 'const' instead.  prefer-const
+193:57  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+214:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+228:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+253:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+280:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+280:57  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+305:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+305:57  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+322:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+322:61  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+338:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+354:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+354:57  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+368:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/utils/exportTemplates.ts
+9:34  Error: 'ViewportLayout' is defined but never used.  @typescript-eslint/no-unused-vars
+9:50  Error: 'TitleBlockLayout' is defined but never used.  @typescript-eslint/no-unused-vars
+645:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./src/utils/exportUtils2D.ts
+13:10  Error: 'Element2D' is defined but never used.  @typescript-eslint/no-unused-vars
+475:3  Error: 'zipName' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+491:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./src/utils/materialRenderer2D.ts
+8:20  Error: 'MaterialProperties' is defined but never used.  @typescript-eslint/no-unused-vars
+277:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+625:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+751:92  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+768:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/utils/roofMaterialCalculations.ts
+10:10  Error: 'Material' is defined but never used.  @typescript-eslint/no-unused-vars
+246:11  Error: 'lowerSlopeLength' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+247:11  Error: 'upperSlopeLength' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+475:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+509:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+513:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+535:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+550:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+590:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+608:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+627:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+697:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+725:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+734:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+747:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+762:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+777:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+792:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/utils/roofPitchCalculations.ts
+8:27  Error: 'Wall2D' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/utils/roofWallIntegration2D.ts
+9:35  Error: 'Element2D' is defined but never used.  @typescript-eslint/no-unused-vars
+9:46  Error: 'Dimensions2D' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Error: 'ViewType2D' is defined but never used.  @typescript-eslint/no-unused-vars
+267:11  Error: 'u' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+461:5  Error: 'roof' is defined but never used.  @typescript-eslint/no-unused-vars
+462:5  Error: 'wall' is defined but never used.  @typescript-eslint/no-unused-vars
+482:59  Error: 'roof' is defined but never used.  @typescript-eslint/no-unused-vars
+482:73  Error: 'wall' is defined but never used.  @typescript-eslint/no-unused-vars
+514:43  Error: 'wall' is defined but never used.  @typescript-eslint/no-unused-vars
+852:46  Error: 'walls' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/utils/stageGenerator.ts
+252:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+252:53  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+271:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+271:53  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+304:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+304:57  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+322:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+322:55  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+360:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+360:53  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+363:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+380:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+434:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+456:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+478:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+509:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+509:80  Error: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+514:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+515:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/utils/wallJoining2D.ts
+9:27  Error: 'Element2D' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Error: 'ViewType2D' is defined but never used.  @typescript-eslint/no-unused-vars
+198:11  Error: 'u' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+252:78  Error: 'walls' is defined but never used.  @typescript-eslint/no-unused-vars
+298:11  Error: 'threshold' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+
+
+Build Errors:
+
+▲ Next.js 15.3.5
+
+Creating an optimized production build ...
+Failed to compile.
+
+./src/components/Annotations/DimensionControls.tsx
+Module not found: Can't resolve '@/components/ui/button'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/components/Toolbar/EnhancedAnnotationToolbar.tsx
+./src/components/Layout/AppLayout.tsx
+./src/app/page.tsx
+
+./src/components/Annotations/DimensionControls.tsx
+Module not found: Can't resolve '@/components/ui/input'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/components/Toolbar/EnhancedAnnotationToolbar.tsx
+./src/components/Layout/AppLayout.tsx
+./src/app/page.tsx
+
+./src/components/Annotations/DimensionControls.tsx
+Module not found: Can't resolve '@/components/ui/label'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/components/Toolbar/EnhancedAnnotationToolbar.tsx
+./src/components/Layout/AppLayout.tsx
+./src/app/page.tsx
+
+./src/components/Annotations/DimensionControls.tsx
+Module not found: Can't resolve '@/components/ui/select'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/components/Toolbar/EnhancedAnnotationToolbar.tsx
+./src/components/Layout/AppLayout.tsx
+./src/app/page.tsx
+
+./src/components/Annotations/DimensionControls.tsx
+Module not found: Can't resolve '@/components/ui/checkbox'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/components/Toolbar/EnhancedAnnotationToolbar.tsx
+./src/components/Layout/AppLayout.tsx
+./src/app/page.tsx
+
+
+Build failed because of webpack errors
+
+
+Dev Server Status:
+
+The dev server starts successfully with Next.js 15.3.5 (Turbopack) and is ready in ~901ms.
+Hot-reloading is available at http://localhost:3000 for development fixes.
+The dev server can run despite the build failures, indicating the application is functional in development mode.

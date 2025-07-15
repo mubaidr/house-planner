@@ -14,7 +14,7 @@ import { Element2D } from '@/types/elements2D';
 import jsPDF from 'jspdf';
 
 export interface MultiViewExportOptions {
-  format: 'png' | 'pdf' | 'svg';
+  format: 'png' | 'pdf' | 'svg' | 'dxf';
   quality: number;
   includeGrid: boolean;
   includeMeasurements: boolean;
@@ -33,6 +33,9 @@ export interface MultiViewExportOptions {
     bottom: number;
     left: number;
   };
+  // Additional options for new formats
+  units?: 'mm' | 'cm' | 'in' | 'ft';
+  precision?: number;
 }
 
 export interface DrawingSheetLayout {

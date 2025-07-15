@@ -12,22 +12,38 @@ import StatusBar from '@/components/StatusBar/StatusBar';
 import ViewSwitcher from '@/components/ViewSwitcher/ViewSwitcher';
 import MeasurementControls from '@/components/Toolbar/MeasurementControls';
 import DoorAnimationControls from '@/components/Toolbar/DoorAnimationControls';
+import EnhancedAnnotationToolbar from '@/components/Toolbar/EnhancedAnnotationToolbar';
 import DrawingCanvas from '@/components/Canvas/DrawingCanvas';
 import FloorSwitcher from '@/components/Floor/FloorSwitcher';
 import MaterialLibrary from '@/components/Materials/MaterialLibrary';
 import TemplateLibrary from '@/components/Templates/TemplateLibrary';
+import ExportDialog from '@/components/Export/ExportDialog';
+import ImportDialog from '@/components/Export/ImportDialog';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const { sidebarCollapsed, propertiesPanelCollapsed } = useUIStore();
+  const { sidebarCollapsed, propertiesPanelCollapsed, setExportDialogOpen, setImportDialogOpen, isExportDialogOpen, isImportDialogOpen } = useUIStore();
   const { isLibraryOpen } = useMaterialStore();
   const { isTemplateLibraryOpen } = useTemplateStore();
   
   // Enable auto-save every 30 seconds
   useAutoSave(30000);
+
+  const handleExportTemplates = () => {
+    setExportDialogOpen(true);
+  };
+
+  const handleImportAnnotations = () => {
+    setImportDialogOpen(true);
+  };
+
+  const handleExportAnnotations = () => {
+    // Logic to handle exporting annotations
+    console.log('Exporting annotations...');
+  };
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-100">
@@ -71,6 +87,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <FloorSwitcher />
           <MeasurementControls />
           <DoorAnimationControls />
+          <EnhancedAnnotationToolbar 
+            onExportTemplates={handleExportTemplates}
+            onImportAnnotations={handleImportAnnotations}
+            onExportAnnotations={handleExportAnnotations}
+          />
           {children}
         </main>
 
@@ -94,6 +115,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Template Library Modal */}
       {isTemplateLibraryOpen && <TemplateLibrary />}
+
+      {/* Export and Import Dialogs */}
+      {isExportDialogOpen && <ExportDialog />}
+      {isImportDialogOpen && <ImportDialog />}
     </div>
   );
 }

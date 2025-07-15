@@ -161,7 +161,7 @@ export function convertStairToStair2D(stair: Stair): Stair2D {
     scale: { x: 1, y: 1 }
   };
 
-  const stepDefinitions: StepDefinition2D[] = Array.from({ length: stair.steps }, (_, i) => ({
+  const stepDefinitions: StepDefinition2D[] = Array.from({ length: stair.steps }, () => ({
     rise: stair.stepHeight,
     run: stair.stepDepth,
     width: stair.width

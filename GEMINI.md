@@ -1,4 +1,4 @@
-# Gemini Agent Instructions for Plank-Starter Project
+# Gemini Agent Instructions
 
 ## Project Overview
 This project is a web-based floor plan designer built with Next.js 15, React 19, TypeScript, Konva.js, and Tailwind CSS 4.
@@ -9,7 +9,6 @@ The `docs/llm` directory contains optimized documentation specifically for AI ag
 
 - `project_summary.md`: Business requirements, stakeholders, and technical constraints.
 - `task_management.md`: Development phases and task breakdown.
-- `implementation_plan.md`: Step-by-step implementation guidance and technical details.
 
 ## General Interaction & Philosophy
 

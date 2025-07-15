@@ -193,7 +193,7 @@ export default function WallJoinPropertiesPanel({
                 </label>
                 <select
                   value={configuration.joinStyle.lineCapStyle}
-                  onChange={(e) => handleJoinStyleChange({ lineCapStyle: e.target.value as any })}
+                  onChange={(e) => handleJoinStyleChange({ lineCapStyle: e.target.value as 'butt' | 'round' | 'square' })}
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="butt">Butt</option>
@@ -208,7 +208,7 @@ export default function WallJoinPropertiesPanel({
                 </label>
                 <select
                   value={configuration.joinStyle.lineJoinStyle}
-                  onChange={(e) => handleJoinStyleChange({ lineJoinStyle: e.target.value as any })}
+                  onChange={(e) => handleJoinStyleChange({ lineJoinStyle: e.target.value as 'miter' | 'round' | 'bevel' })}
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="miter">Miter</option>

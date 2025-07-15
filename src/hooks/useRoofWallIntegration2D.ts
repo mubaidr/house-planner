@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDesignStore } from '@/stores/designStore';
-import { useHistoryStore } from '@/stores/historyStore';
 import { 
   RoofWallIntegrationSystem2D, 
   RoofWallConnection2D, 
@@ -36,7 +35,7 @@ export interface UseRoofWallIntegration2DReturn {
   getConnectionsForRoof: (roofId: string) => RoofWallConnection2D[];
   getConnectionsForWall: (wallId: string) => RoofWallConnection2D[];
   updateConnectionPitch: (connectionId: string, newPitch: number) => boolean;
-  calculateOptimalPitch: (roofId: string, wallId: string, constraints?: any) => any;
+  calculateOptimalPitch: (roofId: string, wallId: string, constraints?: Record<string, unknown>) => Record<string, unknown> | null;
   
   // Configuration
   configuration: RoofWallIntegrationConfig;
@@ -58,7 +57,7 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
   // Initialize integration system
   const integrationSystem = useMemo(() => {
     return new RoofWallIntegrationSystem2D(config);
-  }, []);
+  }, [config]);
 
   // State
   const [connections, setConnections] = useState<RoofWallConnection2D[]>([]);
@@ -167,7 +166,7 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
   }, [integrationSystem]);
 
   // Calculate optimal pitch
-  const calculateOptimalPitch = useCallback((roofId: string, wallId: string, constraints?: any) => {
+  const calculateOptimalPitch = useCallback((roofId: string, wallId: string, constraints?: Record<string, unknown>) => {
     const roof = roofs2D.find(r => r.id === roofId);
     const wall = walls2D.find(w => w.id === wallId);
     
@@ -196,7 +195,7 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
     if (enabled && walls2D.length > 0 && roofs2D.length > 0) {
       analyzeIntegration();
     }
-  }, [enabled]); // Only run when enabled changes
+  }, [enabled, analyzeIntegration, roofs2D.length, walls2D.length]); // Only run when enabled changes
 
   return {
     // State

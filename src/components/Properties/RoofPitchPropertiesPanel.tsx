@@ -7,11 +7,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  RoofPitchData, 
-  RoofPitchCategory, 
-  RoofGeometry,
-  RoofPitchCalculator 
+import {
+  RoofPitchData,
+  RoofPitchCategory,
+  RoofPitchCalculator
 } from '@/utils/roofPitchCalculations';
 import { RoofWallConnection2D } from '@/utils/roofWallIntegration2D';
 
@@ -141,7 +140,7 @@ export default function RoofPitchPropertiesPanel({
                   </label>
                   <select
                     value={pitchUnit}
-                    onChange={(e) => setPitchUnit(e.target.value as any)}
+                    onChange={(e) => setPitchUnit(e.target.value as 'degrees' | 'ratio' | 'percent')}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="degrees">Degrees</option>
@@ -321,7 +320,7 @@ export default function RoofPitchPropertiesPanel({
                   </label>
                   <select
                     value={climate}
-                    onChange={(e) => setClimate(e.target.value as any)}
+                    onChange={(e) => setClimate(e.target.value as 'snow' | 'rain' | 'dry')}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="rain">Rain</option>

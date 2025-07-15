@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDesignStore } from '@/stores/designStore';
-import { useHistoryStore } from '@/stores/historyStore';
 import { WallJoiningSystem2D, WallJoint2D, WallJoinConfiguration, WallJoinResult } from '@/utils/wallJoining2D';
 import { convertElementsToElement2D } from '@/utils/elementTypeConverter';
 import { Wall2D } from '@/types/elements2D';
@@ -50,7 +49,7 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
   // Initialize joining system
   const joiningSystem = useMemo(() => {
     return new WallJoiningSystem2D(config);
-  }, []);
+  }, [config]);
 
   // State
   const [joints, setJoints] = useState<WallJoint2D[]>([]);
@@ -155,7 +154,7 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
     if (enabled && walls2D.length > 0) {
       analyzeWalls();
     }
-  }, [enabled]); // Only run when enabled changes
+  }, [enabled, analyzeWalls, walls2D.length]); // Only run when enabled changes
 
   return {
     // State

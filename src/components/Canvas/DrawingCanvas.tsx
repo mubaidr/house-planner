@@ -273,7 +273,7 @@ export default function DrawingCanvas() {
       clearSelection();
     }
 
-    const pos = e.target.getStage()?.getPointerPosition();
+    const pos = (e.target.getStage() as Konva.Stage).getPointerPosition();
     const stage = stageRef.current;
     if (stage && pos) {
       // Adjust for stage position and scale
@@ -307,7 +307,7 @@ export default function DrawingCanvas() {
   };
 
   const handleStageMouseMove = (e: KonvaEventObject<MouseEvent>) => {
-    const pos = e.target.getStage()?.getPointerPosition();
+    const pos = (e.target.getStage() as Konva.Stage).getPointerPosition();
     const stage = stageRef.current;
 
     if (stage && pos) {
@@ -515,7 +515,7 @@ export default function DrawingCanvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, deleteSelectedDoor, deleteSelectedWindow, setMouseCoordinates, cancelRoofDrawing, cancelStairDrawing, isDrawingRoof, isDrawingStair]);
+  }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, deleteSelectedDoor, deleteSelectedWindow, setMouseCoordinates, cancelRoofDrawing, cancelStairDrawing, isDrawingRoof, isDrawingStair, copyElement, pasteElement, hasClipboardData]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
@@ -528,7 +528,7 @@ export default function DrawingCanvas() {
         }}
         onContextMenu={(e) => {
           e.evt.preventDefault();
-          const stage = e.target.getStage();
+          const stage = e.target.getStage() as Konva.Stage;
           if (stage) {
             const pos = stage.getPointerPosition();
             if (pos) {
@@ -599,7 +599,7 @@ export default function DrawingCanvas() {
               showAnnotations={true}
               onElementSelect={(elementId, element2D) => {
                 const elementType = getElementTypeFromElement2D(element2D);
-                selectElement(elementId, elementType as any);
+                selectElement(elementId, elementType as ElementType);
               }}
               onElementEdit={(elementId, updates) => {
                 console.log('Edit element:', elementId, updates);
@@ -626,7 +626,7 @@ export default function DrawingCanvas() {
               showAnnotations={true}
               onElementSelect={(elementId, element2D) => {
                 const elementType = getElementTypeFromElement2D(element2D);
-                selectElement(elementId, elementType as any);
+                selectElement(elementId, elementType as ElementType);
               }}
               onElementEdit={(elementId, updates) => {
                 console.log('Edit element:', elementId, updates);
@@ -681,13 +681,13 @@ export default function DrawingCanvas() {
               isSelected={selectedElementId === wall.id && selectedElementType === 'wall'}
               onSelect={() => selectElement(wall.id, 'wall')}
               onStartDrag={(e: KonvaEventObject<DragEvent>) => {
-                const pos = e.target.getStage()?.getPointerPosition();
+                const pos = (e.target.getStage() as Konva.Stage).getPointerPosition();
                 if (pos) {
                   handleWallStartDrag(wall.id, 'move', pos.x, pos.y);
                 }
               }}
               onDrag={(e: KonvaEventObject<DragEvent>) => {
-                const pos = e.target.getStage()?.getPointerPosition();
+                const pos = (e.target.getStage() as Konva.Stage).getPointerPosition();
                 if (pos) {
                   handleWallDrag(wall.id, 'move', pos.x, pos.y);
                 }

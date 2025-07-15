@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Stage } from 'konva/lib/Stage';
 import { ViewType2D } from '@/types/views';
 import { useViewStore } from '@/stores/viewStore';
@@ -26,34 +26,8 @@ export default function ExportButton({ stage }: ExportButtonProps) {
   const { walls, doors, windows, stairs, roofs } = useDesignStore();
   const { currentFloorId, getCurrentFloor } = useFloorStore();
   
-  // Create hidden stages for each view for multi-view export
-  const hiddenStageRefs = useRef<Record<ViewType2D, HTMLDivElement | null>>({
-    plan: null,
-    front: null,
-    back: null,
-    left: null,
-    right: null,
-  });
 
-  // Generate stages for all views when export dialog opens
-  useEffect(() => {
-    if (showExportDialog) {
-      generateMultiViewStages();
-    }
-  }, [showExportDialog, walls, doors, windows, stairs, roofs, currentFloorId]);
-
-  // Cleanup stages when component unmounts or dialog closes
-  useEffect(() => {
-    return () => {
-      if (!showExportDialog) {
-        import('@/utils/stageGenerator').then(({ cleanupStages }) => {
-          cleanupStages(multiViewStages);
-        });
-      }
-    };
-  }, [showExportDialog, multiViewStages]);
-
-  const generateMultiViewStages = async () => {
+  const generateMultiViewStages = useCallback(async () => {
     try {
       // Import the stage generator
       const { generateAllViewStages, cleanupStages } = await import('@/utils/stageGenerator');
@@ -114,7 +88,25 @@ export default function ExportButton({ stage }: ExportButtonProps) {
       
       setMultiViewStages(fallbackStages);
     }
-  };
+  }, [multiViewStages, getCurrentFloor, walls, doors, windows, stairs, roofs, currentFloorId, stage, currentView]);
+
+  // Generate stages for all views when export dialog opens
+  useEffect(() => {
+    if (showExportDialog) {
+      generateMultiViewStages();
+    }
+  }, [showExportDialog, walls, doors, windows, stairs, roofs, currentFloorId, generateMultiViewStages]);
+
+  // Cleanup stages when component unmounts or dialog closes
+  useEffect(() => {
+    return () => {
+      if (!showExportDialog) {
+        import('@/utils/stageGenerator').then(({ cleanupStages }) => {
+          cleanupStages(multiViewStages);
+        });
+      }
+    };
+  }, [showExportDialog, multiViewStages]);
 
   return (
     <>
