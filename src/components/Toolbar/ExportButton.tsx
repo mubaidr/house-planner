@@ -1,7 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Stage } from 'konva/lib/Stage';
+import { ViewType2D } from '@/types/views';
+import { useViewStore } from '@/stores/viewStore';
+import { useDesignStore } from '@/stores/designStore';
+import { useFloorStore } from '@/stores/floorStore';
 import ExportDialog from '../Export/ExportDialog';
 
 interface ExportButtonProps {
@@ -10,6 +14,107 @@ interface ExportButtonProps {
 
 export default function ExportButton({ stage }: ExportButtonProps) {
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [multiViewStages, setMultiViewStages] = useState<Record<ViewType2D, Stage | null>>({
+    plan: null,
+    front: null,
+    back: null,
+    left: null,
+    right: null,
+  });
+  
+  const { currentView } = useViewStore();
+  const { walls, doors, windows, stairs, roofs } = useDesignStore();
+  const { currentFloorId, getCurrentFloor } = useFloorStore();
+  
+  // Create hidden stages for each view for multi-view export
+  const hiddenStageRefs = useRef<Record<ViewType2D, HTMLDivElement | null>>({
+    plan: null,
+    front: null,
+    back: null,
+    left: null,
+    right: null,
+  });
+
+  // Generate stages for all views when export dialog opens
+  useEffect(() => {
+    if (showExportDialog) {
+      generateMultiViewStages();
+    }
+  }, [showExportDialog, walls, doors, windows, stairs, roofs, currentFloorId]);
+
+  // Cleanup stages when component unmounts or dialog closes
+  useEffect(() => {
+    return () => {
+      if (!showExportDialog) {
+        import('@/utils/stageGenerator').then(({ cleanupStages }) => {
+          cleanupStages(multiViewStages);
+        });
+      }
+    };
+  }, [showExportDialog, multiViewStages]);
+
+  const generateMultiViewStages = async () => {
+    try {
+      // Import the stage generator
+      const { generateAllViewStages, cleanupStages } = await import('@/utils/stageGenerator');
+      
+      // Clean up any existing stages
+      cleanupStages(multiViewStages);
+      
+      // Get current floor elements
+      const currentFloor = getCurrentFloor();
+      const currentFloorElements = currentFloor ? currentFloor.elements : { walls, doors, windows, stairs, roofs, rooms: [] };
+      
+      // Prepare elements for stage generation
+      const elements = {
+        walls: currentFloorElements.walls,
+        doors: currentFloorElements.doors,
+        windows: currentFloorElements.windows,
+        stairs: currentFloorElements.stairs,
+        roofs: currentFloorElements.roofs,
+        rooms: currentFloorElements.rooms || [],
+      };
+      
+      // Generate stages for all views
+      const generatedStages = await generateAllViewStages(
+        elements,
+        currentFloorId || 'floor-1',
+        {
+          width: 800,
+          height: 600,
+          scale: 1,
+          showGrid: false,
+          showMaterials: true,
+          showDimensions: true,
+          showAnnotations: true,
+        }
+      );
+      
+      // Use the current stage for the current view if available
+      if (stage) {
+        generatedStages[currentView] = stage;
+      }
+      
+      setMultiViewStages(generatedStages);
+    } catch (error) {
+      console.error('Failed to generate multi-view stages:', error);
+      
+      // Fallback: just use current stage
+      const fallbackStages: Record<ViewType2D, Stage | null> = {
+        plan: null,
+        front: null,
+        back: null,
+        left: null,
+        right: null,
+      };
+      
+      if (stage) {
+        fallbackStages[currentView] = stage;
+      }
+      
+      setMultiViewStages(fallbackStages);
+    }
+  };
 
   return (
     <>
@@ -28,6 +133,7 @@ export default function ExportButton({ stage }: ExportButtonProps) {
         isOpen={showExportDialog}
         onClose={() => setShowExportDialog(false)}
         stage={stage}
+        stages={multiViewStages}
       />
     </>
   );

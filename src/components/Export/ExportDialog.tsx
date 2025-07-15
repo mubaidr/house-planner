@@ -11,14 +11,27 @@ import {
   generateFilename,
   getExportPreview 
 } from '@/utils/exportUtils';
+import {
+  MultiViewExportOptions,
+  exportMultiViewToPDF,
+  generateExportPreview,
+  DEFAULT_MULTI_VIEW_OPTIONS,
+  PAPER_SIZES
+} from '@/utils/exportUtils2D';
+import { ViewType2D } from '@/types/views';
+import { useViewStore } from '@/stores/viewStore';
 
 interface ExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
   stage: Stage | null;
+  stages?: Record<ViewType2D, Stage | null>; // For multi-view export
 }
 
-export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogProps) {
+export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportDialogProps) {
+  const { currentView } = useViewStore();
+  
+  const [exportMode, setExportMode] = useState<'single' | 'multi'>('single');
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'png',
     quality: 0.9,
@@ -31,6 +44,12 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
     title: 'House Plan',
     description: 'Created with 2D House Planner',
   });
+  
+  const [multiViewOptions, setMultiViewOptions] = useState<MultiViewExportOptions>({
+    ...DEFAULT_MULTI_VIEW_OPTIONS,
+    title: 'House Plan - Multi-View',
+    description: 'Created with 2D House Planner',
+  });
 
   const [isExporting, setIsExporting] = useState(false);
   const [preview, setPreview] = useState<string>('');
@@ -38,45 +57,90 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
   const previewRef = useRef<HTMLImageElement>(null);
 
   const generatePreview = React.useCallback(async () => {
-    if (!stage) return;
+    if (exportMode === 'single' && !stage) return;
+    if (exportMode === 'multi' && !stages) return;
     
     try {
-      const previewUrl = await getExportPreview(stage, 300, 200);
-      setPreview(previewUrl);
+      if (exportMode === 'single' && stage) {
+        const previewUrl = await getExportPreview(stage, 300, 200);
+        setPreview(previewUrl);
+      } else if (exportMode === 'multi' && stages) {
+        // Filter out null stages and create valid stages record
+        const validStages: Record<ViewType2D, Stage> = {};
+        multiViewOptions.views.forEach(viewType => {
+          if (stages[viewType]) {
+            validStages[viewType] = stages[viewType]!;
+          }
+        });
+        
+        if (Object.keys(validStages).length > 0) {
+          const multiPreview = await generateExportPreview(validStages, multiViewOptions);
+          setPreview(multiPreview.dataUrl);
+        }
+      }
     } catch (error) {
       console.error('Failed to generate preview:', error);
     }
-  }, [stage]);
+  }, [stage, stages, exportMode, multiViewOptions]);
 
   // Generate preview when dialog opens or options change
   React.useEffect(() => {
-    if (isOpen && stage) {
+    if (isOpen && (stage || stages)) {
       generatePreview();
     }
-  }, [isOpen, stage, exportOptions.scale, generatePreview]);
+  }, [isOpen, stage, stages, exportMode, exportOptions.scale, multiViewOptions, generatePreview]);
 
   const handleExport = async () => {
-    if (!stage) return;
+    if (exportMode === 'single' && !stage) return;
+    if (exportMode === 'multi' && !stages) return;
 
     setIsExporting(true);
     setExportError('');
 
     try {
-      let result;
+      let blob: Blob;
+      let filename: string;
       
-      if (exportOptions.format === 'png') {
-        result = await exportToPNG(stage, exportOptions);
+      if (exportMode === 'single' && stage) {
+        // Single view export
+        let result;
+        
+        if (exportOptions.format === 'png') {
+          result = await exportToPNG(stage, exportOptions);
+        } else {
+          result = await exportToPDF(stage, exportOptions);
+        }
+
+        if (result.success && result.blob) {
+          blob = result.blob;
+          filename = generateFilename(exportOptions.format, exportOptions.title);
+        } else {
+          setExportError(result.error || 'Export failed');
+          return;
+        }
+      } else if (exportMode === 'multi' && stages) {
+        // Multi-view export
+        const validStages: Record<ViewType2D, Stage> = {};
+        multiViewOptions.views.forEach(viewType => {
+          if (stages[viewType]) {
+            validStages[viewType] = stages[viewType]!;
+          }
+        });
+        
+        if (Object.keys(validStages).length === 0) {
+          setExportError('No valid views available for export');
+          return;
+        }
+        
+        blob = await exportMultiViewToPDF(validStages, multiViewOptions);
+        filename = generateFilename('pdf', multiViewOptions.title);
       } else {
-        result = await exportToPDF(stage, exportOptions);
+        setExportError('Invalid export configuration');
+        return;
       }
 
-      if (result.success && result.blob) {
-        const filename = generateFilename(exportOptions.format, exportOptions.title);
-        downloadFile(result.blob, filename);
-        onClose();
-      } else {
-        setExportError(result.error || 'Export failed');
-      }
+      downloadFile(blob, filename);
+      onClose();
     } catch (error) {
       setExportError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
@@ -90,6 +154,16 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
   ) => {
     setExportOptions(prev => ({ ...prev, [key]: value }));
   };
+
+  const updateMultiViewOption = <K extends keyof MultiViewExportOptions>(
+    key: K,
+    value: MultiViewExportOptions[K]
+  ) => {
+    setMultiViewOptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Check if multi-view export is available
+  const isMultiViewAvailable = stages && Object.values(stages).some(stage => stage !== null);
 
   if (!isOpen) return null;
 
@@ -110,9 +184,40 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Export Mode Selection */}
+          {isMultiViewAvailable && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-700">Export Mode</h3>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="single"
+                    checked={exportMode === 'single'}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi')}
+                    className="mr-2"
+                  />
+                  Single View ({currentView})
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="multi"
+                    checked={exportMode === 'multi'}
+                    onChange={(e) => setExportMode(e.target.value as 'single' | 'multi')}
+                    className="mr-2"
+                  />
+                  Multi-View Layout
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* Preview */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Preview</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">
+              Preview {exportMode === 'multi' ? '(Multi-View Layout)' : `(${currentView} view)`}
+            </h3>
             <div className="flex justify-center">
               {preview ? (
                 <Image
@@ -141,26 +246,34 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
               <div>
                 <label className="block text-sm text-gray-600 mb-2">Export Format</label>
                 <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="png"
-                      checked={exportOptions.format === 'png'}
-                      onChange={(e) => updateOption('format', e.target.value as 'png' | 'pdf')}
-                      className="mr-2"
-                    />
-                    PNG Image
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="pdf"
-                      checked={exportOptions.format === 'pdf'}
-                      onChange={(e) => updateOption('format', e.target.value as 'png' | 'pdf')}
-                      className="mr-2"
-                    />
-                    PDF Document
-                  </label>
+                  {exportMode === 'single' ? (
+                    <>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="png"
+                          checked={exportOptions.format === 'png'}
+                          onChange={(e) => updateOption('format', e.target.value as 'png' | 'pdf')}
+                          className="mr-2"
+                        />
+                        PNG Image
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="pdf"
+                          checked={exportOptions.format === 'pdf'}
+                          onChange={(e) => updateOption('format', e.target.value as 'png' | 'pdf')}
+                          className="mr-2"
+                        />
+                        PDF Document
+                      </label>
+                    </>
+                  ) : (
+                    <div className="text-sm text-gray-600">
+                      Multi-view export is only available as PDF
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -208,8 +321,100 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
               </div>
             </div>
 
+            {/* Multi-View Options */}
+            {exportMode === 'multi' && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-gray-700">Multi-View Settings</h3>
+                
+                {/* View Selection */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">Views to Include</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(['plan', 'front', 'back', 'left', 'right'] as ViewType2D[]).map((view) => (
+                      <label key={view} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={multiViewOptions.views.includes(view)}
+                          onChange={(e) => {
+                            const newViews = e.target.checked
+                              ? [...multiViewOptions.views, view]
+                              : multiViewOptions.views.filter(v => v !== view);
+                            updateMultiViewOption('views', newViews);
+                          }}
+                          className="mr-2"
+                          disabled={!stages?.[view]}
+                        />
+                        <span className={!stages?.[view] ? 'text-gray-400' : ''}>
+                          {view.charAt(0).toUpperCase() + view.slice(1)}
+                          {!stages?.[view] && ' (unavailable)'}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Layout Options */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">Layout</label>
+                  <select
+                    value={multiViewOptions.layout}
+                    onChange={(e) => updateMultiViewOption('layout', e.target.value as 'grid' | 'sequential' | 'custom')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="grid">Grid Layout</option>
+                    <option value="sequential">Sequential Layout</option>
+                  </select>
+                </div>
+
+                {/* Paper Size */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">Paper Size</label>
+                  <select
+                    value={multiViewOptions.paperSize}
+                    onChange={(e) => updateMultiViewOption('paperSize', e.target.value as any)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="A4">A4 (210 × 297 mm)</option>
+                    <option value="A3">A3 (297 × 420 mm)</option>
+                    <option value="A2">A2 (420 × 594 mm)</option>
+                    <option value="A1">A1 (594 × 841 mm)</option>
+                    <option value="Letter">Letter (8.5 × 11 in)</option>
+                    <option value="Legal">Legal (8.5 × 14 in)</option>
+                    <option value="Tabloid">Tabloid (11 × 17 in)</option>
+                  </select>
+                </div>
+
+                {/* Orientation */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">Orientation</label>
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="portrait"
+                        checked={multiViewOptions.orientation === 'portrait'}
+                        onChange={(e) => updateMultiViewOption('orientation', e.target.value as 'portrait' | 'landscape')}
+                        className="mr-2"
+                      />
+                      Portrait
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="landscape"
+                        checked={multiViewOptions.orientation === 'landscape'}
+                        onChange={(e) => updateMultiViewOption('orientation', e.target.value as 'portrait' | 'landscape')}
+                        className="mr-2"
+                      />
+                      Landscape
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* PDF Options */}
-            {exportOptions.format === 'pdf' && (
+            {exportMode === 'single' && exportOptions.format === 'pdf' && (
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-gray-700">PDF Settings</h3>
                 
@@ -264,29 +469,59 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={exportOptions.includeGrid}
-                  onChange={(e) => updateOption('includeGrid', e.target.checked)}
+                  checked={exportMode === 'single' ? exportOptions.includeGrid : multiViewOptions.includeGrid}
+                  onChange={(e) => {
+                    if (exportMode === 'single') {
+                      updateOption('includeGrid', e.target.checked);
+                    } else {
+                      updateMultiViewOption('includeGrid', e.target.checked);
+                    }
+                  }}
                   className="mr-2"
                 />
                 Include Grid
               </label>
+              {exportMode === 'single' && (
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={exportOptions.includeRooms}
+                    onChange={(e) => updateOption('includeRooms', e.target.checked)}
+                    className="mr-2"
+                  />
+                  Include Rooms
+                </label>
+              )}
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={exportOptions.includeRooms}
-                  onChange={(e) => updateOption('includeRooms', e.target.checked)}
+                  checked={exportMode === 'single' ? exportOptions.includeMeasurements : multiViewOptions.includeMeasurements}
+                  onChange={(e) => {
+                    if (exportMode === 'single') {
+                      updateOption('includeMeasurements', e.target.checked);
+                    } else {
+                      updateMultiViewOption('includeMeasurements', e.target.checked);
+                    }
+                  }}
                   className="mr-2"
                 />
-                Include Rooms
+                Include Measurements
               </label>
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={exportOptions.includeMeasurements}
-                  onChange={(e) => updateOption('includeMeasurements', e.target.checked)}
+                  checked={exportMode === 'single' ? exportOptions.includeMeasurements : multiViewOptions.includeAnnotations}
+                  onChange={(e) => {
+                    if (exportMode === 'single') {
+                      // For single view, we use includeMeasurements for annotations too
+                      updateOption('includeMeasurements', e.target.checked);
+                    } else {
+                      updateMultiViewOption('includeAnnotations', e.target.checked);
+                    }
+                  }}
                   className="mr-2"
                 />
-                Include Measurements
+                Include Annotations
               </label>
             </div>
           </div>
@@ -299,8 +534,14 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
               <label className="block text-sm text-gray-600 mb-2">Title</label>
               <input
                 type="text"
-                value={exportOptions.title || ''}
-                onChange={(e) => updateOption('title', e.target.value)}
+                value={exportMode === 'single' ? (exportOptions.title || '') : (multiViewOptions.title || '')}
+                onChange={(e) => {
+                  if (exportMode === 'single') {
+                    updateOption('title', e.target.value);
+                  } else {
+                    updateMultiViewOption('title', e.target.value);
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter document title"
               />
@@ -309,8 +550,14 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
             <div>
               <label className="block text-sm text-gray-600 mb-2">Description</label>
               <textarea
-                value={exportOptions.description || ''}
-                onChange={(e) => updateOption('description', e.target.value)}
+                value={exportMode === 'single' ? (exportOptions.description || '') : (multiViewOptions.description || '')}
+                onChange={(e) => {
+                  if (exportMode === 'single') {
+                    updateOption('description', e.target.value);
+                  } else {
+                    updateMultiViewOption('description', e.target.value);
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={2}
                 placeholder="Enter document description"
@@ -342,7 +589,7 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
           </button>
           <button
             onClick={handleExport}
-            disabled={isExporting || !stage}
+            disabled={isExporting || (exportMode === 'single' && !stage) || (exportMode === 'multi' && (!stages || multiViewOptions.views.length === 0))}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
           >
             {isExporting ? (
@@ -353,8 +600,10 @@ export default function ExportDialog({ isOpen, onClose, stage }: ExportDialogPro
                 </svg>
                 Exporting...
               </>
-            ) : (
+            ) : exportMode === 'single' ? (
               `Export ${exportOptions.format.toUpperCase()}`
+            ) : (
+              `Export Multi-View PDF (${multiViewOptions.views.length} views)`
             )}
           </button>
         </div>

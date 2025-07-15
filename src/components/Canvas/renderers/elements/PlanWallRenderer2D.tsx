@@ -71,7 +71,7 @@ export default function PlanWallRenderer2D({
   };
 
   // Get wall appearance (computed but not used in current implementation)
-  getWallAppearance();
+  // getWallAppearance();
 
   // Convert Wall2D to Wall format for MaterializedWallComponent
   const wallForComponent = {
@@ -119,7 +119,7 @@ export default function PlanWallRenderer2D({
       />
 
       {/* Material overlay effects for plan view */}
-      {showMaterials && material && material.properties.metallic > 0.5 && (
+      {/* showMaterials && material && material.properties.metallic > 0.5 && (
         <Rect
           x={wall.startPoint.x}
           y={wall.startPoint.y - wall.thickness / 2}
@@ -130,10 +130,10 @@ export default function PlanWallRenderer2D({
           opacity={material.properties.metallic * 0.3}
           listening={false}
         />
-      )}
+      )} */}
 
       {/* Reflectivity highlight */}
-      {showMaterials && material && material.properties.reflectivity > 0.5 && (
+      {/* showMaterials && material && material.properties.reflectivity > 0.5 && (
         <Line
           points={[wall.startPoint.x, wall.startPoint.y, wall.endPoint.x, wall.endPoint.y]}
           stroke="rgba(255,255,255,0.6)"
@@ -141,7 +141,7 @@ export default function PlanWallRenderer2D({
           opacity={material.properties.reflectivity * 0.5}
           listening={false}
         />
-      )}
+      )} */}
 
       {/* Wall centerline for reference (shown when selected or in edit mode) */}
       {isSelected && (
