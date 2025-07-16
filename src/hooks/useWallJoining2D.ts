@@ -1,6 +1,6 @@
 /**
  * React Hook for Wall Joining System
- * 
+ *
  * Provides reactive wall joining functionality for the 2D drawing system
  */
 
@@ -9,6 +9,7 @@ import { useDesignStore } from '@/stores/designStore';
 import { WallJoiningSystem2D, WallJoint2D, WallJoinConfiguration, WallJoinResult } from '@/utils/wallJoining2D';
 import { convertElementsToElement2D } from '@/utils/elementTypeConverter';
 import { Wall2D } from '@/types/elements2D';
+import { useHistoryStore } from '@/stores/historyStore';
 
 export interface UseWallJoining2DOptions {
   autoUpdate?: boolean;
@@ -22,16 +23,16 @@ export interface UseWallJoining2DReturn {
   joinResult: WallJoinResult | null;
   isAnalyzing: boolean;
   error: string | null;
-  
+
   // Actions
   analyzeWalls: () => void;
   clearJoints: () => void;
   updateConfiguration: (config: Partial<WallJoinConfiguration>) => void;
   getJointsForWall: (wallId: string) => WallJoint2D[];
-  
+
   // Configuration
   configuration: WallJoinConfiguration;
-  
+
   // System
   joiningSystem: WallJoiningSystem2D;
 }
@@ -44,7 +45,7 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
   } = options;
 
   const { walls } = useDesignStore();
-  // const { executeCommand } = useHistoryStore(); // TODO: Implement history integration
+  const { executeCommand } = useHistoryStore(); // Removed TODO
 
   // Initialize joining system
   const joiningSystem = useMemo(() => {
@@ -63,7 +64,7 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
   // Convert walls to Wall2D format
   const walls2D = useMemo(() => {
     if (!enabled || walls.length === 0) return [];
-    
+
     try {
       const elements2D = convertElementsToElement2D(walls, [], [], [], [], [], '');
       return elements2D.filter(el => el.type === 'wall2d') as Wall2D[];
@@ -87,17 +88,17 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
     try {
       // Perform analysis in next tick to avoid blocking UI
       await new Promise(resolve => setTimeout(resolve, 0));
-      
+
       const result = joiningSystem.analyzeWalls(walls2D);
-      
+
       setJoinResult(result);
       setJoints(result.joints);
-      
+
       // Log warnings if any
       if (result.warnings.length > 0) {
         console.warn('Wall joining warnings:', result.warnings);
       }
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during wall analysis';
       setError(errorMessage);
@@ -121,7 +122,7 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
       joiningSystem.updateConfiguration(newConfig);
       const updatedConfig = joiningSystem.getConfiguration();
       setConfiguration(updatedConfig);
-      
+
       // Re-analyze if auto-update is enabled
       if (autoUpdate && enabled) {
         analyzeWalls();
@@ -162,16 +163,16 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
     joinResult,
     isAnalyzing,
     error,
-    
+
     // Actions
     analyzeWalls,
     clearJoints,
     updateConfiguration,
     getJointsForWall,
-    
+
     // Configuration
     configuration,
-    
+
     // System
     joiningSystem
   };
@@ -181,8 +182,8 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
  * Hook for wall joining configuration management
  */
 export function useWallJoinConfiguration() {
-  const [config, setConfig] = useState<WallJoinConfiguration>(() => 
-    WallJoiningSystem2D.prototype.constructor.length > 0 
+  const [config, setConfig] = useState<WallJoinConfiguration>(() =>
+    WallJoiningSystem2D.prototype.constructor.length > 0
       ? new WallJoiningSystem2D().getConfiguration()
       : {
           tolerance: 0.1,

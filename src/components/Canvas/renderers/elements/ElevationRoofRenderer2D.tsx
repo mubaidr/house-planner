@@ -45,7 +45,7 @@ export default function ElevationRoofRenderer2D({
         opacity: material.properties.opacity,
       };
     }
-    
+
     return {
       fill: ELEVATION_VIEW_CONFIG.colors.roof,
       stroke: isSelected ? '#3b82f6' : ELEVATION_VIEW_CONFIG.colors.roof,
@@ -68,7 +68,7 @@ export default function ElevationRoofRenderer2D({
   };
 
   const handleDoubleClick = () => {
-    console.log('Edit roof in elevation view:', roof.id);
+    // Edit roof in elevation view
   };
 
   // Render different roof types
@@ -104,9 +104,9 @@ export default function ElevationRoofRenderer2D({
   const renderGableRoof = () => {
     const ridgeX = roofX + roofWidth / 2;
     void ridgeX;
-    
+
     const ridgeY = roofBaseY - ridgeHeight;
-    
+
     return (
       <Group>
         {/* Left slope */}
@@ -128,7 +128,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Ridge line */}
         <Line
           points={[ridgeX, ridgeY, ridgeX, ridgeY]}
@@ -146,7 +146,7 @@ export default function ElevationRoofRenderer2D({
     void ridgeX;
     const ridgeY = roofBaseY - ridgeHeight;
     const hipOffset = roofWidth * 0.1; // Hip offset from edges
-    
+
     return (
       <Group>
         {/* Hip roof profile */}
@@ -170,7 +170,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Ridge line */}
         <Line
           points={[
@@ -190,7 +190,7 @@ export default function ElevationRoofRenderer2D({
   const renderShedRoof = () => {
     const highY = roofBaseY - ridgeHeight;
     const lowY = roofBaseY - ridgeHeight * 0.3;
-    
+
     return (
       <Line
         points={[
@@ -217,7 +217,7 @@ export default function ElevationRoofRenderer2D({
 
   const renderFlatRoof = () => {
     const roofY = roofBaseY - 6; // Slight height for flat roof
-    
+
     return (
       <Rect
         x={roofX}
@@ -242,7 +242,7 @@ export default function ElevationRoofRenderer2D({
     const ridgeY = roofBaseY - ridgeHeight;
     const breakY = roofBaseY - ridgeHeight * 0.6;
     const breakOffset = roofWidth * 0.25;
-    
+
     return (
       <Group>
         {/* Main gambrel profile */}
@@ -268,7 +268,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Break lines to show gambrel structure */}
         <Line
           points={[roofX + breakOffset, breakY, roofX + breakOffset, breakY]}
@@ -282,7 +282,7 @@ export default function ElevationRoofRenderer2D({
           strokeWidth={appearance.strokeWidth * 1.2}
           listening={false}
         />
-        
+
         {/* Ridge line */}
         <Line
           points={[ridgeX, ridgeY, ridgeX, ridgeY]}
@@ -301,7 +301,7 @@ export default function ElevationRoofRenderer2D({
     const flatX = centerX - flatWidth / 2;
     const steepY = roofBaseY - mansardHeight;
     const flatY = roofBaseY - ridgeHeight;
-    
+
     return (
       <Group>
         {/* Mansard profile with steep lower section and flat upper section */}
@@ -329,7 +329,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Transition lines to show mansard structure */}
         <Line
           points={[flatX, steepY, flatX, flatY]}
@@ -343,7 +343,7 @@ export default function ElevationRoofRenderer2D({
           strokeWidth={appearance.strokeWidth * 1.2}
           listening={false}
         />
-        
+
         {/* Flat section outline */}
         <Line
           points={[flatX, flatY, flatX + flatWidth, flatY]}
@@ -360,7 +360,7 @@ export default function ElevationRoofRenderer2D({
     const centerX = roofX + roofWidth / 2;
     const valleyY = roofBaseY - ridgeHeight * 0.3; // Valley is lower than edges
     const edgeY = roofBaseY - ridgeHeight;
-    
+
     return (
       <Group>
         {/* Butterfly profile - inverted V */}
@@ -386,7 +386,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Valley line */}
         <Line
           points={[centerX, valleyY, centerX, valleyY]}
@@ -394,7 +394,7 @@ export default function ElevationRoofRenderer2D({
           strokeWidth={appearance.strokeWidth * 1.5}
           listening={false}
         />
-        
+
         {/* Drainage indicator */}
         <Line
           points={[centerX, valleyY, centerX, valleyY + 10 * scale]}
@@ -411,7 +411,7 @@ export default function ElevationRoofRenderer2D({
     const ridgeX = roofX + roofWidth * 0.35; // Ridge offset to one side
     void ridgeX;
     const ridgeY = roofBaseY - ridgeHeight;
-    
+
     return (
       <Group>
         {/* Saltbox profile - asymmetrical */}
@@ -433,7 +433,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Ridge line */}
         <Line
           points={[ridgeX, ridgeY, ridgeX, ridgeY]}
@@ -441,7 +441,7 @@ export default function ElevationRoofRenderer2D({
           strokeWidth={appearance.strokeWidth * 1.5}
           listening={false}
         />
-        
+
         {/* Asymmetry indicator */}
         <Line
           points={[ridgeX, ridgeY - 5 * scale, ridgeX, ridgeY + 5 * scale]}
@@ -460,7 +460,7 @@ export default function ElevationRoofRenderer2D({
     const monitorX = roofX + (roofWidth - monitorWidth) / 2;
     const lowerRidgeY = roofBaseY - ridgeHeight * 0.7;
     const upperRidgeY = roofBaseY - ridgeHeight;
-    
+
     return (
       <Group>
         {/* Lower roof sections */}
@@ -488,7 +488,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Monitor section outline */}
         <Line
           points={[
@@ -501,7 +501,7 @@ export default function ElevationRoofRenderer2D({
           strokeWidth={appearance.strokeWidth * 1.5}
           listening={false}
         />
-        
+
         {/* Clerestory windows indication */}
         <Line
           points={[
@@ -535,9 +535,9 @@ export default function ElevationRoofRenderer2D({
     const toothWidth = roofWidth / numTeeth;
     const ridgeY = roofBaseY - ridgeHeight;
     const valleyY = roofBaseY - ridgeHeight * 0.6;
-    
+
     const points: number[] = [];
-    
+
     // Build sawtooth profile
     for (let i = 0; i <= numTeeth; i++) {
       const x = roofX + i * toothWidth;
@@ -550,7 +550,7 @@ export default function ElevationRoofRenderer2D({
     }
     points.push(roofX + roofWidth, roofBaseY);
     points.push(roofX, roofBaseY);
-    
+
     return (
       <Group>
         {/* Sawtooth profile */}
@@ -565,7 +565,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Glazing indicators (north-facing slopes) */}
         {Array.from({ length: numTeeth }, (_, i) => (
           <Line
@@ -593,7 +593,7 @@ export default function ElevationRoofRenderer2D({
     const dormerX = roofX + roofWidth * 0.3;
     const dormerTopY = roofBaseY - ridgeHeight * 0.8;
     const dormerBottomY = roofBaseY - ridgeHeight * 0.4;
-    
+
     return (
       <Group>
         {/* Main gable roof */}
@@ -615,7 +615,7 @@ export default function ElevationRoofRenderer2D({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Shed dormer */}
         <Line
           points={[
@@ -632,7 +632,7 @@ export default function ElevationRoofRenderer2D({
           closed
           listening={false}
         />
-        
+
         {/* Dormer window */}
         <Line
           points={[
@@ -645,7 +645,7 @@ export default function ElevationRoofRenderer2D({
           strokeWidth={4 * scale}
           listening={false}
         />
-        
+
         {/* Ridge line */}
         <Line
           points={[ridgeX, ridgeY, ridgeX, ridgeY]}
@@ -732,7 +732,7 @@ export default function ElevationRoofRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection handles */}
           <Rect
             x={roofX - 3}
@@ -792,7 +792,7 @@ export default function ElevationRoofRenderer2D({
             opacity={0.5}
             listening={false}
           />
-          
+
           <Text
             x={roofX + roofWidth / 2 + 15 * scale}
             y={roofBaseY - 10 * scale}

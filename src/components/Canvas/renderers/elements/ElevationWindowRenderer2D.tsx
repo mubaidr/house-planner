@@ -32,16 +32,16 @@ export default function ElevationWindowRenderer2D({
   // Suppress unused variable warning
   void onEdit;
   const material = window.materialId ? getMaterialById(window.materialId) : undefined;
-  
+
   // Initialize material renderer for elevation view
   const materialRenderer = React.useMemo(() => new MaterialRenderer2D(_viewType), [_viewType]);
-  
+
   // Get window appearance
   const getWindowAppearance = () => {
     if (showMaterials && material) {
       // Use advanced material pattern system for elevation view
       const materialPattern = materialRenderer.getKonvaFillPattern(material, scale);
-      
+
       return {
         ...materialPattern,
         stroke: isSelected ? '#3b82f6' : material.color,
@@ -49,7 +49,7 @@ export default function ElevationWindowRenderer2D({
         opacity: (materialPattern.opacity || 1) * 0.7, // Windows are typically more transparent
       };
     }
-    
+
     return {
       fill: ELEVATION_VIEW_CONFIG.colors.window,
       stroke: isSelected ? '#3b82f6' : ELEVATION_VIEW_CONFIG.colors.window,
@@ -72,7 +72,7 @@ export default function ElevationWindowRenderer2D({
   };
 
   const handleDoubleClick = () => {
-    console.log('Edit window in elevation view:', window.id);
+    // Edit window in elevation view
   };
 
   return (
@@ -121,7 +121,7 @@ export default function ElevationWindowRenderer2D({
             strokeWidth={2 * scale}
             listening={false}
           />
-          
+
           {/* Horizontal mullion */}
           <Line
             points={[
@@ -134,7 +134,7 @@ export default function ElevationWindowRenderer2D({
             strokeWidth={2 * scale}
             listening={false}
           />
-          
+
           {/* Additional mullions for triple glazing */}
           {window.glazingType === 'triple' && (
             <Group>
@@ -208,7 +208,7 @@ export default function ElevationWindowRenderer2D({
               />
             </Group>
           )}
-          
+
           {window.operableType === 'sliding' && (
             // Sliding window tracks
             <Group>
@@ -240,7 +240,7 @@ export default function ElevationWindowRenderer2D({
               />
             </Group>
           )}
-          
+
           {window.operableType === 'awning' && (
             // Awning window hinge at bottom
             <Group>
@@ -288,7 +288,7 @@ export default function ElevationWindowRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection handles */}
           <Rect
             x={windowX - 3}
@@ -376,7 +376,7 @@ export default function ElevationWindowRenderer2D({
             opacity={0.5}
             listening={false}
           />
-          
+
           {/* Window height reference */}
           <Line
             points={[

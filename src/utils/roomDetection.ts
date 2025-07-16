@@ -1,4 +1,4 @@
-import { Wall } from '@/types/elements/Wall';
+import { Wall } from '../types/elements/Wall';
 import { Point } from './wallIntersection';
 
 export interface Room {
@@ -81,7 +81,7 @@ const buildWallGraph = (walls: Wall[]): Map<string, string[]> => {
         for (let j = i + 1; j < wallIds.length; j++) {
           const wall1 = wallIds[i];
           const wall2 = wallIds[j];
-          
+
           if (!graph.get(wall1)!.includes(wall2)) {
             graph.get(wall1)!.push(wall2);
           }
@@ -123,7 +123,7 @@ const findCycles = (graph: Map<string, string[]>): string[][] => {
     const neighbors = graph.get(current) || [];
     for (const neighbor of neighbors) {
       if (neighbor === parent) continue; // Don't go back immediately
-      
+
       if (neighbor === start && path.length >= 3) {
         // Complete the cycle
         cycles.push([...path, neighbor]);
@@ -150,7 +150,7 @@ const findCycles = (graph: Map<string, string[]>): string[][] => {
       return sortedExisting.length === sortedCycle.length &&
              sortedExisting.every((id, i) => id === sortedCycle[i]);
     });
-    
+
     if (!isDuplicate && cycle.length >= 3) {
       uniqueCycles.push(cycle);
     }
@@ -165,7 +165,7 @@ const findCycles = (graph: Map<string, string[]>): string[][] => {
 const cycleToPolygon = (wallIds: string[], walls: Wall[]): Point[] => {
   const wallMap = new Map(walls.map(w => [w.id, w]));
   const vertices: Point[] = [];
-  
+
   if (wallIds.length === 0) return vertices;
 
   // Start with first wall
@@ -191,14 +191,14 @@ const cycleToPolygon = (wallIds: string[], walls: Wall[]): Point[] => {
     } else {
       // Find the closest endpoint
       const distToStart = Math.sqrt(
-        Math.pow(currentPoint.x - startPoint.x, 2) + 
+        Math.pow(currentPoint.x - startPoint.x, 2) +
         Math.pow(currentPoint.y - startPoint.y, 2)
       );
       const distToEnd = Math.sqrt(
-        Math.pow(currentPoint.x - endPoint.x, 2) + 
+        Math.pow(currentPoint.x - endPoint.x, 2) +
         Math.pow(currentPoint.y - endPoint.y, 2)
       );
-      
+
       currentPoint = distToStart < distToEnd ? endPoint : startPoint;
     }
 
@@ -280,27 +280,41 @@ const generateRoomColor = (index: number): string => {
  * Detect rooms from walls
  */
 export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
+  // Debug log: wall count
+  // eslint-disable-next-line no-console
+  console.log('[detectRooms] wall count:', walls.length);
+
   if (walls.length < 3) {
+    // eslint-disable-next-line no-console
+    console.log('[detectRooms] Not enough walls to form a room.');
     return { rooms: [], closedShapes: [] };
   }
 
   const graph = buildWallGraph(walls);
   const cycles = findCycles(graph);
+  // eslint-disable-next-line no-console
+  console.log('[detectRooms] cycles found:', cycles.length, cycles);
+
   const rooms: Room[] = [];
   const closedShapes: Point[][] = [];
 
   cycles.forEach((wallIds, index) => {
     const vertices = cycleToPolygon(wallIds, walls);
-    
+
     if (vertices.length >= 3) {
       closedShapes.push(vertices);
-      
+
       const area = calculatePolygonArea(vertices);
       const perimeter = calculatePolygonPerimeter(vertices);
       const center = calculatePolygonCenter(vertices);
 
+      // eslint-disable-next-line no-console
+      console.log(`[detectRooms] cycle #${index} area:`, area, 'vertices:', vertices);
+
       // Only create rooms for shapes with reasonable area
-      if (area > 100) { // Minimum area threshold
+      if (area > 1) { // Lowered minimum area threshold for minimal geometry
+        // eslint-disable-next-line no-console
+        console.log(`[detectRooms] Room created for cycle #${index} (area > 1)`);
         const room: Room = {
           id: `room-${Date.now()}-${index}`,
           name: `Room ${rooms.length + 1}`,
@@ -313,9 +327,15 @@ export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
         };
 
         rooms.push(room);
+      } else {
+        // eslint-disable-next-line no-console
+        console.log(`[detectRooms] Skipped cycle #${index} (area <= 1)`);
       }
     }
   });
+
+  // eslint-disable-next-line no-console
+  console.log('[detectRooms] rooms:', rooms.length, rooms);
 
   return { rooms, closedShapes };
 };
@@ -334,6 +354,6 @@ export const isClosedShape = (walls: Wall[]): boolean => {
 export const getRoomInfo = (room: Room): string => {
   const areaInSqFt = (room.area / 144).toFixed(1); // Convert from sq pixels to sq feet (rough)
   const perimeterInFt = (room.perimeter / 12).toFixed(1); // Convert from pixels to feet (rough)
-  
+
   return `${room.name}\nArea: ${areaInSqFt} sq ft\nPerimeter: ${perimeterInFt} ft`;
 };

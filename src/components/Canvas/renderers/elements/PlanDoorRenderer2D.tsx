@@ -29,23 +29,23 @@ export default function PlanDoorRenderer2D({
   // Suppress unused variable warning
   void onEdit;
   const material = door.materialId ? getMaterialById(door.materialId) : undefined;
-  
+
   // Initialize material renderer for plan view
   const materialRenderer = React.useMemo(() => new MaterialRenderer2D('plan'), []);
-  
+
   // Get door appearance
   const getDoorAppearance = () => {
     if (showMaterials && material) {
       // Use advanced material pattern system
       const materialPattern = materialRenderer.getKonvaFillPattern(material, scale);
-      
+
       return {
         ...materialPattern,
         stroke: isSelected ? '#3b82f6' : material.color,
         strokeWidth: PLAN_VIEW_CONFIG.lineWeights.door * scale,
       };
     }
-    
+
     return {
       fill: PLAN_VIEW_CONFIG.colors.door,
       stroke: isSelected ? '#3b82f6' : PLAN_VIEW_CONFIG.colors.door,
@@ -60,7 +60,7 @@ export default function PlanDoorRenderer2D({
 
   // Calculate door swing direction multiplier
   const swingMultiplier = door.swingDirection === 'left' ? -1 : 1;
-  
+
   // Calculate swing arc end point
   const swingEndX = position.x + Math.cos((rotation + door.swingAngle * swingMultiplier) * Math.PI / 180) * door.width;
   const swingEndY = position.y + Math.sin((rotation + door.swingAngle * swingMultiplier) * Math.PI / 180) * door.width;
@@ -71,13 +71,12 @@ export default function PlanDoorRenderer2D({
 
   const handleDoubleClick = () => {
     // Could trigger door properties dialog
-    console.log('Edit door:', door.id);
   };
 
   return (
     <Group>
       {/* Door opening (gap in wall) - this is typically handled by the wall renderer */}
-      
+
       {/* Door panel */}
       <Rect
         x={position.x - door.width / 2}
@@ -137,7 +136,7 @@ export default function PlanDoorRenderer2D({
         const handleOffset = door.width * 0.8; // Handle is 80% along the door width
         const handleX = position.x + Math.cos(rotation * Math.PI / 180) * handleOffset * handleSide;
         const handleY = position.y + Math.sin(rotation * Math.PI / 180) * handleOffset * handleSide;
-        
+
         return (
           <Arc
             x={handleX}
@@ -202,7 +201,7 @@ export default function PlanDoorRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection arc for swing */}
           <Arc
             x={position.x}
@@ -249,7 +248,7 @@ export default function PlanDoorRenderer2D({
             opacity={0.6}
             listening={false}
           />
-          
+
           {/* Motion blur effect */}
           <Arc
             x={position.x}

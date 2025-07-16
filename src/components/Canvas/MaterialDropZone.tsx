@@ -46,19 +46,16 @@ export default function MaterialDropZone({
   const handleDrop = useCallback((e: KonvaDragEvent) => {
     e.preventDefault();
     e.currentTarget.opacity(0);
-    
+
     try {
       // In a real implementation, we would get the drag data from the browser event
       // For now, we'll use a simulated approach
       const dragData = (window as unknown as { currentDragData?: { type: string; materialId: string } }).currentDragData;
-      
+
       if (dragData && dragData.type === 'material') {
         const material = getMaterialById(dragData.materialId);
         if (material) {
           applyMaterialToElement(elementId, elementType, dragData.materialId);
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`Applied material "${material.name}" to ${elementType} ${elementId}`);
-          }
         }
       }
     } catch (error) {
@@ -87,7 +84,7 @@ export default function MaterialDropZone({
         onDrop={handleDrop}
         listening={true}
       />
-      
+
       {/* Drop hint text */}
       {isSelected && (
         <Text

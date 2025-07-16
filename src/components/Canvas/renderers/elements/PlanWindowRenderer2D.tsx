@@ -29,16 +29,16 @@ export default function PlanWindowRenderer2D({
   // Suppress unused variable warning
   void onEdit;
   const material = window.materialId ? getMaterialById(window.materialId) : undefined;
-  
+
   // Initialize material renderer for plan view
   const materialRenderer = React.useMemo(() => new MaterialRenderer2D('plan'), []);
-  
+
   // Get window appearance
   const getWindowAppearance = () => {
     if (showMaterials && material) {
       // Use advanced material pattern system
       const materialPattern = materialRenderer.getKonvaFillPattern(material, scale);
-      
+
       return {
         ...materialPattern,
         stroke: isSelected ? '#3b82f6' : material.color,
@@ -46,7 +46,7 @@ export default function PlanWindowRenderer2D({
         opacity: (materialPattern.opacity || 1) * 0.7, // Windows are typically more transparent
       };
     }
-    
+
     return {
       fill: PLAN_VIEW_CONFIG.colors.window,
       stroke: isSelected ? '#3b82f6' : PLAN_VIEW_CONFIG.colors.window,
@@ -65,13 +65,12 @@ export default function PlanWindowRenderer2D({
 
   const handleDoubleClick = () => {
     // Could trigger window properties dialog
-    console.log('Edit window:', window.id);
   };
 
   return (
     <Group>
       {/* Window opening (gap in wall) - typically handled by wall renderer */}
-      
+
       {/* Window frame */}
       <Rect
         x={position.x - window.width / 2}
@@ -119,7 +118,7 @@ export default function PlanWindowRenderer2D({
             strokeWidth={1 * scale}
             listening={false}
           />
-          
+
           {/* Additional mullion for triple glazing */}
           {window.glazingType === 'triple' && (
             <Group>
@@ -172,7 +171,7 @@ export default function PlanWindowRenderer2D({
               listening={false}
             />
           )}
-          
+
           {window.operableType === 'sliding' && (
             // Sliding window track indicators
             <Group>
@@ -206,7 +205,7 @@ export default function PlanWindowRenderer2D({
               />
             </Group>
           )}
-          
+
           {window.operableType === 'awning' && (
             // Awning window hinge indicator
             <Line
@@ -256,7 +255,7 @@ export default function PlanWindowRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection handles */}
           <Rect
             x={position.x - window.width / 2 - 3}

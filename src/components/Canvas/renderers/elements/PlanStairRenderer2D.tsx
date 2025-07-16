@@ -41,7 +41,7 @@ export default function PlanStairRenderer2D({
         opacity: material.properties.opacity,
       };
     }
-    
+
     return {
       fill: PLAN_VIEW_CONFIG.colors.stair,
       stroke: isSelected ? '#3b82f6' : PLAN_VIEW_CONFIG.colors.stair,
@@ -57,7 +57,7 @@ export default function PlanStairRenderer2D({
   };
 
   const handleDoubleClick = () => {
-    console.log('Edit stair:', stair.id);
+    // Edit stair
   };
 
   // Calculate step positions
@@ -89,7 +89,7 @@ export default function PlanStairRenderer2D({
       {/* Individual step treads */}
       {stair.steps.map((step, index) => {
         const stepX = position.x - stair.totalRun / 2 + index * stepWidth;
-        
+
         return (
           <Line
             key={`step-${index}`}
@@ -176,7 +176,7 @@ export default function PlanStairRenderer2D({
               listening={false}
             />
           )}
-          
+
           {(stair.handrailSide === 'right' || stair.handrailSide === 'both') && (
             <Line
               points={[
@@ -227,7 +227,7 @@ export default function PlanStairRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection handles */}
           <Rect
             x={position.x - stair.totalRun / 2 - 3}

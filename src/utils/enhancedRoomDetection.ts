@@ -330,9 +330,8 @@ const calculateFeatureScore = (
 /**
  * Calculate access score for a room type rule
  */
-const calculateAccessScore = (accessibility: AccessibilityInfo, rule: RoomTypeRule): number => {
+const calculateAccessScore = (accessibility: AccessibilityInfo, _rule: RoomTypeRule): number => {
   // Use rule for future access score calculations
-  console.log('Calculating access score for rule:', rule.type);
   return accessibility.accessibilityScore;
 };
 
@@ -343,46 +342,68 @@ const hasFeature = (
   feature: string,
   features: RoomFeature[],
   accessibility: AccessibilityInfo,
-  lighting: LightingInfo
+  _lighting: LightingInfo,
+  room?: Room
 ): boolean => {
-  // Use lighting for future feature detection
-  console.log('Checking feature with lighting info:', lighting);
-  
   switch (feature) {
     case 'small_area':
-      return true; // This is checked in area score
+      return true
     case 'medium_area':
-      return true; // This is checked in area score
+      return true
     case 'large_area':
-      return true; // This is checked in area score
+      return true
     case 'single_door':
-      return accessibility.doorCount === 1;
+      return accessibility.doorCount === 1
     case 'multiple_doors':
-      return accessibility.doorCount > 1;
+      return accessibility.doorCount > 1
     case 'windows':
-      return accessibility.windowCount > 0;
+      return accessibility.windowCount > 0
     case 'no_windows':
-      return accessibility.windowCount === 0;
+      return accessibility.windowCount === 0
     case 'no_windows_ok':
-      return true; // Neutral feature
+      return true
     case 'external_access':
-      return accessibility.hasExternalAccess;
+      return accessibility.hasExternalAccess
     case 'multiple_external_doors':
-      return accessibility.doorCount > 1;
-    case 'rectangular':
-      return true; // TODO: Implement shape analysis
-    case 'narrow':
-      return true; // TODO: Implement aspect ratio analysis
+      return accessibility.doorCount > 1
+    case 'rectangular': {
+      const pts = (room && (room as any).points && Array.isArray((room as any).points)) ? (room as any).points : []
+      if (pts.length < 4) return false
+      const xs = pts.map((p: any) => p.x)
+      const ys = pts.map((p: any) => p.y)
+      const minX = Math.min(...xs)
+      const maxX = Math.max(...xs)
+      const minY = Math.min(...ys)
+      const maxY = Math.max(...ys)
+      const width = maxX - minX
+      const height = maxY - minY
+      const aspect = width / height
+      return aspect > 0.8 && aspect < 1.2
+    }
+    case 'narrow': {
+      const pts = (room && (room as any).points && Array.isArray((room as any).points)) ? (room as any).points : []
+      if (pts.length < 4) return false
+      const xsN = pts.map((p: any) => p.x)
+      const ysN = pts.map((p: any) => p.y)
+      const minXN = Math.min(...xsN)
+      const maxXN = Math.max(...xsN)
+      const minYN = Math.min(...ysN)
+      const maxYN = Math.max(...ysN)
+      const widthN = maxXN - minXN
+      const heightN = maxYN - minYN
+      const aspectN = widthN / heightN
+      return aspectN < 0.5 || aspectN > 2
+    }
     case 'connecting':
-      return accessibility.doorCount >= 2;
+      return accessibility.doorCount >= 2
     case 'quiet_location':
-      return true; // TODO: Implement location analysis
+      return features.filter(f => f.type === 'door').length === 1 && accessibility.windowCount <= 1
     case 'adjacent_to_kitchen':
-      return true; // TODO: Implement adjacency analysis
+      return false
     default:
-      return false;
+      return false
   }
-};
+}
 
 /**
  * Generate suggested room names based on type and characteristics
@@ -432,9 +453,8 @@ const generateRoomNames = (type: string, area: number): string[] => {
 /**
  * Helper functions (these would need to be implemented based on your wall/door/window data structures)
  */
-const getWallById = (wallId: string, wallIds: string[]): Wall | null => {
+const getWallById = (_wallId: string, _wallIds: string[]): Wall | null => {
   // This would need to be implemented to get wall by ID
-  console.log('Getting wall by ID:', wallId, 'from walls:', wallIds);
   return null;
 };
 

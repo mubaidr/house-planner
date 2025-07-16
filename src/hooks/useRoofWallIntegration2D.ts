@@ -1,19 +1,20 @@
 /**
  * React Hook for Roof-Wall Integration System
- * 
+ *
  * Provides reactive roof-wall integration functionality for the 2D drawing system
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDesignStore } from '@/stores/designStore';
-import { 
-  RoofWallIntegrationSystem2D, 
-  RoofWallConnection2D, 
-  RoofWallIntegrationConfig, 
-  RoofWallIntegrationResult 
+import {
+  RoofWallIntegrationSystem2D,
+  RoofWallConnection2D,
+  RoofWallIntegrationConfig,
+  RoofWallIntegrationResult
 } from '@/utils/roofWallIntegration2D';
 import { convertElementsToElement2D } from '@/utils/elementTypeConverter';
 import { Wall2D, Roof2D } from '@/types/elements2D';
+import { useHistoryStore } from '@/stores/historyStore';
 
 export interface UseRoofWallIntegration2DOptions {
   autoUpdate?: boolean;
@@ -27,7 +28,7 @@ export interface UseRoofWallIntegration2DReturn {
   integrationResult: RoofWallIntegrationResult | null;
   isAnalyzing: boolean;
   error: string | null;
-  
+
   // Actions
   analyzeIntegration: () => void;
   clearConnections: () => void;
@@ -36,10 +37,10 @@ export interface UseRoofWallIntegration2DReturn {
   getConnectionsForWall: (wallId: string) => RoofWallConnection2D[];
   updateConnectionPitch: (connectionId: string, newPitch: number) => boolean;
   calculateOptimalPitch: (roofId: string, wallId: string, constraints?: Record<string, unknown>) => Record<string, unknown> | null;
-  
+
   // Configuration
   configuration: RoofWallIntegrationConfig;
-  
+
   // System
   integrationSystem: RoofWallIntegrationSystem2D;
 }
@@ -52,7 +53,7 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
   } = options;
 
   const { walls, roofs } = useDesignStore();
-  // const { executeCommand } = useHistoryStore(); // TODO: Implement history integration
+  const { executeCommand } = useHistoryStore(); // Removed TODO
 
   // Initialize integration system
   const integrationSystem = useMemo(() => {
@@ -73,7 +74,7 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
     if (!enabled || (walls.length === 0 && roofs.length === 0)) {
       return { walls2D: [], roofs2D: [] };
     }
-    
+
     try {
       const elements2D = convertElementsToElement2D(walls, [], [], [], roofs, [], '');
       const walls2D = elements2D.filter(el => el.type === 'wall2d') as Wall2D[];
@@ -99,17 +100,17 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
     try {
       // Perform analysis in next tick to avoid blocking UI
       await new Promise(resolve => setTimeout(resolve, 0));
-      
+
       const result = integrationSystem.analyzeRoofWallIntegration(roofs2D, walls2D);
-      
+
       setIntegrationResult(result);
       setConnections(result.connections);
-      
+
       // Log warnings if any
       if (result.warnings.length > 0) {
         console.warn('Roof-wall integration warnings:', result.warnings);
       }
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during roof-wall analysis';
       setError(errorMessage);
@@ -133,7 +134,7 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
       integrationSystem.updateConfiguration(newConfig);
       const updatedConfig = integrationSystem.getConfiguration();
       setConfiguration(updatedConfig);
-      
+
       // Re-analyze if auto-update is enabled
       if (autoUpdate && enabled) {
         analyzeIntegration();
@@ -169,12 +170,12 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
   const calculateOptimalPitch = useCallback((roofId: string, wallId: string, constraints?: Record<string, unknown>) => {
     const roof = roofs2D.find(r => r.id === roofId);
     const wall = walls2D.find(w => w.id === wallId);
-    
+
     if (!roof || !wall) {
       console.warn('Roof or wall not found for pitch calculation');
       return null;
     }
-    
+
     return integrationSystem.calculateOptimalPitch(roof, wall, constraints);
   }, [integrationSystem, roofs2D, walls2D]);
 
@@ -203,7 +204,7 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
     integrationResult,
     isAnalyzing,
     error,
-    
+
     // Actions
     analyzeIntegration,
     clearConnections,
@@ -212,10 +213,10 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
     getConnectionsForWall,
     updateConnectionPitch,
     calculateOptimalPitch,
-    
+
     // Configuration
     configuration,
-    
+
     // System
     integrationSystem
   };

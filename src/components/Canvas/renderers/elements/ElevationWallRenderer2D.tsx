@@ -32,17 +32,17 @@ export default function ElevationWallRenderer2D({
   // Suppress unused variable warning
   void onEdit;
   const material = wall.materialId ? getMaterialById(wall.materialId) : undefined;
-  
+
   // Initialize material renderer for elevation view
   const materialRenderer = React.useMemo(() => new MaterialRenderer2D(viewType), [viewType]);
-  
+
   // Calculate wall properties for elevation view
   // In elevation views, walls are shown as vertical rectangles
   const wallLength = Math.sqrt(
-    Math.pow(wall.endPoint.x - wall.startPoint.x, 2) + 
+    Math.pow(wall.endPoint.x - wall.startPoint.x, 2) +
     Math.pow(wall.endPoint.y - wall.startPoint.y, 2)
   );
-  
+
   // Wall position in elevation view (projected from 3D to 2D)
   const wallX = wall.startPoint.x; // Horizontal position
   const wallY = ELEVATION_VIEW_CONFIG.heightReferences.groundLevel; // Base at ground level
@@ -54,14 +54,14 @@ export default function ElevationWallRenderer2D({
     if (showMaterials && material) {
       // Use advanced material pattern system for elevation view
       const materialPattern = materialRenderer.getKonvaFillPattern(material, scale);
-      
+
       return {
         ...materialPattern,
         stroke: isSelected ? '#3b82f6' : material.color,
         strokeWidth: ELEVATION_VIEW_CONFIG.lineWeights.wall * scale,
       };
     }
-    
+
     // Default appearance
     return {
       fill: ELEVATION_VIEW_CONFIG.colors.wall,
@@ -80,7 +80,7 @@ export default function ElevationWallRenderer2D({
 
   // Handle wall editing (double-click)
   const handleDoubleClick = () => {
-    console.log('Edit wall in elevation view:', wall.id);
+    // Edit wall in elevation view
   };
 
   // Calculate wall visibility based on view direction
@@ -90,7 +90,7 @@ export default function ElevationWallRenderer2D({
       wall.endPoint.x - wall.startPoint.x
     );
     const wallAngleDegrees = (wallAngle * 180) / Math.PI;
-    
+
     // Determine if wall faces the current view direction
     switch (viewType) {
       case 'front':
@@ -176,7 +176,7 @@ export default function ElevationWallRenderer2D({
       {wall.openings.map((opening, index) => {
         const openingX = wallX + wallWidth * opening.positionOnWall - opening.width / 2;
         const openingY = wallY - (opening.type === 'door2d' ? opening.height : opening.sillHeight! + opening.height);
-        
+
         return (
           <Group key={`opening-${index}`}>
             {/* Opening cutout */}
@@ -190,7 +190,7 @@ export default function ElevationWallRenderer2D({
               strokeWidth={1 * scale}
               listening={false}
             />
-            
+
             {/* Window sill (for windows) */}
             {opening.type === 'window2d' && opening.sillHeight! > 0 && (
               <Line
@@ -241,7 +241,7 @@ export default function ElevationWallRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection handles */}
           <Rect
             x={wallX - 3}
@@ -282,7 +282,7 @@ export default function ElevationWallRenderer2D({
             dash={[3 * scale, 3 * scale]}
             listening={false}
           />
-          
+
           {/* Height text */}
           <Rect
             x={wallX - 25 * scale}
@@ -294,7 +294,7 @@ export default function ElevationWallRenderer2D({
             strokeWidth={1 * scale}
             listening={false}
           />
-          
+
           {/* Height value */}
           <Line
             points={[

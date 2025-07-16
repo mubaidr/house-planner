@@ -21,9 +21,6 @@ export default function ViewSwitcher() {
   const handleViewChange = (view: ViewType2D) => {
     setViewWithHistory(view, executeCommand);
     setIsExpanded(false);
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Switching to ${view} view with history support`);
-    }
   };
 
   const currentViewData = views.find(v => v.mode === currentView) || views[0];

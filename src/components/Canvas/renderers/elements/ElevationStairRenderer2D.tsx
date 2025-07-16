@@ -45,7 +45,7 @@ export default function ElevationStairRenderer2D({
         opacity: material.properties.opacity,
       };
     }
-    
+
     return {
       fill: ELEVATION_VIEW_CONFIG.colors.stair,
       stroke: isSelected ? '#3b82f6' : ELEVATION_VIEW_CONFIG.colors.stair,
@@ -60,7 +60,7 @@ export default function ElevationStairRenderer2D({
   const stepCount = stair.steps.length;
   const avgRise = stair.totalRise / stepCount;
   const avgRun = stair.totalRun / stepCount;
-  
+
   const stairX = position.x - stair.totalRun / 2;
   const stairY = ELEVATION_VIEW_CONFIG.heightReferences.groundLevel;
 
@@ -69,7 +69,7 @@ export default function ElevationStairRenderer2D({
   };
 
   const handleDoubleClick = () => {
-    console.log('Edit stair in elevation view:', stair.id);
+    // Edit stair in elevation view
   };
 
   return (
@@ -79,7 +79,7 @@ export default function ElevationStairRenderer2D({
         {stair.steps.map((step, index) => {
           const stepX = stairX + index * avgRun;
           const stepY = stairY - (index + 1) * avgRise;
-          
+
           return (
             <Group key={`step-${index}`}>
               {/* Step tread (horizontal) */}
@@ -98,7 +98,7 @@ export default function ElevationStairRenderer2D({
                 onDblClick={index === 0 ? handleDoubleClick : undefined}
                 onDblTap={index === 0 ? handleDoubleClick : undefined}
               />
-              
+
               {/* Step riser (vertical) */}
               <Line
                 points={[
@@ -111,7 +111,7 @@ export default function ElevationStairRenderer2D({
                 strokeWidth={appearance.strokeWidth}
                 listening={false}
               />
-              
+
               {/* Step fill for material visualization */}
               {showMaterials && (
                 <Rect
@@ -160,7 +160,7 @@ export default function ElevationStairRenderer2D({
               listening={false}
             />
           )}
-          
+
           {(stair.handrailSide === 'right' || stair.handrailSide === 'both') && (
             <Line
               points={[
@@ -174,12 +174,12 @@ export default function ElevationStairRenderer2D({
               listening={false}
             />
           )}
-          
+
           {/* Handrail posts */}
           {Array.from({ length: Math.floor(stepCount / 3) + 1 }, (_, i) => {
             const postX = stairX + (i * 3 * avgRun);
             const postY = stairY - (i * 3 * avgRise);
-            
+
             return (
               <Line
                 key={`post-${i}`}
@@ -228,7 +228,7 @@ export default function ElevationStairRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection handles */}
           <Rect
             x={stairX - 3}
@@ -285,7 +285,7 @@ export default function ElevationStairRenderer2D({
             dash={[3 * scale, 3 * scale]}
             listening={false}
           />
-          
+
           <Text
             x={stairX - 25 * scale}
             y={stairY - avgRise / 2}
@@ -299,7 +299,7 @@ export default function ElevationStairRenderer2D({
             rotation={-90}
             listening={false}
           />
-          
+
           {/* Run dimension */}
           <Line
             points={[
@@ -313,7 +313,7 @@ export default function ElevationStairRenderer2D({
             dash={[3 * scale, 3 * scale]}
             listening={false}
           />
-          
+
           <Text
             x={stairX + avgRun / 2}
             y={stairY + 20 * scale}
@@ -350,7 +350,7 @@ export default function ElevationStairRenderer2D({
           {stair.steps.map((step, index) => {
             const stepX = stairX + index * avgRun;
             const stepY = stairY - (index + 1) * avgRise;
-            
+
             return (
               <Rect
                 key={`material-${index}`}

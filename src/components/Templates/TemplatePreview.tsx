@@ -18,7 +18,6 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
   const handleApplyTemplate = async () => {
     try {
       await applyTemplate(template.id);
-      console.log(`Applied template: ${template.name}`);
       onClose();
     } catch (error) {
       console.error('Failed to apply template:', error);
@@ -35,7 +34,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
       alert('Built-in templates cannot be deleted.');
       return;
     }
-    
+
     if (confirm(`Are you sure you want to delete "${template.name}"?`)) {
       removeTemplate(template.id);
       onClose();
@@ -95,7 +94,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
             {/* Template Info */}
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900">Template Information</h3>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Category:</span>
@@ -153,7 +152,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
             {/* Template Preview */}
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900">Preview</h3>
-              
+
               <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
                 {template.thumbnail ? (
                   <Image
@@ -208,7 +207,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
                         opacity: material.properties.opacity,
                       }}
                     />
-                    
+
                     {/* Material Info */}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-900 truncate">
@@ -223,7 +222,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Priority */}
                     <div className="text-xs text-gray-400">
                       Priority: {templateMaterial.priority}
@@ -244,7 +243,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
             >
               Duplicate
             </button>
-            
+
             {!template.isBuiltIn && (
               <button
                 onClick={handleDelete}
@@ -254,7 +253,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
               </button>
             )}
           </div>
-          
+
           <div className="flex space-x-3">
             <button
               onClick={onClose}

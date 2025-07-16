@@ -20,7 +20,6 @@ export default function TemplateCard({ template, isSelected, onSelect }: Templat
     e.stopPropagation();
     try {
       await applyTemplate(template.id);
-      console.log(`Applied template: ${template.name}`);
     } catch (error) {
       console.error('Failed to apply template:', error);
     }
@@ -77,7 +76,7 @@ export default function TemplateCard({ template, isSelected, onSelect }: Templat
             </div>
           </div>
         )}
-        
+
         {/* Built-in badge */}
         {template.isBuiltIn && (
           <div className="absolute top-2 left-2">
@@ -120,7 +119,7 @@ export default function TemplateCard({ template, isSelected, onSelect }: Templat
             {template.metadata.difficulty}
           </div>
         </div>
-        
+
         <p className="text-xs text-gray-600 mb-3 line-clamp-2" title={template.description}>
           {template.description}
         </p>

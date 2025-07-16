@@ -28,7 +28,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const { sidebarCollapsed, propertiesPanelCollapsed, setExportDialogOpen, setImportDialogOpen, isExportDialogOpen, isImportDialogOpen } = useUIStore();
   const { isLibraryOpen } = useMaterialStore();
   const { isTemplateLibraryOpen } = useTemplateStore();
-  
+
   // Enable auto-save every 30 seconds
   useAutoSave(30000);
 
@@ -42,9 +42,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const handleExportAnnotations = () => {
     // Logic to handle exporting annotations
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Exporting annotations...');
-    }
     // TODO: Implement annotation export functionality
   };
 
@@ -90,7 +87,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <FloorSwitcher />
           <MeasurementControls />
           <DoorAnimationControls />
-          <EnhancedAnnotationToolbar 
+          <EnhancedAnnotationToolbar
             onExportTemplates={handleExportTemplates}
             onImportAnnotations={handleImportAnnotations}
             onExportAnnotations={handleExportAnnotations}

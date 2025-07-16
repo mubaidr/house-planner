@@ -14,13 +14,13 @@ interface ClipboardData {
 }
 
 export const useClipboard = () => {
-  const { 
-    selectedElementId, 
-    selectedElementType, 
-    walls, 
-    doors, 
-    windows, 
-    stairs, 
+  const {
+    selectedElementId,
+    selectedElementType,
+    walls,
+    doors,
+    windows,
+    stairs,
     roofs,
     addWall,
     addDoor,
@@ -60,13 +60,10 @@ export const useClipboard = () => {
         type: selectedElementType,
         element: { ...element }
       };
-      
+
       // Store in localStorage for persistence across sessions
       localStorage.setItem('house-planner-clipboard', JSON.stringify(clipboardData));
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Copied ${selectedElementType} to clipboard`);
-      }
+
       return clipboardData;
     }
 
@@ -180,12 +177,10 @@ export const useClipboard = () => {
         },
         undo: () => {
           // Remove element logic would go here
-          console.log(`Undo paste ${type}`);
         },
         description: `Paste ${type}`,
       });
 
-      console.log(`Pasted ${type} with offset (${offsetX}, ${offsetY})`);
       return newElement;
 
     } catch (error) {
@@ -207,7 +202,7 @@ export const useClipboard = () => {
     try {
       const clipboardJson = localStorage.getItem('house-planner-clipboard');
       if (!clipboardJson) return null;
-      
+
       const clipboardData: ClipboardData = JSON.parse(clipboardJson);
       return clipboardData.type;
     } catch {

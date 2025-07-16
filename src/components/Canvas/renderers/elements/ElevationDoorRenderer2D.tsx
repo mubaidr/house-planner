@@ -32,23 +32,23 @@ export default function ElevationDoorRenderer2D({
   // Suppress unused variable warnings
   void onEdit;
   const material = door.materialId ? getMaterialById(door.materialId) : undefined;
-  
+
   // Initialize material renderer for elevation view
   const materialRenderer = React.useMemo(() => new MaterialRenderer2D(viewType), [viewType]);
-  
+
   // Get door appearance
   const getDoorAppearance = () => {
     if (showMaterials && material) {
       // Use advanced material pattern system for elevation view
       const materialPattern = materialRenderer.getKonvaFillPattern(material, scale);
-      
+
       return {
         ...materialPattern,
         stroke: isSelected ? '#3b82f6' : material.color,
         strokeWidth: ELEVATION_VIEW_CONFIG.lineWeights.door * scale,
       };
     }
-    
+
     return {
       fill: ELEVATION_VIEW_CONFIG.colors.door,
       stroke: isSelected ? '#3b82f6' : ELEVATION_VIEW_CONFIG.colors.door,
@@ -71,7 +71,7 @@ export default function ElevationDoorRenderer2D({
   };
 
   const handleDoubleClick = () => {
-    console.log('Edit door in elevation view:', door.id);
+    // Edit door in elevation view
   };
 
   return (
@@ -108,7 +108,7 @@ export default function ElevationDoorRenderer2D({
           opacity={0.6}
           listening={false}
         />
-        
+
         {/* Lower panel */}
         <Rect
           x={doorX + 3 * scale}
@@ -128,7 +128,7 @@ export default function ElevationDoorRenderer2D({
         const handleSide = door.handleSide === 'left' ? 0.2 : 0.8;
         const handleX = doorX + doorWidth * handleSide;
         const handleY = doorY + doorHeight * 0.5;
-        
+
         return (
           <Group>
             {/* Handle */}
@@ -140,7 +140,7 @@ export default function ElevationDoorRenderer2D({
               fill={appearance.stroke}
               listening={false}
             />
-            
+
             {/* Handle knob */}
             <Rect
               x={handleX - 2 * scale}
@@ -185,7 +185,7 @@ export default function ElevationDoorRenderer2D({
               listening={false}
             />
           )}
-          
+
           {door.openingType === 'sliding' && (
             // Sliding track indicator
             <Line
@@ -202,7 +202,7 @@ export default function ElevationDoorRenderer2D({
               listening={false}
             />
           )}
-          
+
           {door.openingType === 'folding' && (
             // Folding door segments
             <Group>
@@ -265,7 +265,7 @@ export default function ElevationDoorRenderer2D({
             fill="rgba(59, 130, 246, 0.1)"
             listening={false}
           />
-          
+
           {/* Selection handles */}
           <Rect
             x={doorX - 3}
@@ -349,7 +349,7 @@ export default function ElevationDoorRenderer2D({
             opacity={0.5}
             listening={false}
           />
-          
+
           {/* Height arrows */}
           <Line
             points={[

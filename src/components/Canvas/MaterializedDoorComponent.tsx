@@ -27,10 +27,10 @@ export default function MaterializedDoorComponent({
 }: MaterializedDoorComponentProps) {
   const { getMaterialById } = useMaterialStore();
   const { getDoorState, toggleDoor } = useGlobalDoorAnimation();
-  
+
   const material = door.materialId ? getMaterialById(door.materialId) : null;
   const doorState = getDoorState(door.id);
-  
+
   const handleClick = () => {
     onSelect();
   };
@@ -42,19 +42,19 @@ export default function MaterializedDoorComponent({
   // Calculate door animation and positioning based on style
   const swingAngle = doorState.currentAngle;
   const wallAngle = door.wallAngle || 0;
-  
+
   // Calculate wall direction
   const wallDirX = Math.cos(wallAngle);
   const wallDirY = Math.sin(wallAngle);
-  
+
   // Calculate perpendicular direction for door swing
   const perpDirX = -wallDirY;
   const perpDirY = wallDirX;
-  
+
   // Determine swing direction based on door.swingDirection
   let swingMultiplier = 1;
   let hingeOffset = 0.5;
-  
+
   switch (door.swingDirection) {
     case 'left':
       swingMultiplier = -1;
@@ -93,7 +93,7 @@ export default function MaterializedDoorComponent({
         fillPatternRotation: material.texture ? (material.properties.patternRotation || 0) : undefined,
       };
     }
-    
+
     return {
       fill: door.color,
       stroke: isSelected ? '#3b82f6' : '#666',
@@ -116,7 +116,7 @@ export default function MaterializedDoorComponent({
     const swingDirY = perpDirX * Math.sin(swingRadians) + perpDirY * Math.cos(swingRadians) * swingMultiplier;
     const doorEndX = hingeX + door.width * swingDirX * swingMultiplier;
     const doorEndY = hingeY + door.width * swingDirY * swingMultiplier;
-    
+
     return (
       <>
         {/* Door opening (gap in wall) */}
@@ -136,7 +136,7 @@ export default function MaterializedDoorComponent({
           onDblClick={handleDoubleClick}
           onDblTap={handleDoubleClick}
         />
-        
+
         {/* Door swing arc */}
         <Arc
           x={hingeX}
@@ -151,7 +151,7 @@ export default function MaterializedDoorComponent({
           opacity={0.3}
           listening={false}
         />
-        
+
         {/* Animated door panel with material */}
         {swingAngle > 0 && (
           <>
@@ -166,7 +166,7 @@ export default function MaterializedDoorComponent({
               onDblClick={handleDoubleClick}
               onDblTap={handleDoubleClick}
             />
-            
+
             {/* Material overlay for door panel */}
             {material && material.texture && (
               <Rect
@@ -179,7 +179,7 @@ export default function MaterializedDoorComponent({
                 listening={false}
               />
             )}
-            
+
             {/* Metallic effect */}
             {material && material.properties.metallic > 0.5 && (
               <Line
@@ -192,7 +192,7 @@ export default function MaterializedDoorComponent({
             )}
           </>
         )}
-        
+
         {/* Door handle */}
         {swingAngle > 0 && (
           <Rect
@@ -208,7 +208,7 @@ export default function MaterializedDoorComponent({
             onDblTap={handleDoubleClick}
           />
         )}
-        
+
         {/* Hinge indicator */}
         <Rect
           x={hingeX - 2}
@@ -227,18 +227,160 @@ export default function MaterializedDoorComponent({
   };
 
   // Render based on door style
+  const renderDoubleDoorContent = () => {
+    // Render two single doors mirrored about the center
+    return (
+      <>
+        {renderSingleDoorContentWithOverride({ x: door.x - door.width / 4, width: door.width / 2 })}
+        {renderSingleDoorContentWithOverride({ x: door.x + door.width / 4, width: door.width / 2, swingDirection: door.swingDirection === 'left' ? 'right' : 'left' })}
+      </>
+    )
+  }
+
+  const renderSlidingDoorContent = () => {
+    // Render a sliding panel along the wall
+    const slideOffset = doorState.currentAngle / 90 * door.width
+    return (
+      <>
+        <Rect
+          x={door.x - door.width / 2 + slideOffset}
+          y={door.y - 2}
+          width={door.width}
+          height={4}
+          rotation={(door.wallAngle || 0) * 180 / Math.PI}
+          offsetX={0}
+          offsetY={0}
+          fill={material ? material.color : '#ccc'}
+          stroke={isSelected ? '#3b82f6' : '#666'}
+          strokeWidth={isSelected ? 2 : 1}
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+      </>
+    )
+  }
+
+  // Accepts an optional override for door object (for double doors)
+  const renderSingleDoorContentWithOverride = (override?: Partial<Door>) => {
+    const d = { ...door, ...override }
+    // Position hinge at door edge along wall direction
+    const hingeOffsetX = hingeOffset * d.width * wallDirX
+    const hingeOffsetY = hingeOffset * d.width * wallDirY
+    const hingeX = d.x + hingeOffsetX
+    const hingeY = d.y + hingeOffsetY
+    const swingRadians = (swingAngle * Math.PI) / 180
+    const swingDirX = perpDirX * Math.cos(swingRadians) - perpDirY * Math.sin(swingRadians) * swingMultiplier
+    const swingDirY = perpDirX * Math.sin(swingRadians) + perpDirY * Math.cos(swingRadians) * swingMultiplier
+    const doorEndX = hingeX + d.width * swingDirX * swingMultiplier
+    const doorEndY = hingeY + d.width * swingDirY * swingMultiplier
+    return (
+      <>
+        <Rect
+          x={d.x}
+          y={d.y}
+          width={d.width}
+          height={4}
+          rotation={(wallAngle * 180) / Math.PI}
+          offsetX={d.width / 2}
+          offsetY={2}
+          fill="white"
+          stroke={isSelected ? '#3b82f6' : '#666'}
+          strokeWidth={isSelected ? 2 : 1}
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+        <Arc
+          x={hingeX}
+          y={hingeY}
+          innerRadius={0}
+          outerRadius={d.width}
+          angle={90}
+          rotation={(wallAngle * 180) / Math.PI + (swingMultiplier > 0 ? 90 : 0)}
+          stroke={isSelected ? '#3b82f6' : d.color}
+          strokeWidth={1}
+          dash={[5, 5]}
+          opacity={0.3}
+          listening={false}
+        />
+        {swingAngle > 0 && (
+          <>
+            <Line
+              points={[hingeX, hingeY, doorEndX, doorEndY]}
+              stroke={appearance.stroke}
+              strokeWidth={6}
+              lineCap="round"
+              opacity={appearance.opacity}
+              onClick={handleClick}
+              onTap={handleClick}
+              onDblClick={handleDoubleClick}
+              onDblTap={handleDoubleClick}
+            />
+            {material && material.texture && (
+              <Rect
+                x={hingeX}
+                y={hingeY - 3}
+                width={d.width}
+                height={6}
+                rotation={(Math.atan2(doorEndY - hingeY, doorEndX - hingeX) * 180) / Math.PI}
+                {...appearance}
+                listening={false}
+              />
+            )}
+            {material && material.properties.metallic > 0.5 && (
+              <Line
+                points={[hingeX, hingeY, doorEndX, doorEndY]}
+                stroke="rgba(255,255,255,0.8)"
+                strokeWidth={3}
+                opacity={material.properties.metallic * 0.4}
+                listening={false}
+              />
+            )}
+          </>
+        )}
+        {swingAngle > 0 && (
+          <Rect
+            x={doorEndX - 3}
+            y={doorEndY - 1}
+            width={6}
+            height={2}
+            fill={material ? (material.properties.metallic > 0.5 ? '#C0C0C0' : '#8B4513') : '#8B4513'}
+            cornerRadius={1}
+            onClick={handleClick}
+            onTap={handleClick}
+            onDblClick={handleDoubleClick}
+            onDblTap={handleDoubleClick}
+          />
+        )}
+        <Rect
+          x={hingeX - 2}
+          y={hingeY - 1}
+          width={4}
+          height={2}
+          fill={isSelected ? '#3b82f6' : '#333'}
+          cornerRadius={1}
+          onClick={handleClick}
+          onTap={handleClick}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        />
+      </>
+    )
+  }
+
   const renderDoorContent = () => {
     switch (door.style) {
       case 'single':
-        return renderSingleDoorContent();
+        return renderSingleDoorContentWithOverride()
       case 'double':
-        // TODO: Implement double door with materials
-        return renderSingleDoorContent();
+        return renderDoubleDoorContent()
       case 'sliding':
-        // TODO: Implement sliding door with materials
-        return renderSingleDoorContent();
+        return renderSlidingDoorContent()
       default:
-        return renderSingleDoorContent();
+        return renderSingleDoorContentWithOverride()
     }
   };
 
@@ -250,9 +392,9 @@ export default function MaterializedDoorComponent({
       <DoorHandles
         door={door}
         isSelected={isSelected}
-        onStartDrag={onStartDrag}
-        onDrag={onDrag}
-        onEndDrag={onEndDrag}
+        onStartDrag={onStartDrag as any}
+        onDrag={onDrag as any}
+        onEndDrag={onEndDrag as any}
       />
     </Group>
   );

@@ -13,6 +13,14 @@ export default function KeyboardShortcuts({ isOpen, onClose }: KeyboardShortcuts
 
   const shortcuts = [
     {
+      category: 'File',
+      items: [
+        { key: 'Ctrl+S', description: 'Save project' },
+        { key: 'Ctrl+O', description: 'Open project' },
+        { key: 'Ctrl+E', description: 'Export project' },
+      ]
+    },
+    {
       category: 'Tools',
       items: [
         { key: 'V', description: 'Select tool' },
@@ -39,6 +47,11 @@ export default function KeyboardShortcuts({ isOpen, onClose }: KeyboardShortcuts
     {
       category: 'View',
       items: [
+        { key: '1', description: 'Plan view' },
+        { key: '2', description: 'Front view' },
+        { key: '3', description: 'Back view' },
+        { key: '4', description: 'Left view' },
+        { key: '5', description: 'Right view' },
         { key: 'Ctrl++', description: 'Zoom in' },
         { key: 'Ctrl+-', description: 'Zoom out' },
         { key: 'Ctrl+0', description: 'Reset zoom' },
@@ -50,7 +63,7 @@ export default function KeyboardShortcuts({ isOpen, onClose }: KeyboardShortcuts
         { key: 'Escape', description: 'Cancel current operation' },
         { key: 'Right-click', description: 'Context menu' },
         { key: 'Enter', description: 'Edit selected element' },
-        { key: 'F4', description: 'Properties panel' },
+        { key: 'F4', description: 'Toggle properties panel' },
       ]
     }
   ];
