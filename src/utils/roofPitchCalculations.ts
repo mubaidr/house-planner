@@ -5,7 +5,8 @@
  * and geometric computations for accurate roof-wall integration.
  */
 
-import { Point2D, Roof2D, Wall2D } from '@/types/elements2D';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Wall2D } from '@/types/elements2D';
 
 export interface RoofPitchData {
   pitch: number;           // Pitch in degrees

@@ -120,7 +120,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
   };
 
   // Handle floor selection for batch export
-  const handleFloorSelection = (floorId: string, selected: boolean) => {
+  const handleFloorSelection = (floorId: string) => {
     setSelectedFloors(prev => 
       selected 
         ? [...prev, floorId]

@@ -141,6 +141,14 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
         description: formData.description || 'Custom template created from current design',
         category: formData.category,
         materials,
+        designData: {
+          walls: walls,
+          doors: doors,
+          windows: windows,
+          stairs: [], // Assuming stairs are not yet part of the template creation logic
+          roofs: [],   // Assuming roofs are not yet part of the template creation logic
+          rooms: rooms,
+        },
         metadata: {
           author: 'User',
           createdAt: new Date(),

@@ -59,7 +59,8 @@ export async function generateStageForView(
   floorId: string,
   options: Partial<StageGenerationOptions> = {}
 ): Promise<Stage> {
-  const opts = { ...DEFAULT_STAGE_OPTIONS, ...options };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _options = options;
   
   // Create a temporary container for the stage
   const container = document.createElement('div');

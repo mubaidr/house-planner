@@ -102,7 +102,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   },
 
   // Template application
-  applyTemplate: async (templateId, targetElements) => {
+  applyTemplate: async (templateId) => {
     const state = get();
     const template = state.templates.find(t => t.id === templateId);
     
@@ -110,12 +110,28 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
       throw new Error('Template not found');
     }
 
-    // This would integrate with the design store and material application system
+    if (!template.designData) {
+      throw new Error('Template does not contain design data.');
+    }
+
+    const currentDesignState = useDesignStore.getState();
+    const { executeCommand } = useHistoryStore.getState();
+
+    executeCommand({
+      execute: () => {
+            useDesignStore.setState(template.designData);
+      },
+      undo: () => {
+        useDesignStore.setState(currentDesignState);
+      },
+      description: `Apply template: ${template.name}`,
+    });
+
     const application: TemplateApplication = {
       templateId,
       appliedAt: new Date(),
-      elementsAffected: targetElements || [],
-      materialsApplied: [],
+      elementsAffected: [], // This could be more specific if needed
+      materialsApplied: [], // This could be more specific if needed
     };
 
     // Update usage count
@@ -214,13 +230,21 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   },
 
   createTemplateFromCurrentDesign: (name, description) => {
-    // This would analyze the current design and create a template
-    const template: MaterialTemplate = {
+    const designState = useDesignStore.getState();
+    const newTemplate: MaterialTemplate = {
       id: `custom-${Date.now()}`,
       name,
       description,
       category: 'custom',
-      materials: [], // Would be populated from current design
+      materials: [], // You might want to extract materials from the designState if needed
+      designData: {
+        walls: designState.walls,
+        doors: designState.doors,
+        windows: designState.windows,
+        stairs: designState.stairs,
+        roofs: designState.roofs,
+        rooms: designState.rooms,
+      },
       metadata: {
         author: 'User',
         createdAt: new Date(),
@@ -234,10 +258,10 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
     };
 
     set((state) => ({
-      templates: [...state.templates, template],
+      templates: [...state.templates, newTemplate],
     }));
 
-    return template;
+    return newTemplate;
   },
 
   calculateTemplateCost: (templateId) => {

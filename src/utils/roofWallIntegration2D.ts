@@ -6,7 +6,8 @@
  * and proper rendering coordination between roof and wall elements.
  */
 
-import { Wall2D, Roof2D, Point2D, Element2D, Dimensions2D } from '@/types/elements2D';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Element2D, Dimensions2D } from '@/types/elements2D';
 import { ViewType2D } from '@/types/views';
 import { RoofPitchCalculator, RoofPitchData, RoofGeometry } from './roofPitchCalculations';
 

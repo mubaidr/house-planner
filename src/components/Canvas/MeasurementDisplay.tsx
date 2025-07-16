@@ -3,6 +3,7 @@
 import React from 'react';
 import { Line, Circle, Text, Group } from 'react-konva';
 import { Measurement, MeasurementPoint } from '@/hooks/useMeasureTool';
+import useUnitStore from '@/stores/unitStore';
 
 interface MeasurementDisplayProps {
   measurements: Measurement[];
@@ -22,9 +23,17 @@ interface MeasurementLineProps {
 }
 
 function MeasurementLine({ measurement, isTemporary = false, onRemove }: MeasurementLineProps) {
-  const { startPoint, endPoint, label } = measurement;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { convertValue, getUnitSymbol } = useUnitStore();
+  // These are used in the JSX below, so no need to declare them as unused.
+  // These are used in the JSX below, so no need to declare them as unused.
+  const { startPoint, endPoint, distance } = measurement;
   const color = isTemporary ? '#3b82f6' : '#ef4444';
   const opacity = isTemporary ? 0.8 : 1;
+
+  const convertedDistance = convertValue(distance);
+  const unitSymbol = getUnitSymbol();
+  const label = `${convertedDistance.toFixed(2)} ${unitSymbol}`;
 
   // Calculate midpoint for label
   const midX = (startPoint.x + endPoint.x) / 2;

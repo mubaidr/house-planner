@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 import { Command } from '@/utils/history';
 
 interface HistoryState {
@@ -18,82 +19,74 @@ interface HistoryActions {
   getRedoDescription: () => string | null;
 }
 
-export const useHistoryStore = create<HistoryState & HistoryActions>((set, get) => ({
-  // State
-  undoStack: [],
-  redoStack: [],
-  maxHistorySize: 50,
+export const useHistoryStore = create<HistoryState & HistoryActions>()(
+  immer((set, get) => ({
+    // State
+    undoStack: [],
+    redoStack: [],
+    maxHistorySize: 50,
 
-  // Actions
-  executeCommand: (command: Command) => {
-    // Execute the command
-    command.execute();
-    
-    set((state) => {
-      const newUndoStack = [...state.undoStack, command];
-      
-      // Limit history size
-      if (newUndoStack.length > state.maxHistorySize) {
-        newUndoStack.shift();
-      }
-      
-      return {
-        undoStack: newUndoStack,
-        redoStack: [], // Clear redo stack when new command is executed
-      };
-    });
-  },
+    // Actions
+    executeCommand: (command: Command) => {
+      command.execute();
+      set((state) => {
+        state.undoStack.push(command);
+        if (state.undoStack.length > state.maxHistorySize) {
+          state.undoStack.shift();
+        }
+        state.redoStack = [];
+      });
+    },
 
-  undo: () => {
-    const { undoStack, redoStack } = get();
-    
-    if (undoStack.length === 0) return;
-    
-    const command = undoStack[undoStack.length - 1];
-    command.undo();
-    
-    set({
-      undoStack: undoStack.slice(0, -1),
-      redoStack: [...redoStack, command],
-    });
-  },
+    undo: () => {
+      const { undoStack, redoStack } = get();
+      if (undoStack.length === 0) return;
 
-  redo: () => {
-    const { undoStack, redoStack } = get();
-    
-    if (redoStack.length === 0) return;
-    
-    const command = redoStack[redoStack.length - 1];
-    command.execute();
-    
-    set({
-      undoStack: [...undoStack, command],
-      redoStack: redoStack.slice(0, -1),
-    });
-  },
+      const command = undoStack[undoStack.length - 1];
+      command.undo();
 
-  canUndo: () => {
-    return get().undoStack.length > 0;
-  },
+      set((state) => {
+        state.undoStack.pop();
+        state.redoStack.push(command);
+      });
+    },
 
-  canRedo: () => {
-    return get().redoStack.length > 0;
-  },
+    redo: () => {
+      const { undoStack, redoStack } = get();
+      if (redoStack.length === 0) return;
 
-  clearHistory: () => {
-    set({
-      undoStack: [],
-      redoStack: [],
-    });
-  },
+      const command = redoStack[redoStack.length - 1];
+      command.execute();
 
-  getUndoDescription: () => {
-    const { undoStack } = get();
-    return undoStack.length > 0 ? undoStack[undoStack.length - 1].description : null;
-  },
+      set((state) => {
+        state.redoStack.pop();
+        state.undoStack.push(command);
+      });
+    },
 
-  getRedoDescription: () => {
-    const { redoStack } = get();
-    return redoStack.length > 0 ? redoStack[redoStack.length - 1].description : null;
-  },
-}));
+    canUndo: () => {
+      return get().undoStack.length > 0;
+    },
+
+    canRedo: () => {
+      return get().redoStack.length > 0;
+    },
+
+    clearHistory: () => {
+      set((state) => {
+        state.undoStack = [];
+        state.redoStack = [];
+      });
+    },
+
+    getUndoDescription: () => {
+      const { undoStack } = get();
+      return undoStack.length > 0 ? undoStack[undoStack.length - 1].description : null;
+    },
+
+    getRedoDescription: () => {
+      const { redoStack } = get();
+      return redoStack.length > 0 ? redoStack[redoStack.length - 1].description : null;
+    },
+  }))
+);

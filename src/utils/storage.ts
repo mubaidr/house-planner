@@ -1,54 +1,60 @@
-import { DesignState } from '@/stores/designStore';
+import { useDesignStore, DesignState } from '@/stores/designStore';
+import { useErrorStore } from '@/stores/errorStore';
 
-export interface SavedDesign {
-  id: string;
-  name: string;
-  timestamp: number;
-  data: Pick<DesignState, 'walls' | 'doors' | 'windows'>;
-}
-
-const STORAGE_KEY = 'house-planner-designs';
-const AUTO_SAVE_KEY = 'house-planner-autosave';
-
-export const saveDesign = (name: string, data: Pick<DesignState, 'walls' | 'doors' | 'windows'>): string => {
-  const designs = getSavedDesigns();
-  const id = Date.now().toString();
-  
-  const newDesign: SavedDesign = {
-    id,
-    name,
-    timestamp: Date.now(),
-    data,
-  };
-  
-  designs.push(newDesign);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(designs));
-  
-  return id;
-};
-
-export const loadDesign = (id: string): SavedDesign | null => {
-  const designs = getSavedDesigns();
-  return designs.find(design => design.id === id) || null;
-};
-
-export const getSavedDesigns = (): SavedDesign[] => {
+export const saveDesign = async () => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
+    const design = useDesignStore.getState();
+    const designData = JSON.stringify(design, null, 2);
+    const blob = new Blob([designData], { type: 'application/json' });
+
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'house-plan.json',
+      types: [
+        {
+          description: 'JSON Files',
+          accept: {
+            'application/json': ['.json'],
+          },
+        },
+      ],
+    });
+
+    const writable = await handle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+  } catch (error) {
+    console.error('Error saving design:', error);
+    useErrorStore.getState().setError('Failed to save design.');
   }
 };
 
-export const deleteDesign = (id: string): void => {
-  const designs = getSavedDesigns().filter(design => design.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(designs));
+export const loadDesign = async () => {
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [
+        {
+          description: 'JSON Files',
+          accept: {
+            'application/json': ['.json'],
+          },
+        },
+      ],
+    });
+
+    const file = await handle.getFile();
+    const contents = await file.text();
+    const design = JSON.parse(contents);
+
+    useDesignStore.setState(design);
+  } catch (error) {
+    console.error('Error loading design:', error);
+    useErrorStore.getState().setError('Failed to load design.');
+  }
 };
 
 export const autoSave = (data: Pick<DesignState, 'walls' | 'doors' | 'windows'>): void => {
   try {
-    localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify({
+    localStorage.setItem('house-planner-autosave', JSON.stringify({
       timestamp: Date.now(),
       data,
     }));
@@ -59,7 +65,7 @@ export const autoSave = (data: Pick<DesignState, 'walls' | 'doors' | 'windows'>)
 
 export const loadAutoSave = (): Pick<DesignState, 'walls' | 'doors' | 'windows'> | null => {
   try {
-    const stored = localStorage.getItem(AUTO_SAVE_KEY);
+    const stored = localStorage.getItem('house-planner-autosave');
     if (stored) {
       const parsed = JSON.parse(stored);
       // Only load if autosave is less than 24 hours old

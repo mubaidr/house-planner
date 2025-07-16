@@ -50,16 +50,6 @@ export const useMeasureTool = () => {
     return Math.atan2(point2.y - point1.y, point2.x - point1.x);
   }, []);
 
-  const formatDistance = useCallback((distance: number): string => {
-    // Convert pixels to more meaningful units (assuming 1 pixel = 1 cm for now)
-    const cm = Math.round(distance);
-    const meters = (distance / 100).toFixed(2);
-    const feet = (distance / 30.48).toFixed(2);
-    const inches = (distance / 2.54).toFixed(1);
-    
-    return `${cm}cm (${meters}m / ${feet}ft / ${inches}in)`;
-  }, []);
-
   const getSnapPoint = useCallback((x: number, y: number): MeasurementPoint => {
     const snapPoints = getWallSnapPoints(walls);
     const snapResult = snapPoint(
@@ -120,7 +110,6 @@ export const useMeasureTool = () => {
     // Only create measurement if there's meaningful distance
     if (distance > 5) {
       const angle = calculateAngle(measureState.startPoint, measureState.currentPoint);
-      const label = formatDistance(distance);
       
       const newMeasurement: Measurement = {
         id: `measurement-${Date.now()}`,
@@ -128,7 +117,7 @@ export const useMeasureTool = () => {
         endPoint: measureState.currentPoint,
         distance,
         angle,
-        label,
+        label: '', // Label is now handled by MeasurementDisplay
         timestamp: Date.now(),
       };
 
@@ -143,7 +132,7 @@ export const useMeasureTool = () => {
       // Cancel if distance is too small
       cancelMeasurement();
     }
-  }, [measureState, calculateDistance, calculateAngle, formatDistance, cancelMeasurement]);
+  }, [measureState, calculateDistance, calculateAngle, cancelMeasurement]);
 
   const removeMeasurement = useCallback((id: string) => {
     setMeasureState(prev => ({
@@ -170,8 +159,8 @@ export const useMeasureTool = () => {
     if (!measureState.startPoint || !measureState.currentPoint) return null;
     
     const distance = calculateDistance(measureState.startPoint, measureState.currentPoint);
-    return formatDistance(distance);
-  }, [measureState.startPoint, measureState.currentPoint, calculateDistance, formatDistance]);
+    return distance.toFixed(2);
+  }, [measureState.startPoint, measureState.currentPoint, calculateDistance]);
 
   return {
     measureState,
@@ -183,6 +172,5 @@ export const useMeasureTool = () => {
     clearAllMeasurements,
     toggleShowAllMeasurements,
     getCurrentDistance,
-    formatDistance,
   };
 };

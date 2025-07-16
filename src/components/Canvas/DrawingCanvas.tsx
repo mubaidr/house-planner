@@ -58,8 +58,11 @@ import { useDimensionManager2D } from '@/hooks/useDimensionManager2D';
 import AnnotationRenderer2D from '@/components/Annotations/AnnotationRenderer2D';
 // Import clipboard functionality
 import { useClipboard } from '@/hooks/useClipboard';
-// Import context menu
-// import ContextMenu from './ContextMenu'; // Empty file, commented out
+import ContextMenu from './ContextMenu';
+// Import accessibility features
+import { useCanvasKeyboardNavigation } from '@/hooks/useCanvasKeyboardNavigation';
+import { AccessibilityAnnouncer, useAccessibilityAnnouncer } from '@/components/Accessibility/AccessibilityAnnouncer';
+import { useAccessibilityStore } from '@/stores/accessibilityStore';
 
 export default function DrawingCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -84,12 +87,39 @@ export default function DrawingCanvas() {
   // Clipboard functionality
   const { copyElement, pasteElement, hasClipboardData } = useClipboard();
 
+  // Accessibility functionality
+  const {
+    focusedElementId,
+    isCanvasFocused,
+    setIsCanvasFocused,
+    navigateElements,
+    selectFocusedElement,
+    getAllElements,
+    getFocusedElement
+  } = useCanvasKeyboardNavigation();
+
+  const {
+    announceToolChange,
+    announceElementCreated,
+    announceElementSelected,
+    announceElementDeleted,
+    announceError,
+    announceViewChange
+  } = useAccessibilityAnnouncer();
+
+  const {
+    isAccessibilityMode,
+    preferences,
+    setAccessibilityMode,
+    setFocusedElement,
+    getAccessibilityDescription
+  } = useAccessibilityStore();
+
   // Dimension state
   const [selectedDimensionId, setSelectedDimensionId] = useState<string | undefined>();
   const [isDimensionMode, setIsDimensionMode] = useState(false);
 
-  // Context menu state (currently not used due to empty ContextMenu component)
-  const [_contextMenu, setContextMenu] = useState<{
+  const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     visible: boolean;
@@ -230,7 +260,7 @@ export default function DrawingCanvas() {
   }, [currentView]);
 
   // Apply view-specific transformations to the stage
-  const getStageProps = () => {
+  const getStageProps = React.useCallback(() => {
     return {
       width: canvasWidth,
       height: canvasHeight,
@@ -246,7 +276,7 @@ export default function DrawingCanvas() {
       onMouseUp: handleStageMouseUp,
       className: "bg-white",
     };
-  };
+  }, [canvasWidth, canvasHeight, zoomLevel, viewTransform, activeTool, handleWheel, handleStageMouseDown, handleStageMouseMove, handleStageMouseUp]);
 
   // Handle wheel zoom
   const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
@@ -412,12 +442,138 @@ export default function DrawingCanvas() {
     }
   };
 
-  // Keyboard shortcuts
+  // Accessibility: Auto-detect screen reader usage
+  useEffect(() => {
+    const detectScreenReader = () => {
+      // Check for common screen reader indicators
+      const hasScreenReader = 
+        navigator.userAgent.includes('NVDA') ||
+        navigator.userAgent.includes('JAWS') ||
+        navigator.userAgent.includes('VoiceOver') ||
+        window.speechSynthesis ||
+        document.querySelector('[aria-live]') !== null;
+      
+      if (hasScreenReader && !isAccessibilityMode) {
+        setAccessibilityMode(true);
+      }
+    };
+
+    detectScreenReader();
+  }, [isAccessibilityMode, setAccessibilityMode]);
+
+  // Accessibility: Announce tool changes
+  useEffect(() => {
+    if (preferences.enableScreenReaderSupport) {
+      const toolNames = {
+        select: 'Selection',
+        wall: 'Wall drawing',
+        door: 'Door placement',
+        window: 'Window placement',
+        stair: 'Stair drawing',
+        roof: 'Roof drawing',
+        measure: 'Measurement',
+        dimension: 'Dimension annotation'
+      };
+      
+      const toolName = toolNames[activeTool as keyof typeof toolNames] || activeTool;
+      announceToolChange(toolName);
+    }
+  }, [activeTool, preferences.enableScreenReaderSupport, announceToolChange]);
+
+  // Accessibility: Announce view changes
+  useEffect(() => {
+    if (preferences.enableScreenReaderSupport) {
+      announceViewChange(currentView);
+    }
+  }, [currentView, preferences.enableScreenReaderSupport, announceViewChange]);
+
+  // Keyboard shortcuts with accessibility enhancements
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger shortcuts if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
+      }
+
+      // Handle accessibility-specific keyboard navigation
+      if (isCanvasFocused && preferences.enableKeyboardNavigation) {
+        switch (e.key) {
+          case 'Tab':
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              navigateElements(e.shiftKey ? 'left' : 'right');
+              return;
+            }
+            break;
+          case 'ArrowUp':
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              if (e.shiftKey && focusedElementId) {
+                // Move element up (fine control)
+                // TODO: Implement element movement
+              } else {
+                navigateElements('up');
+              }
+              return;
+            }
+            break;
+          case 'ArrowDown':
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              if (e.shiftKey && focusedElementId) {
+                // Move element down (fine control)
+                // TODO: Implement element movement
+              } else {
+                navigateElements('down');
+              }
+              return;
+            }
+            break;
+          case 'ArrowLeft':
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              if (e.shiftKey && focusedElementId) {
+                // Move element left (fine control)
+                // TODO: Implement element movement
+              } else {
+                navigateElements('left');
+              }
+              return;
+            }
+            break;
+          case 'ArrowRight':
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              if (e.shiftKey && focusedElementId) {
+                // Move element right (fine control)
+                // TODO: Implement element movement
+              } else {
+                navigateElements('right');
+              }
+              return;
+            }
+            break;
+          case 'Enter':
+          case ' ':
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              selectFocusedElement();
+              return;
+            }
+            break;
+          case 'i':
+            // Announce element information
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              const focusedElement = getFocusedElement();
+              if (focusedElement) {
+                const description = getAccessibilityDescription(focusedElement.type, focusedElement);
+                announceElementSelected(focusedElement.type, description);
+              }
+              return;
+            }
+            break;
+        }
       }
 
       if (e.ctrlKey || e.metaKey) {
@@ -459,10 +615,9 @@ export default function DrawingCanvas() {
             // Quick save design
             if (walls.length > 0 || doors.length > 0 || windows.length > 0 || stairs.length > 0 || roofs.length > 0) {
               try {
-                const { saveDesign } = require('@/utils/storage');
                 const designData = { walls, doors, windows, stairs, roofs };
                 const timestamp = new Date().toLocaleString();
-                const _id = saveDesign(`Quick Save - ${timestamp}`, designData);
+                saveDesign(`Quick Save - ${timestamp}`, designData);
                 // You could show a toast notification here
               } catch (error) {
                 console.error('Failed to save design:', error);
@@ -596,12 +751,53 @@ export default function DrawingCanvas() {
   }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, deleteSelectedDoor, deleteSelectedWindow, setMouseCoordinates, cancelRoofDrawing, cancelStairDrawing, isDrawingRoof, isDrawingStair, copyElement, pasteElement, hasClipboardData]);
 
   return (
-    <div ref={containerRef} className="w-full h-full">
+    <div 
+      ref={containerRef} 
+      className={`w-full h-full ${preferences.highContrastMode ? 'high-contrast' : ''}`}
+      tabIndex={0}
+      onFocus={() => setIsCanvasFocused(true)}
+      onBlur={(e) => {
+        // Only blur if focus is moving outside the canvas container
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setIsCanvasFocused(false);
+        }
+      }}
+      role="application"
+      aria-label="House design canvas - Use Tab to navigate elements, arrow keys for movement, Enter to select"
+      aria-describedby="canvas-instructions accessibility-status"
+      aria-live="polite"
+      style={{
+        outline: isCanvasFocused && preferences.largerFocusIndicators 
+          ? '3px solid #005fcc' 
+          : 'none',
+        outlineOffset: '2px'
+      }}
+    >
+      {/* Hidden instructions for screen readers */}
+      <div id="canvas-instructions" className="sr-only">
+        Interactive house design canvas. Use Tab to navigate between elements, 
+        arrow keys to move selection, Enter or Space to select elements, 
+        and keyboard shortcuts to activate tools. Press 'i' to hear detailed 
+        information about the focused element.
+      </div>
+      
+      {/* Accessibility status information */}
+      <div id="accessibility-status" className="sr-only" aria-live="polite">
+        {isAccessibilityMode ? 'Accessibility mode active. ' : ''}
+        {getAllElements().length} elements on canvas. 
+        {focusedElementId ? `Currently focused: ${getFocusedElement()?.ariaLabel}` : 'No element focused.'}
+      </div>
+
+      {/* Accessibility announcer for screen readers */}
+      <AccessibilityAnnouncer />
+
       <Stage
         ref={stageRef}
         {...getStageProps()}
         style={{
-          transition: isTransitioning ? 'all 0.3s ease-in-out' : 'none',
+          transition: isTransitioning && !preferences.reducedMotion 
+            ? 'all 0.3s ease-in-out' 
+            : 'none',
           opacity: isTransitioning ? 0.7 : 1,
         }}
         onContextMenu={(e) => {
@@ -679,7 +875,7 @@ export default function DrawingCanvas() {
                 const elementType = getElementTypeFromElement2D(element2D);
                 selectElement(elementId, elementType as 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'room' | null);
               }}
-              onElementEdit={(_elementId, _updates) => {
+              onElementEdit={(elementId, updates) => {
                 // Handle element edit
               }}
               onWallStartDrag={handleWallStartDrag}
@@ -706,7 +902,7 @@ export default function DrawingCanvas() {
                 const elementType = getElementTypeFromElement2D(element2D);
                 selectElement(elementId, elementType as 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'room' | null);
               }}
-              onElementEdit={(_elementId, _updates) => {
+              onElementEdit={(elementId, updates) => {
                 // Handle element edit
               }}
             />
@@ -948,7 +1144,7 @@ export default function DrawingCanvas() {
               joints={joints}
               visible={true}
               scale={zoomLevel}
-              onJointSelect={(_joint) => {
+              onJointSelect={() => {
                 // Could implement joint selection logic here
               }}
             />
@@ -960,7 +1156,7 @@ export default function DrawingCanvas() {
               connections={roofWallConnections}
               visible={true}
               scale={zoomLevel}
-              onConnectionSelect={(_connection) => {
+              onConnectionSelect={() => {
                 // Could implement connection selection logic here
               }}
             />
@@ -972,8 +1168,7 @@ export default function DrawingCanvas() {
       {/* Door Floating Controls */}
       <DoorFloatingControls />
 
-      {/* Context Menu - Commented out since ContextMenu component is empty */}
-      {/*
+      <ContextMenu
         x={contextMenu.x}
         y={contextMenu.y}
         isVisible={contextMenu.visible}
@@ -1027,7 +1222,6 @@ export default function DrawingCanvas() {
         }}
         hasClipboardData={hasClipboardData()}
       />
-      */}
     </div>
   );
 }

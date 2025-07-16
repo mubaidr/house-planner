@@ -10,7 +10,7 @@ interface ConstraintIndicatorsProps {
   elementWidth?: number;
 }
 
-export default function ConstraintIndicators({
+const ConstraintIndicators = React.memo(function ConstraintIndicatorsComponent({
   constraintResult,
   isValid,
   elementWidth = 80,
@@ -109,4 +109,6 @@ export default function ConstraintIndicators({
       )}
     </>
   );
-}
+});
+
+export default ConstraintIndicators;

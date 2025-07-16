@@ -11,7 +11,7 @@ interface SnapIndicatorsProps {
   canvasHeight?: number;
 }
 
-export default function SnapIndicators({
+const SnapIndicators = React.memo(function SnapIndicatorsComponent({
   snapPoint,
   showGridLines = false,
   canvasWidth = 800,
@@ -86,4 +86,6 @@ export default function SnapIndicators({
       )}
     </>
   );
-}
+});
+
+export default SnapIndicators;

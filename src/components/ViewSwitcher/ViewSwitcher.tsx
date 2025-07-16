@@ -4,18 +4,19 @@ import React, { useState } from 'react';
 import { useViewStore } from '@/stores/viewStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { ViewType2D } from '@/types/views';
+import { LuLayoutDashboard, LuChevronsRight, LuChevronsLeft, LuChevronsUp, LuChevronsDown } from 'react-icons/lu';
 
 export default function ViewSwitcher() {
   const { currentView, setViewWithHistory, isTransitioning } = useViewStore();
   const { executeCommand } = useHistoryStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const views: { mode: ViewType2D; label: string; icon: string; description: string }[] = [
-    { mode: 'plan', label: 'Plan View', icon: '⬜', description: 'Top-down floor layout' },
-    { mode: 'front', label: 'Front Elevation', icon: '⬛', description: 'Front view of building' },
-    { mode: 'back', label: 'Back Elevation', icon: '⬛', description: 'Back view of building' },
-    { mode: 'left', label: 'Left Elevation', icon: '⬛', description: 'Left side view' },
-    { mode: 'right', label: 'Right Elevation', icon: '⬛', description: 'Right side view' },
+  const views: { mode: ViewType2D; label: string; icon: React.ReactNode; description: string }[] = [
+    { mode: 'plan', label: 'Plan View', icon: <LuLayoutDashboard />, description: 'Top-down floor layout' },
+    { mode: 'front', label: 'Front Elevation', icon: <LuChevronsUp />, description: 'Front view of building' },
+    { mode: 'back', label: 'Back Elevation', icon: <LuChevronsDown />, description: 'Back view of building' },
+    { mode: 'left', label: 'Left Elevation', icon: <LuChevronsLeft />, description: 'Left side view' },
+    { mode: 'right', label: 'Right Elevation', icon: <LuChevronsRight />, description: 'Right side view' },
   ];
 
   const handleViewChange = (view: ViewType2D) => {

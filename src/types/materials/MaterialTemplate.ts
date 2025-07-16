@@ -1,3 +1,10 @@
+import { Wall } from '@/types/elements/Wall';
+import { Door } from '@/types/elements/Door';
+import { Window } from '@/types/elements/Window';
+import { Stair } from '@/types/elements/Stair';
+import { Roof } from '@/types/elements/Roof';
+import { Room } from '@/types/elements/Room';
+
 export interface MaterialTemplate {
   id: string;
   name: string;
@@ -5,6 +12,14 @@ export interface MaterialTemplate {
   category: TemplateCategory;
   thumbnail?: string;
   materials: TemplateMaterial[];
+  designData?: {
+    walls: Wall[];
+    doors: Door[];
+    windows: Window[];
+    stairs: Stair[];
+    roofs: Roof[];
+    rooms: Room[];
+  };
   metadata: TemplateMetadata;
   isBuiltIn: boolean;
 }

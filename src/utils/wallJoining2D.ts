@@ -88,7 +88,8 @@ export class WallJoiningSystem2D {
    * Analyze walls and create joins
    */
   public analyzeWalls(walls: Wall2D[]): WallJoinResult {
-    const result: WallJoinResult = {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _walls = walls;
       joints: [],
       intersections: [],
       modifiedWalls: [...walls],

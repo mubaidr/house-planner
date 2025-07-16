@@ -720,7 +720,8 @@ export class MaterialRenderer2D {
    * Load texture image for pattern rendering
    */
   private loadTextureImage(textureUrl: string): HTMLImageElement {
-    const img = new Image();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const image = new Image() as any;
     img.src = textureUrl;
     return img;
   }

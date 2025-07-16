@@ -1,4 +1,5 @@
-import { DrawingSheet, SheetViewPlacement, STANDARD_PAPER_SIZES, ViewType2D, Stage } from '@/types/drawingSheet2D';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { SheetViewPlacement } from '@/types/views';
 import JSZip from 'jszip';
 import jsPDF from 'jspdf';
 

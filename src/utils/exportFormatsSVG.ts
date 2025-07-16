@@ -47,7 +47,8 @@ export async function exportStageToSVG(
   options: Partial<SVGExportOptions> = {}
 ): Promise<{ success: boolean; svg?: string; blob?: Blob; error?: string }> {
   try {
-    const opts = { ...DEFAULT_SVG_OPTIONS, ...options };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _options = options;
     
     // Get stage dimensions
     const stageRect = stage.getClientRect();

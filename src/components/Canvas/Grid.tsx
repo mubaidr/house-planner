@@ -4,7 +4,7 @@ import React from 'react';
 import { Line } from 'react-konva';
 import { useUIStore } from '@/stores/uiStore';
 
-export default function Grid() {
+const Grid = React.memo(function GridComponent() {
   const { gridSize, canvasWidth, canvasHeight, gridVisible = true } = useUIStore();
 
   if (!gridVisible) return null;
@@ -38,4 +38,6 @@ export default function Grid() {
   }
 
   return <>{lines}</>;
-}
+});
+
+export default Grid;

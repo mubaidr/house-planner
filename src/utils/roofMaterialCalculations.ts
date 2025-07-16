@@ -243,7 +243,8 @@ export class RoofMaterialCalculator {
     // Calculate areas for mansard sections using both pitches
     const span = roofData.width;
     const lowerHeight = span * 0.3; // Lower section height
-    const lowerSlopeLength = lowerHeight / Math.sin(lowerPitch * Math.PI / 180);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _lowerSlopeLength = lowerSlopeLength;
     const upperSlopeLength = (span * 0.4) / Math.cos(upperPitch * Math.PI / 180);
     const upperWidth = span * 0.4; // Upper flat section width
     

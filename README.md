@@ -1,120 +1,56 @@
+
 # 2D House Planner
 
-A sophisticated web application for 2D architectural design and house planning, built for business owners who provide client estimates for house projects.
+This is a 2D house planner web application designed for business owners who provide client estimates for house projects. The target user is someone with minimal computer knowledge. The application is intended for desktop use only and follows WCAG accessibility guidelines.
 
-## Overview
+## Features
 
-The 2D House Planner is a desktop-focused web application that enables users with minimal computer knowledge to create professional architectural designs. The application supports multiple 2D view perspectives (plan, front, back, left, right elevations) and includes advanced features for material assignment, dimension management, and professional export capabilities.
-
-## Key Features
-
-### Core Functionality
-- **2D Architectural Design**: Complete house planning with walls, doors, windows, roofs, stairs, and rooms
-- **Multi-View System**: Seamless switching between plan view and 4 elevation views
-- **Material Library**: Comprehensive material assignment with visual patterns
-- **Multi-Story Support**: Complete floor management system
-- **Professional Export**: PNG, PDF, SVG export with drawing sheet layouts
-
-### Advanced Features
-- **Wall Joining System**: 7 joint types with visual indicators
-- **Roof-Wall Integration**: Complex roof-wall connection system
-- **Dimension Management**: Auto-generated and manual dimensions
-- **Interactive Annotations**: Real-time dimension editing
-- **Template System**: Save and reuse design templates
-- **Undo/Redo**: Complete history management
-
-### User Experience
-- **Accessibility**: WCAG compliant design
-- **Intuitive Interface**: Designed for minimal computer knowledge users
-- **Desktop Optimized**: Focused desktop experience
-- **Real-time Feedback**: Immediate visual feedback for all operations
-
-## Technology Stack
-
-- **Framework**: Next.js 15.3.5 with React 19.1.0
-- **Language**: TypeScript 5.0+
-- **Styling**: Tailwind CSS 4.0
-- **Canvas**: Konva.js 9.3.22 with React-Konva
-- **State Management**: Zustand 5.0.6
-- **Testing**: Jest 29.7.0 with jsdom
-- **Build Tool**: Turbopack (Next.js)
+- **2D House Design**: Create detailed 2D floor plans with walls, doors, windows, roofs, and stairs.
+- **Material Library**: Assign different materials to structural elements for accurate cost estimation.
+- **Multi-Story Support**: Design houses with multiple floors.
+- **Interactive Canvas**: Easily draw, edit, and manipulate your designs with an intuitive drag-and-drop interface.
+- **Save and Load**: Your work is saved automatically, so you can pick up where you left off.
+- **Export**: Export your designs to high-quality images or PDFs.
+- **Precision Tools**: Use a grid system, snap-to-grid, alignment tools, and measurement tools for accurate designs.
+- **Multiple Views**: Switch between top-down, front, back, left, and right 2D perspectives.
 
 ## Getting Started
 
+To get a local copy up and running, follow these simple steps.
+
 ### Prerequisites
-- Node.js 18+ 
-- npm, yarn, pnpm, or bun
+
+- npm
+  ```sh
+  npm install npm@latest -g
+  ```
 
 ### Installation
 
-1. Clone the repository
-2. Install dependencies:
-```bash
-npm install
-```
+1. Clone the repo
+   ```sh
+   git clone https://github.com/your_username_/Project-Name.git
+   ```
+2. Install NPM packages
+   ```sh
+   npm install
+   ```
+3. Run the development server
+   ```sh
+   npm run dev
+   ```
 
-3. Run the development server:
-```bash
-npm run dev
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-### Available Scripts
-
-```bash
-npm run dev          # Start development server with Turbopack
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run test         # Run Jest tests
-npm run test:watch   # Run tests in watch mode
-npm run test:coverage # Generate test coverage report
-```
-
-## Project Structure
-
-```
-src/
-├── app/                 # Next.js app router
-├── components/          # React components
-│   ├── Canvas/         # Drawing canvas and rendering
-│   ├── Layout/         # Application layout
-│   ├── Toolbar/        # Tool controls
-│   ├── Materials/      # Material system
-│   ├── Export/         # Export functionality
-│   └── ui/             # Reusable UI components
-├── stores/             # Zustand state stores
-├── types/              # TypeScript type definitions
-├── utils/              # Utility functions
-└── hooks/              # Custom React hooks
-```
-
-## Development Status
-
-**Current Progress**: 80% Complete
-- ✅ **Phase 1**: Core View System (Complete)
-- ✅ **Phase 2**: View Rendering System (Complete)
-- ✅ **Phase 3**: Enhanced Joining System (Complete)
-- ✅ **Phase 4**: Dimension & Annotation System (Complete)
-- 🔄 **Phase 5**: Export System Enhancement (In Progress)
-
-## Documentation
-
-- [Project Requirements](docs/requirements.md)
-- [Implementation Plan](docs/llm/implementation_plan.md)
-- [Task Management](docs/llm/task_management.md)
-- [Project Analysis](docs/PROJECT_ANALYSIS.md)
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Contributing
 
-This project follows modern React and TypeScript best practices:
-- Strict TypeScript configuration
-- ESLint for code quality
-- Jest for testing
-- Component-based architecture
-- Zustand for state management
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-## License
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 
-This project is private and proprietary.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
