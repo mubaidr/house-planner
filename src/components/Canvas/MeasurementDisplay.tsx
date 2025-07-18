@@ -3,7 +3,8 @@
 import React from 'react';
 import { Line, Circle, Text, Group } from 'react-konva';
 import { Measurement, MeasurementPoint } from '@/hooks/useMeasureTool';
-import useUnitStore from '@/stores/unitStore';
+import { useUnitStore } from '@/stores/unitStore';
+import { formatLength } from '@/utils/unitUtils';
 
 interface MeasurementDisplayProps {
   measurements: Measurement[];
@@ -23,17 +24,14 @@ interface MeasurementLineProps {
 }
 
 function MeasurementLine({ measurement, isTemporary = false, onRemove }: MeasurementLineProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { convertValue, getUnitSymbol } = useUnitStore();
-  // These are used in the JSX below, so no need to declare them as unused.
-  // These are used in the JSX below, so no need to declare them as unused.
+  const { unitSystem, precision, showUnitLabels } = useUnitStore();
   const { startPoint, endPoint, distance } = measurement;
   const color = isTemporary ? '#3b82f6' : '#ef4444';
   const opacity = isTemporary ? 0.8 : 1;
 
-  const convertedDistance = convertValue(distance);
-  const unitSymbol = getUnitSymbol();
-  const label = `${convertedDistance.toFixed(2)} ${unitSymbol}`;
+  // Convert pixel distance to meters (assuming 100px = 1m)
+  const distanceInMeters = typeof distance === 'number' ? distance / 100 : parseFloat(distance) / 100;
+  const label = formatLength(distanceInMeters, unitSystem, precision, showUnitLabels);
 
   // Calculate midpoint for label
   const midX = (startPoint.x + endPoint.x) / 2;
@@ -181,6 +179,7 @@ export default function MeasurementDisplay({
   showAll,
   onRemoveMeasurement,
 }: MeasurementDisplayProps) {
+  const { unitSystem } = useUnitStore();
   return (
     <>
       {/* Show existing measurements */}
@@ -200,7 +199,7 @@ export default function MeasurementDisplay({
             id: 'current',
             startPoint: currentMeasurement.startPoint,
             endPoint: currentMeasurement.currentPoint,
-            distance: 0, // Not used for display
+            distance: currentMeasurement.distance,
             angle: 0, // Not used for display
             label: currentMeasurement.distance,
             timestamp: Date.now(),

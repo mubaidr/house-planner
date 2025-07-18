@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useUnitStore } from '@/stores/unitStore';
 import { snapPoint, getWallSnapPoints } from '@/utils/snapping';
+import { formatLength } from '@/utils/unitUtils';
 
 export interface MeasurementPoint {
   x: number;
@@ -39,6 +41,7 @@ export const useMeasureTool = () => {
 
   const { walls } = useDesignStore();
   const { activeTool, snapToGrid, gridSize } = useUIStore();
+  const { unitSystem, precision, showUnitLabels } = useUnitStore();
 
   const calculateDistance = useCallback((point1: MeasurementPoint, point2: MeasurementPoint): number => {
     return Math.sqrt(
@@ -159,8 +162,10 @@ export const useMeasureTool = () => {
     if (!measureState.startPoint || !measureState.currentPoint) return null;
     
     const distance = calculateDistance(measureState.startPoint, measureState.currentPoint);
-    return distance.toFixed(2);
-  }, [measureState.startPoint, measureState.currentPoint, calculateDistance]);
+    // Convert pixel distance to meters (assuming 100px = 1m)
+    const distanceInMeters = distance / 100;
+    return formatLength(distanceInMeters, unitSystem, precision, showUnitLabels);
+  }, [measureState.startPoint, measureState.currentPoint, calculateDistance, unitSystem, precision, showUnitLabels]);
 
   return {
     measureState,

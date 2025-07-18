@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
+import { useUnitStore } from '@/stores/unitStore';
 import RoomPropertiesPanel from './RoomPropertiesPanel';
 import StairPropertiesPanel from './StairPropertiesPanel';
 import RoofPropertiesPanel from './RoofPropertiesPanel';
+import UnitSettings from '../Settings/UnitSettings';
 import { useWallEditor } from '@/hooks/useWallEditor';
 import { useDoorEditor } from '@/hooks/useDoorEditor';
 import { useWindowEditor } from '@/hooks/useWindowEditor';
@@ -257,27 +259,29 @@ export default function PropertiesPanel() {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Width (px)
+                        Width {useUnitStore().showUnitLabels ? (useUnitStore().unitSystem === 'metric' ? '(m)' : '(ft)') : ''}
                       </label>
                       <input
                         type="number"
-                        min="40"
-                        max="200"
-                        value={editValues.width ?? selectedElement.width}
-                        onChange={(e) => handlePropertyChange('width', e.target.value)}
+                        min="0.4"
+                        max="2"
+                        step="0.1"
+                        value={(editValues.width ?? selectedElement.width) / 100}
+                        onChange={(e) => handlePropertyChange('width', parseFloat(e.target.value) * 100)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Height (px)
+                        Height {useUnitStore().showUnitLabels ? (useUnitStore().unitSystem === 'metric' ? '(m)' : '(ft)') : ''}
                       </label>
                       <input
                         type="number"
-                        min="150"
-                        max="250"
-                        value={editValues.height ?? selectedElement.height}
-                        onChange={(e) => handlePropertyChange('height', e.target.value)}
+                        min="1.5"
+                        max="2.5"
+                        step="0.1"
+                        value={(editValues.height ?? selectedElement.height) / 100}
+                        onChange={(e) => handlePropertyChange('height', parseFloat(e.target.value) * 100)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -377,30 +381,47 @@ export default function PropertiesPanel() {
                 )}
 
                 {/* Position information (read-only) */}
-                {selectedElementType === 'wall' && 'startX' in selectedElement && (
-                  <div className="pt-3 border-t border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Position</h4>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-gray-500">Start:</span> 
-                        <span className="ml-1">({Math.round(selectedElement.startX)}, {Math.round(selectedElement.startY)})</span>
+                {selectedElementType === 'wall' && 'startX' in selectedElement && (() => {
+                  const { unitSystem, precision, showUnitLabels } = useUnitStore();
+                  const { formatLength } = require('@/utils/unitUtils');
+                  
+                  // Calculate length in pixels
+                  const lengthPx = Math.sqrt(
+                    Math.pow(selectedElement.endX - selectedElement.startX, 2) + 
+                    Math.pow(selectedElement.endY - selectedElement.startY, 2)
+                  );
+                  
+                  // Convert to meters (assuming 100px = 1m)
+                  const lengthInMeters = lengthPx / 100;
+                  
+                  return (
+                    <div className="pt-3 border-t border-gray-200">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Position</h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-gray-500">Start:</span> 
+                          <span className="ml-1">
+                            ({formatLength(selectedElement.startX / 100, unitSystem, precision, showUnitLabels)}, 
+                             {formatLength(selectedElement.startY / 100, unitSystem, precision, showUnitLabels)})
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">End:</span> 
+                          <span className="ml-1">
+                            ({formatLength(selectedElement.endX / 100, unitSystem, precision, showUnitLabels)}, 
+                             {formatLength(selectedElement.endY / 100, unitSystem, precision, showUnitLabels)})
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-gray-500">End:</span> 
-                        <span className="ml-1">({Math.round(selectedElement.endX)}, {Math.round(selectedElement.endY)})</span>
+                      <div className="mt-1">
+                        <span className="text-gray-500">Length:</span> 
+                        <span className="ml-1">
+                          {formatLength(lengthInMeters, unitSystem, precision, showUnitLabels)}
+                        </span>
                       </div>
                     </div>
-                    <div className="mt-1">
-                      <span className="text-gray-500">Length:</span> 
-                      <span className="ml-1">
-                        {Math.round(Math.sqrt(
-                          Math.pow(selectedElement.endX - selectedElement.startX, 2) + 
-                          Math.pow(selectedElement.endY - selectedElement.startY, 2)
-                        ))}px
-                      </span>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Actions */}
                 <div className="pt-3 border-t border-gray-200">
@@ -454,9 +475,14 @@ export default function PropertiesPanel() {
             </div>
           )
         ) : (
-          <div className="text-center text-gray-500 mt-8">
-            <div className="text-4xl mb-4">📐</div>
-            <p>Select an element to edit its properties</p>
+          <div className="space-y-6">
+            <div className="text-center text-gray-500 mt-8">
+              <div className="text-4xl mb-4">📐</div>
+              <p>Select an element to edit its properties</p>
+            </div>
+            
+            {/* Show unit settings when no element is selected */}
+            <UnitSettings />
           </div>
         )}
       </div>
