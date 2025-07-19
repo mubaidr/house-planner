@@ -1,6 +1,6 @@
 /**
  * Wall Joining System for 2D Views
- * 
+ *
  * This module handles intelligent wall joining, intersection detection,
  * and connection management for the 2D architectural drawing system.
  * Supports T-joints, L-joints, cross-joints, and corner connections.
@@ -19,7 +19,7 @@ export interface WallJoint2D {
   metadata?: Record<string, unknown>;
 }
 
-export type WallJointType = 
+export type WallJointType =
   | 'corner'      // 90-degree corner
   | 'tee'         // T-junction
   | 'cross'       // 4-way intersection
@@ -88,8 +88,7 @@ export class WallJoiningSystem2D {
    * Analyze walls and create joins
    */
   public analyzeWalls(walls: Wall2D[]): WallJoinResult {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _walls = walls;
+    const result: WallJoinResult = {
       joints: [],
       intersections: [],
       modifiedWalls: [...walls],
@@ -131,7 +130,7 @@ export class WallJoiningSystem2D {
       for (let j = i + 1; j < walls.length; j++) {
         const wall1 = walls[i];
         const wall2 = walls[j];
-        
+
         const intersection = this.findWallIntersection(wall1, wall2);
         if (intersection) {
           intersections.push(intersection);
@@ -150,7 +149,7 @@ export class WallJoiningSystem2D {
       start: wall1.startPoint,
       end: wall1.endPoint
     };
-    
+
     const line2 = {
       start: wall2.startPoint,
       end: wall2.endPoint
@@ -217,7 +216,7 @@ export class WallJoiningSystem2D {
   private getParameterOnLine(line: {start: Point2D, end: Point2D}, point: Point2D): number {
     const dx = line.end.x - line.start.x;
     const dy = line.end.y - line.start.y;
-    
+
     if (Math.abs(dx) > Math.abs(dy)) {
       return (point.x - line.start.x) / dx;
     } else {
@@ -230,20 +229,20 @@ export class WallJoiningSystem2D {
    */
   private classifyIntersection(param1: number, param2: number): 'crossing' | 'touching' | 'overlapping' {
     const tolerance = this.config.tolerance;
-    
+
     // Check if parameters indicate endpoint connections
     const isEndpoint1 = Math.abs(param1) < tolerance || Math.abs(param1 - 1) < tolerance;
     const isEndpoint2 = Math.abs(param2) < tolerance || Math.abs(param2 - 1) < tolerance;
-    
+
     if (isEndpoint1 || isEndpoint2) {
       return 'touching';
     }
-    
+
     // Check for overlapping (parallel walls)
     if (param1 >= 0 && param1 <= 1 && param2 >= 0 && param2 <= 1) {
       return 'overlapping';
     }
-    
+
     return 'crossing';
   }
 
@@ -256,7 +255,7 @@ export class WallJoiningSystem2D {
 
     for (const intersection of intersections) {
       const pointKey = `${intersection.point.x.toFixed(3)},${intersection.point.y.toFixed(3)}`;
-      
+
       let joint = processedPoints.get(pointKey);
       if (!joint) {
         joint = {
@@ -271,7 +270,7 @@ export class WallJoiningSystem2D {
             createdFrom: 'intersection'
           }
         };
-        
+
         joints.push(joint);
         processedPoints.set(pointKey, joint);
       } else {
@@ -282,7 +281,7 @@ export class WallJoiningSystem2D {
         if (!joint.wallIds.includes(intersection.wall2Id)) {
           joint.wallIds.push(intersection.wall2Id);
         }
-        
+
         // Update joint type based on number of walls
         joint.type = this.determineJointTypeFromWallCount(joint.wallIds.length, joint.angle);
       }
@@ -317,10 +316,10 @@ export class WallJoiningSystem2D {
       if (Math.abs(angle - 180) < threshold) return 'butt';
       return 'corner'; // Default for 2 walls
     }
-    
+
     if (wallCount === 3) return 'tee';
     if (wallCount >= 4) return 'cross';
-    
+
     return 'butt'; // Default
   }
 
@@ -423,7 +422,7 @@ export class WallJoiningSystem2D {
    * Get joints for a specific wall
    */
   public getJointsForWall(wallId: string): WallJoint2D[] {
-    return Array.from(this.joints.values()).filter(joint => 
+    return Array.from(this.joints.values()).filter(joint =>
       joint.wallIds.includes(wallId)
     );
   }

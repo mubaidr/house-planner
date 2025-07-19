@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 import { useMaterialStore } from '@/stores/materialStore';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useErrorStore } from '@/stores/errorStore';
 import { useAccessibilityStore } from '@/stores/accessibilityStore';
+import { useFloorStore } from '@/stores/floorStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import AccessibilitySettingsPanel from '@/components/Accessibility/AccessibilitySettingsPanel';
 import AlternativeElementList from '@/components/Accessibility/AlternativeElementList';
 import ErrorNotification from '@/components/ErrorHandling/ErrorNotification';
 import { Button } from '@/components/ui/button';
 import { Settings, List, Accessibility } from 'lucide-react';
-import Toolbar from '@/components/Toolbar/Toolbar';
+import { Toolbar } from '@/components/Toolbar/Toolbar';
 import ElementsSidebar from '@/components/Sidebar/ElementsSidebar';
 import PropertiesPanel from '@/components/Properties/PropertiesPanel';
 import StatusBar from '@/components/StatusBar/StatusBar';
@@ -27,6 +28,7 @@ import TemplateLibrary from '@/components/Templates/TemplateLibrary';
 import ExportDialog from '@/components/Export/ExportDialog';
 import ImportDialog from '@/components/Export/ImportDialog';
 import { Alert } from '@/components/ui/alert';
+import { Stage } from 'konva/lib/Stage';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -37,11 +39,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const { isLibraryOpen } = useMaterialStore();
   const { isTemplateLibraryOpen } = useTemplateStore();
   const { error, setError } = useErrorStore();
-  const { 
-    preferences, 
-    isAccessibilityMode, 
-    showElementList, 
-    toggleElementList 
+  const {
+    preferences,
+    isAccessibilityMode,
+    showElementList,
+    toggleElementList
   } = useAccessibilityStore();
 
   // Local state for accessibility panels
@@ -58,23 +60,108 @@ export default function AppLayout({ children }: AppLayoutProps) {
     setImportDialogOpen(true);
   };
 
-  const handleExportAnnotations = () => {
-    // Logic to handle exporting annotations
-    // TODO: Implement annotation export functionality
+  const handleExportAnnotations = async () => {
+    try {
+      const { floors } = useFloorStore.getState();
+
+      // Collect all annotations from all floors
+      const annotations = {
+        version: "1.0",
+        timestamp: new Date().toISOString(),
+        floors: floors.map(floor => ({
+          id: floor.id,
+          name: floor.name,
+          annotations: {
+            dimensions: floor.elements.dimensions || [],
+            notes: floor.elements.notes || [],
+            labels: floor.elements.labels || []
+          }
+        }))
+      };
+
+      // Export as JSON
+      const jsonBlob = new Blob([JSON.stringify(annotations, null, 2)], {
+        type: 'application/json'
+      });
+
+      const jsonUrl = URL.createObjectURL(jsonBlob);
+      const jsonA = document.createElement('a');
+      jsonA.href = jsonUrl;
+      jsonA.download = `annotations-${Date.now()}.json`;
+      jsonA.click();
+      URL.revokeObjectURL(jsonUrl);
+
+      // Also export as CSV for compatibility
+      const csvData = generateAnnotationsCSV(floors);
+      const csvBlob = new Blob([csvData], { type: 'text/csv' });
+      const csvUrl = URL.createObjectURL(csvBlob);
+      const csvA = document.createElement('a');
+      csvA.href = csvUrl;
+      csvA.download = `annotations-${Date.now()}.csv`;
+      csvA.click();
+      URL.revokeObjectURL(csvUrl);
+
+    } catch (error) {
+      useErrorStore.getState().setError('Failed to export annotations', 'error', { error });
+    }
+  };
+
+  const escapeCSV = (value: any) => {
+    if (value == null) return '';
+    const str = String(value);
+    if (/[",\n]/.test(str)) {
+      // Escape double quotes by doubling them, wrap in quotes
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const generateAnnotationsCSV = (floors: any[]) => {
+    const headers = ['Floor', 'Type', 'Text', 'X', 'Y', 'Width', 'Height'];
+    const rows = floors.flatMap(floor => [
+      ...(floor.elements.dimensions || []).map(dim => [
+        floor.name,
+        'Dimension',
+        dim.text || '',
+        dim.x || 0,
+        dim.y || 0,
+        dim.width || 0,
+        dim.height || 0
+      ]),
+      ...(floor.elements.notes || []).map(note => [
+        floor.name,
+        'Note',
+        note.text || '',
+        note.x || 0,
+        note.y || 0,
+        note.width || 0,
+        note.height || 0
+      ]),
+      ...(floor.elements.labels || []).map(label => [
+        floor.name,
+        'Label',
+        label.text || '',
+        label.x || 0,
+        label.y || 0,
+        label.width || 0,
+        label.height || 0
+      ])
+    ]);
+    return [headers, ...rows].map(row => row.map(escapeCSV).join(',')).join('\n');
   };
 
   return (
     <div className={`h-screen w-screen flex flex-col bg-gray-100 ${preferences.highContrastMode ? 'high-contrast' : ''}`}>
       {/* Skip Links for Accessibility */}
-      <a 
-        href="#main-content" 
+      <a
+        href="#main-content"
         className="skip-link focus-enhanced"
         tabIndex={1}
       >
         Skip to main content
       </a>
-      <a 
-        href="#accessibility-controls" 
+      <a
+        href="#accessibility-controls"
         className="skip-link focus-enhanced"
         tabIndex={2}
       >
@@ -83,7 +170,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Error Notifications */}
       <ErrorNotification />
-      
+
       {/* Legacy error alert - keeping for backward compatibility */}
       {error && <Alert message={error} onClose={() => setError(null)} />}
       {/* Mobile/Tablet responsive grid layout */}
@@ -131,10 +218,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
             onImportAnnotations={handleImportAnnotations}
             onExportAnnotations={handleExportAnnotations}
           />
-          
+
           {/* Accessibility Controls */}
-          <div 
-            id="accessibility-controls" 
+          <div
+            id="accessibility-controls"
             className="fixed bottom-4 left-4 z-40 flex flex-col space-y-2"
           >
             {isAccessibilityMode && (
@@ -149,7 +236,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 >
                   <Accessibility className="w-4 h-4" />
                 </Button>
-                
+
                 {preferences.enableAlternativeElementList && (
                   <Button
                     onClick={toggleElementList}
@@ -166,7 +253,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </>
             )}
           </div>
-          
+
           {children}
         </main>
 
@@ -200,7 +287,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         isOpen={isAccessibilitySettingsOpen}
         onClose={() => setIsAccessibilitySettingsOpen(false)}
       />
-      
+
       <AlternativeElementList
         isOpen={showElementList}
         onClose={toggleElementList}

@@ -13,7 +13,7 @@ interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ size = 'md', label, description, error, className = '', ...props }, ref) => {
     const baseStyles = 'rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
-    
+
     const sizes = {
       sm: 'h-3 w-3',
       md: 'h-4 w-4',
@@ -34,8 +34,15 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={classes}
             aria-invalid={!!error}
             aria-describedby={
-              error ? `${id}-error` : description ? `${id}-description` : undefined
+              error && description
+                ? `${id}-error ${id}-description`
+                : error
+                ? `${id}-error`
+                : description
+                ? `${id}-description`
+                : undefined
             }
+            aria-checked={props.checked}
             {...props}
           />
         </div>

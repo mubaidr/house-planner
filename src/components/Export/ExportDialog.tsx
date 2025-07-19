@@ -3,13 +3,13 @@
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { Stage } from 'konva/lib/Stage';
-import { 
-  ExportOptions, 
-  exportToPNG, 
-  exportToPDF, 
-  downloadFile, 
+import {
+  ExportOptions,
+  exportToPNG,
+  exportToPDF,
+  downloadFile,
   generateFilename,
-  getExportPreview 
+  getExportPreview
 } from '@/utils/exportUtils';
 import {
   MultiViewExportOptions,
@@ -42,17 +42,17 @@ interface ExportDialogProps {
 export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportDialogProps) {
   const { currentView } = useViewStore();
   const { floors } = useFloorStore();
-  const { 
+  const {
     startExport,
     updateProgress,
     setError,
     finishExport
   } = useExportProgressStore();
-  
+
   const [exportMode, setExportMode] = useState<'single' | 'multi' | 'template' | 'batch'>('single');
   const [selectedTemplate, setSelectedTemplate] = useState<ExportTemplate | null>(null);
   const [templateCategory, setTemplateCategory] = useState<'residential' | 'commercial' | 'technical' | 'presentation'>('residential');
-  const [selectedFloors, setSelectedFloors] = useState<string[]>(floors.map(f => f.id));
+  const [selectedFloors, setSelectedFloors] = useState<string[]>(floors.map(f => f.id).filter(id => id && typeof id === 'string'));
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'png',
     quality: 0.9,
@@ -65,7 +65,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
     title: 'House Plan',
     description: 'Created with 2D House Planner',
   });
-  
+
   const [multiViewOptions, setMultiViewOptions] = useState<MultiViewExportOptions>({
     ...DEFAULT_MULTI_VIEW_OPTIONS,
     title: 'House Plan - Multi-View',
@@ -90,23 +90,25 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
   // Implement batch export functionality
   const handleBatchExport = async () => {
     if (!stages || selectedFloors.length === 0) return;
-    
+
     try {
       setIsExporting(true);
-      startExport();
-      
-      const batchItems: BatchExportItem[] = selectedFloors.map(floorId => {
-        const floor = floors.find(f => f.id === floorId);
-        return {
-          id: floorId,
-          name: floor?.name || `Floor-${floorId}`,
-          stages,
-          options: multiViewOptions,
-        };
-      });
+      startExport(selectedFloors.length);
+
+      const batchItems: BatchExportItem[] = selectedFloors
+        .filter(floorId => floorId && typeof floorId === 'string')
+        .map(floorId => {
+          const floor = floors.find(f => f.id === floorId);
+          return {
+            id: floorId,
+            name: floor?.name || `Floor-${floorId}`,
+            stages,
+            options: multiViewOptions,
+          };
+        });
 
       const results = await batchExport(batchItems, (completed, total, currentItem) => {
-        updateProgress(Math.round((completed / total) * 100));
+        updateProgress(Math.round((completed / total) * 100), currentItem);
       });
 
       await downloadBatchAsZip(results, 'house-plans-batch');
@@ -120,17 +122,19 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
   };
 
   // Handle floor selection for batch export
-  const handleFloorSelection = (floorId: string) => {
-    setSelectedFloors(prev => 
-      selected 
-        ? [...prev, floorId]
-        : prev.filter(id => id !== floorId)
+  const handleFloorSelection = (floorId: string | undefined | null) => {
+    // Guard against undefined/null/invalid floorId to prevent "undefined selected" bug
+    if (typeof floorId !== 'string' || !floorId) return;
+    setSelectedFloors(prev =>
+      prev.includes(floorId)
+        ? prev.filter(id => id !== floorId)
+        : [...prev, floorId]
     );
   };
 
 
   // Template handling
-  const availableTemplates = React.useMemo(() => 
+  const availableTemplates = React.useMemo(() =>
     getTemplatesByCategory(templateCategory), [templateCategory]);
 
   const handleTemplateSelect = React.useCallback((template: ExportTemplate) => {
@@ -143,23 +147,26 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
   const generatePreview = React.useCallback(async () => {
     if (exportMode === 'single' && !stage) return;
     if (exportMode === 'multi' && !stages) return;
-    
+
     try {
       if (exportMode === 'single' && stage) {
         const previewUrl = await getExportPreview(stage, 300, 200);
         setPreview(previewUrl);
       } else if (exportMode === 'multi' && stages) {
         // Filter out null stages and create valid stages record
-        const validStages: Record<ViewType2D, Stage> = {};
-        multiViewOptions.views.forEach(viewType => {
-          if (stages[viewType]) {
-            validStages[viewType] = stages[viewType]!;
+        const validStages: Partial<Record<ViewType2D, Stage>> = {};
+        (multiViewOptions.views as ViewType2D[]).forEach(viewType => {
+          const stageValue = stages[viewType as ViewType2D];
+          if (stageValue) {
+            validStages[viewType as ViewType2D] = stageValue;
           }
         });
-        
+
         if (Object.keys(validStages).length > 0) {
-          const multiPreview = await generateExportPreview(validStages, multiViewOptions);
-          setPreview(multiPreview.dataUrl);
+          // For now, use a placeholder preview - the actual preview generation
+          // would need to be implemented based on the stages and options
+          const multiPreview = await generateExportPreview();
+          setPreview(multiPreview.dataUrl || '/placeholder-preview.png');
         }
       }
     } catch (error) {
@@ -185,11 +192,11 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
     try {
       let blob: Blob;
       let filename: string;
-      
+
       if (exportMode === 'single' && stage) {
         // Single view export
         let result;
-        
+
         if (exportOptions.format === 'png') {
           result = await exportToPNG(stage, exportOptions);
         } else {
@@ -198,43 +205,45 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
 
         if (result.success && result.blob) {
           blob = result.blob;
-          filename = generateFilename(exportOptions.format, exportOptions.title);
+          filename = generateFilename(exportOptions.format as 'png' | 'pdf', exportOptions.title);
         } else {
           setExportError(result.error || 'Export failed');
           return;
         }
       } else if (exportMode === 'multi' && stages) {
         // Multi-view export
-        const validStages: Record<ViewType2D, Stage> = {};
-        multiViewOptions.views.forEach(viewType => {
-          if (stages[viewType]) {
-            validStages[viewType] = stages[viewType]!;
+        const validStages: Partial<Record<ViewType2D, Stage>> = {};
+        (multiViewOptions.views as ViewType2D[]).forEach(viewType => {
+          const stageValue = stages?.[viewType as ViewType2D];
+          if (stageValue) {
+            validStages[viewType as ViewType2D] = stageValue;
           }
         });
-        
+
         if (Object.keys(validStages).length === 0) {
           setExportError('No valid views available for export');
           return;
         }
-        
-        blob = await exportMultiViewToPDF(validStages, multiViewOptions);
+
+        blob = await exportMultiViewToPDF(validStages as Record<ViewType2D, Stage>, multiViewOptions);
         filename = generateFilename('pdf', multiViewOptions.title);
       } else if (exportMode === 'template' && selectedTemplate && stages) {
         // Template export
-        const validStages: Record<ViewType2D, Stage> = {};
-        selectedTemplate.views.forEach(viewType => {
-          if (stages[viewType]) {
-            validStages[viewType] = stages[viewType]!;
+        const validStages: Partial<Record<ViewType2D, Stage>> = {};
+        (selectedTemplate.views as ViewType2D[]).forEach(viewType => {
+          const stageValue = stages?.[viewType as ViewType2D];
+          if (stageValue) {
+            validStages[viewType as ViewType2D] = stageValue;
           }
         });
-        
+
         if (Object.keys(validStages).length === 0) {
           setExportError('No valid views available for template export');
           return;
         }
-        
+
         const templateOptions = applyTemplate(selectedTemplate, multiViewOptions);
-        blob = await exportMultiViewToPDF(validStages, templateOptions);
+        blob = await exportMultiViewToPDF(validStages as Record<ViewType2D, Stage>, templateOptions);
         filename = generateFilename('pdf', templateOptions.title || selectedTemplate.name);
       } else {
         setExportError('Invalid export configuration');
@@ -327,13 +336,13 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
           {exportMode === 'template' && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-gray-700">Professional Templates</h3>
-              
+
               {/* Template Category Selection */}
               <div>
                 <label className="block text-sm text-gray-600 mb-2">Category</label>
                 <select
                   value={templateCategory}
-                  onChange={(e) => setTemplateCategory(e.target.value as HTMLSelectElement['value'])}
+                  onChange={(e) => setTemplateCategory(e.target.value as 'residential' | 'commercial' | 'technical' | 'presentation')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="residential">Residential</option>
@@ -438,7 +447,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
             {/* Format Options */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-gray-700">Format & Quality</h3>
-              
+
               {/* Format Selection */}
               <div>
                 <label className="block text-sm text-gray-600 mb-2">Export Format</label>
@@ -522,7 +531,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
             {exportMode === 'multi' && (
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-gray-700">Multi-View Settings</h3>
-                
+
                 {/* View Selection */}
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">Views to Include</label>
@@ -614,7 +623,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
             {exportMode === 'single' && exportOptions.format === 'pdf' && (
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-gray-700">PDF Settings</h3>
-                
+
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">Paper Size</label>
                   <select
@@ -661,7 +670,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
           {/* Content Options */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-700">Content Options</h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <label className="flex items-center">
                 <input
@@ -726,7 +735,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
           {/* Metadata */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-700">Document Information</h3>
-            
+
             <div>
               <label className="block text-sm text-gray-600 mb-2">Title</label>
               <input
@@ -807,7 +816,7 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
           </button>
         </div>
       </div>
-      
+
       {/* Export Preview Modal */}
       <ExportPreview
         isOpen={isPreviewOpen}

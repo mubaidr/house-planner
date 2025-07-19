@@ -12,7 +12,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ variant = 'default', size = 'md', error, className = '', ...props }, ref) => {
     const baseStyles = 'block w-full border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed';
-    
+
     const variants = {
       default: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
       error: 'border-red-500 focus:border-red-500 focus:ring-red-500',
@@ -32,12 +32,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={classes}
           aria-invalid={!!error}
-          aria-describedby={error ? `${props.id}-error` : undefined}
+          aria-describedby={
+            error && props['aria-describedby']
+              ? `${props['aria-describedby']} ${props.id ? `${props.id}-error` : ''}`.trim()
+              : error
+              ? props.id
+                ? `${props.id}-error`
+                : undefined
+              : props['aria-describedby']
+          }
           {...props}
         />
         {error && (
           <div
-            id={`${props.id}-error`}
+            id={props.id ? `${props.id}-error` : undefined}
             className="mt-1 text-sm text-red-600"
             role="alert"
           >

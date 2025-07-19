@@ -10,9 +10,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'default', size = 'md', className = '', children, ...props }, ref) => {
+  ({ variant = 'default', size = 'md', className = '', children, 'aria-label': ariaLabel, ...props }, ref) => {
     const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-    
+
     const variants = {
       default: 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 focus:ring-blue-500',
       primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
@@ -34,6 +34,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={classes}
+        aria-label={ariaLabel}
         {...props}
       >
         {children}

@@ -32,7 +32,7 @@ const PopoverContext = React.createContext<{
 const Popover = ({ open, onOpenChange, children, className = '' }: PopoverProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const triggerRef = useRef<HTMLElement>(null);
-  
+
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = (newOpen: boolean) => {
     if (onOpenChange) {
@@ -55,9 +55,9 @@ const PopoverTrigger = forwardRef<HTMLElement, PopoverTriggerProps>(
   ({ asChild = false, children, className = '', ...props }, ref) => {
     const context = React.useContext(PopoverContext);
     if (!context) throw new Error('PopoverTrigger must be used within Popover');
-    
+
     const { isOpen, setIsOpen, triggerRef } = context;
-    
+
     const handleClick = (event: React.MouseEvent) => {
       event.preventDefault();
       setIsOpen(!isOpen);
@@ -111,10 +111,10 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(
   ({ children, className = '', align = 'center', side = 'bottom', ...props }, ref) => {
     const context = React.useContext(PopoverContext);
     if (!context) throw new Error('PopoverContent must be used within Popover');
-    
+
     const { isOpen, setIsOpen, triggerRef } = context;
     const contentRef = useRef<HTMLDivElement>(null);
-    
+
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -131,19 +131,46 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(
         if (event.key === 'Escape') {
           setIsOpen(false);
         }
+        // Focus trap: Tab/Shift+Tab cycling
+        if (event.key === 'Tab' && contentRef.current) {
+          const focusableEls = contentRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+          );
+          const focusable = Array.from(focusableEls);
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          } else if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          }
+        }
       };
-      
+
       if (isOpen) {
         document.addEventListener('mousedown', handleClickOutside);
         document.addEventListener('keydown', handleEscapeKey);
+        // Move focus to popover content
+        setTimeout(() => {
+          if (contentRef.current) {
+            contentRef.current.focus();
+          }
+        }, 0);
       }
-      
+
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
         document.removeEventListener('keydown', handleEscapeKey);
+        // Return focus to trigger
+        if (triggerRef.current) {
+          triggerRef.current.focus();
+        }
       };
     }, [isOpen, setIsOpen, triggerRef]);
-    
+
     if (!isOpen) return null;
 
     const alignmentClasses = {
@@ -158,7 +185,7 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(
       left: 'right-full mr-2 top-0',
       right: 'left-full ml-2 top-0',
     };
-    
+
     return (
       <div
         ref={(node) => {
@@ -173,6 +200,8 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(
         }}
         className={`absolute z-50 rounded-md border border-gray-200 bg-white p-4 shadow-lg ${alignmentClasses[align]} ${sideClasses[side]} ${className}`}
         role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
         {...props}
       >
         {children}

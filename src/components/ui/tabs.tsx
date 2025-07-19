@@ -54,15 +54,61 @@ interface TabsListProps extends React.HTMLAttributes<HTMLDivElement> {
 const TabsList = forwardRef<HTMLDivElement, TabsListProps>(
   ({ className = '', children, ...props }, ref) => {
     const classes = `inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 ${className}`;
+    const tabRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+
+    // Keyboard navigation handler
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const tabs = tabRefs.current;
+      const activeIndex = tabs.findIndex((tab) => tab && tab === document.activeElement);
+
+      if (tabs.length === 0) return;
+
+      let nextIndex = -1;
+      switch (event.key) {
+        case 'ArrowRight':
+          nextIndex = (activeIndex + 1) % tabs.length;
+          break;
+        case 'ArrowLeft':
+          nextIndex = (activeIndex - 1 + tabs.length) % tabs.length;
+          break;
+        case 'Home':
+          nextIndex = 0;
+          break;
+        case 'End':
+          nextIndex = tabs.length - 1;
+          break;
+        default:
+          return;
+      }
+      event.preventDefault();
+      if (nextIndex >= 0 && tabs[nextIndex]) {
+        tabs[nextIndex]?.focus();
+      }
+    };
+
+    // Clone children to inject refs
+    const childrenWithRefs = React.Children.map(children, (child, idx) => {
+      if (React.isValidElement(child) && child.type && (child.props.role === 'tab' || child.type.displayName === 'TabsTrigger')) {
+        return React.cloneElement(child, {
+          ref: (node: HTMLButtonElement) => {
+            tabRefs.current[idx] = node;
+            if (typeof child.ref === 'function') child.ref(node);
+            else if (child.ref) (child.ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+          },
+        });
+      }
+      return child;
+    });
 
     return (
       <div
         ref={ref}
         role="tablist"
         className={classes}
+        onKeyDown={handleKeyDown}
         {...props}
       >
-        {children}
+        {childrenWithRefs}
       </div>
     );
   }
