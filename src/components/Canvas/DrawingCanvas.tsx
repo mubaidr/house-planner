@@ -63,6 +63,8 @@ import ContextMenu from './ContextMenu';
 import { useCanvasKeyboardNavigation } from '@/hooks/useCanvasKeyboardNavigation';
 import { AccessibilityAnnouncer, useAccessibilityAnnouncer } from '@/components/Accessibility/AccessibilityAnnouncer';
 import { useAccessibilityStore } from '@/stores/accessibilityStore';
+// Import element movement functionality
+import { useElementMovement } from '@/hooks/useElementMovement';
 
 export default function DrawingCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -87,6 +89,16 @@ export default function DrawingCanvas() {
   // Clipboard functionality
   const { copyElement, pasteElement, hasClipboardData } = useClipboard();
 
+  // Element movement functionality
+  const {
+    handleWallDragMove,
+    handleDoorDragMove,
+    handleWindowDragMove,
+    handleStairDragMove,
+    handleRoofDragMove,
+    handleElementDragEnd,
+  } = useElementMovement();
+
   // Accessibility functionality
   const {
     focusedElementId,
@@ -94,6 +106,7 @@ export default function DrawingCanvas() {
     setIsCanvasFocused,
     navigateElements,
     selectFocusedElement,
+    moveFocusedElement,
     getAllElements,
     getFocusedElement
   } = useCanvasKeyboardNavigation();
@@ -510,7 +523,7 @@ export default function DrawingCanvas() {
               e.preventDefault();
               if (e.shiftKey && focusedElementId) {
                 // Move element up (fine control)
-                // TODO: Implement element movement
+                moveFocusedElement('up', e.ctrlKey ? 1 : 10);
               } else {
                 navigateElements('up');
               }
@@ -522,7 +535,7 @@ export default function DrawingCanvas() {
               e.preventDefault();
               if (e.shiftKey && focusedElementId) {
                 // Move element down (fine control)
-                // TODO: Implement element movement
+                moveFocusedElement('down', e.ctrlKey ? 1 : 10);
               } else {
                 navigateElements('down');
               }
@@ -534,7 +547,7 @@ export default function DrawingCanvas() {
               e.preventDefault();
               if (e.shiftKey && focusedElementId) {
                 // Move element left (fine control)
-                // TODO: Implement element movement
+                moveFocusedElement('left', e.ctrlKey ? 1 : 10);
               } else {
                 navigateElements('left');
               }
@@ -546,7 +559,7 @@ export default function DrawingCanvas() {
               e.preventDefault();
               if (e.shiftKey && focusedElementId) {
                 // Move element right (fine control)
-                // TODO: Implement element movement
+                moveFocusedElement('right', e.ctrlKey ? 1 : 10);
               } else {
                 navigateElements('right');
               }

@@ -2,6 +2,8 @@
 import { useEffect } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
+import { useUIStore } from '@/stores/uiStore';
+import { saveDesign } from '@/utils/storage';
 
 type ShortcutAction = () => void;
 
@@ -25,13 +27,14 @@ const isInputLike = (el: Element | null) => {
   );
 };
 
-const getShortcuts = (designStore: any, historyStore: any): ShortcutConfig[] => [
+const getShortcuts = (designStore: any, historyStore: any, uiStore: any): ShortcutConfig[] => [
   // Save (Ctrl+S)
   {
     key: 's',
     ctrl: true,
     action: () => {
-      designStore.save();
+      saveDesign();
+      console.log('Save triggered');
     },
     description: 'Save project',
   },
@@ -41,6 +44,7 @@ const getShortcuts = (designStore: any, historyStore: any): ShortcutConfig[] => 
     ctrl: true,
     action: () => {
       historyStore.undo();
+      console.log('Undo triggered');
     },
     description: 'Undo',
   },
@@ -51,6 +55,7 @@ const getShortcuts = (designStore: any, historyStore: any): ShortcutConfig[] => 
     shift: true,
     action: () => {
       historyStore.redo();
+      console.log('Redo triggered');
     },
     description: 'Redo',
   },
@@ -59,7 +64,8 @@ const getShortcuts = (designStore: any, historyStore: any): ShortcutConfig[] => 
     key: 'e',
     ctrl: true,
     action: () => {
-      designStore.setExportDialogOpen(true);
+      uiStore.setExportDialogOpen(true);
+      console.log('Export dialog triggered');
     },
     description: 'Open export dialog',
   },
@@ -68,9 +74,10 @@ const getShortcuts = (designStore: any, historyStore: any): ShortcutConfig[] => 
 export function useGlobalKeyboardShortcuts() {
   const designStore = useDesignStore();
   const historyStore = useHistoryStore();
+  const uiStore = useUIStore();
 
   useEffect(() => {
-    const shortcuts = getShortcuts(designStore, historyStore);
+    const shortcuts = getShortcuts(designStore, historyStore, uiStore);
 
     function matchShortcut(e: KeyboardEvent, config: ShortcutConfig) {
       return (
@@ -100,7 +107,7 @@ export function useGlobalKeyboardShortcuts() {
     return () => {
       window.removeEventListener('keydown', handler, { capture: true });
     };
-  }, [designStore, historyStore]);
+  }, [designStore, historyStore, uiStore]);
 }
 
 export default useGlobalKeyboardShortcuts;

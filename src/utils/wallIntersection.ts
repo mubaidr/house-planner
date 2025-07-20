@@ -243,7 +243,7 @@ export const isNearWallEndpoint = (
 /**
  * Get all potential snap points from walls (endpoints and intersections)
  */
-export const getWallSnapPointsWithIntersections = (walls: Wall[]): Point[] => {
+export const getWallSnapPointsWithIntersections = (walls: Wall[], includeMidpoints: boolean = false): Point[] => {
   const snapPoints: Point[] = [];
 
   // Add all wall endpoints
@@ -252,6 +252,13 @@ export const getWallSnapPointsWithIntersections = (walls: Wall[]): Point[] => {
       { x: wall.startX, y: wall.startY },
       { x: wall.endX, y: wall.endY }
     );
+    
+    // Add midpoints if requested
+    if (includeMidpoints) {
+      const midX = (wall.startX + wall.endX) / 2;
+      const midY = (wall.startY + wall.endY) / 2;
+      snapPoints.push({ x: midX, y: midY });
+    }
   });
 
   // Add intersection points
@@ -276,4 +283,139 @@ export const getWallSnapPointsWithIntersections = (walls: Wall[]): Point[] => {
   });
 
   return uniquePoints;
+};
+
+/**
+ * Calculate intersection point between two walls
+ */
+export const calculateIntersectionPoint = (wall1: Wall, wall2: Wall): Point | null => {
+  const line1: LineSegment = {
+    start: { x: wall1.startX, y: wall1.startY },
+    end: { x: wall1.endX, y: wall1.endY }
+  };
+  
+  const line2: LineSegment = {
+    start: { x: wall2.startX, y: wall2.startY },
+    end: { x: wall2.endX, y: wall2.endY }
+  };
+  
+  const result = calculateLineIntersection(line1, line2);
+  
+  // Check if intersection point is actually on both line segments
+  if (result.intersects && result.point && result.t1 !== undefined && result.t2 !== undefined) {
+    const tolerance = 0.01;
+    const onSegment1 = result.t1 >= -tolerance && result.t1 <= 1 + tolerance;
+    const onSegment2 = result.t2 >= -tolerance && result.t2 <= 1 + tolerance;
+    
+    if (onSegment1 && onSegment2) {
+      return result.point;
+    }
+  }
+  
+  return null;
+};
+
+/**
+ * Check if two walls are connected at their endpoints
+ */
+export const areWallsConnected = (wall1: Wall, wall2: Wall, tolerance: number = 1): boolean => {
+  const points1 = [
+    { x: wall1.startX, y: wall1.startY },
+    { x: wall1.endX, y: wall1.endY }
+  ];
+  
+  const points2 = [
+    { x: wall2.startX, y: wall2.startY },
+    { x: wall2.endX, y: wall2.endY }
+  ];
+  
+  for (const p1 of points1) {
+    for (const p2 of points2) {
+      const distance = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+      if (distance <= tolerance) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+};
+
+/**
+ * Find all intersections between walls in a collection
+ */
+export const findWallIntersections = (walls: Wall[]): Array<{
+  wall1: Wall;
+  wall2: Wall;
+  point: Point;
+}> => {
+  const intersections: Array<{
+    wall1: Wall;
+    wall2: Wall;
+    point: Point;
+  }> = [];
+
+  for (let i = 0; i < walls.length; i++) {
+    for (let j = i + 1; j < walls.length; j++) {
+      const intersection = checkWallIntersection(walls[i], walls[j]);
+      if (intersection.intersects && intersection.point) {
+        intersections.push({
+          wall1: walls[i],
+          wall2: walls[j],
+          point: intersection.point
+        });
+      }
+    }
+  }
+
+  return intersections;
+};
+
+/**
+ * Join two walls at their intersection point
+ */
+export const joinWallsAtIntersection = (wall1: Wall, wall2: Wall): {
+  success: boolean;
+  updatedWalls?: Wall[];
+  error?: string;
+} => {
+  const intersection = calculateIntersectionPoint(wall1, wall2);
+  
+  if (!intersection) {
+    // Check if walls are parallel
+    const line1: LineSegment = {
+      start: { x: wall1.startX, y: wall1.startY },
+      end: { x: wall1.endX, y: wall1.endY }
+    };
+    
+    const line2: LineSegment = {
+      start: { x: wall2.startX, y: wall2.startY },
+      end: { x: wall2.endX, y: wall2.endY }
+    };
+    
+    const result = calculateLineIntersection(line1, line2);
+    if (!result.intersects) {
+      return { success: false, error: 'Walls are parallel', updatedWalls: [] };
+    } else {
+      return { success: false, error: 'Walls do not intersect', updatedWalls: [] };
+    }
+  }
+
+  // Create updated walls that connect at the intersection point
+  const updatedWall1: Wall = {
+    ...wall1,
+    endX: intersection.x,
+    endY: intersection.y
+  };
+
+  const updatedWall2: Wall = {
+    ...wall2,
+    startX: intersection.x,
+    startY: intersection.y
+  };
+
+  return {
+    success: true,
+    updatedWalls: [updatedWall1, updatedWall2]
+  };
 };

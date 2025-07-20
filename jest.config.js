@@ -23,4 +23,13 @@ module.exports = {
   transformIgnorePatterns: ['node_modules/(?!(konva|react-konva)/)'],
   moduleDirectories: ['node_modules', '<rootDir>/'],
   testTimeout: 10000,
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  globals: {
+    'ts-jest': {
+      useESM: true,
+      tsconfig: {
+        jsx: 'react-jsx',
+      },
+    },
+  },
 };

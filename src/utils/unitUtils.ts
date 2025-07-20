@@ -88,7 +88,12 @@ export function parseLength(
   
   // For metric, simple parsing
   if (unitSystem === 'metric') {
-    const value = parseFloat(input.replace(/[^\d.-]/g, ''));
+    // Handle comma as decimal separator (European format)
+    let cleanInput = input.replace(/[^\d.,-]/g, '');
+    if (cleanInput.includes(',')) {
+      cleanInput = cleanInput.replace(',', '.');
+    }
+    const value = parseFloat(cleanInput);
     return isNaN(value) ? null : value;
   }
   
