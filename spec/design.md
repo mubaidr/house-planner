@@ -1,69 +1,71 @@
-# Test Architecture Design
+# Test Coverage Design
 
-## Testing Strategy
+## Architecture
 
-### High Confidence Areas (>85%)
-- **Store Testing**: Zustand stores have predictable state management patterns
-- **Utility Functions**: Pure functions with clear inputs/outputs
-- **Basic Component Rendering**: Standard React component testing
+### Test Structure
+```
+__tests__/
+├── components/           # Component tests
+│   ├── Canvas/          # Canvas-related components
+│   ├── UI/              # UI component tests
+│   ├── Toolbar/         # Toolbar component tests
+│   └── Properties/      # Properties panel tests
+├── hooks/               # Hook tests
+├── stores/              # Store tests (existing, expand)
+├── utils/               # Utility function tests
+├── integration/         # Integration tests
+└── e2e/                # End-to-end tests
+```
 
-### Medium Confidence Areas (66-85%)
-- **Hook Testing**: Complex interactions between multiple hooks
-- **Canvas Integration**: Konva.js integration requires careful mocking
-- **Export Operations**: Multiple format support with external dependencies
+### Testing Strategy
 
-### Low Confidence Areas (<66%)
-- **Performance Testing**: Canvas rendering performance under load
-- **Complex User Workflows**: Multi-step operations across components
+#### Component Testing
+- **Unit Tests**: Individual component behavior
+- **Integration Tests**: Component-store interactions
+- **Snapshot Tests**: UI consistency
+- **Accessibility Tests**: ARIA, keyboard navigation
 
-## Test Structure
+#### Hook Testing
+- **State Management**: Hook state updates
+- **Side Effects**: API calls, localStorage
+- **Error Handling**: Invalid inputs, network failures
+- **Performance**: Memory leaks, cleanup
 
-### Store Tests (`__tests__/stores/`)
-- **designStore.comprehensive.test.ts**: Complete CRUD operations for all element types
-- **uiStore.test.ts**: UI state management and tool switching
-- **materialStore.test.ts**: Material library and application management
-- **floorStore.test.ts**: Multi-floor management
-- **historyStore.test.ts**: Undo/redo operations
+#### Store Testing
+- **Actions**: State mutations
+- **Selectors**: Computed values
+- **Persistence**: localStorage integration
+- **Concurrency**: Multiple updates
 
-### Utility Tests (`__tests__/utils/`)
-- **wallIntersection.comprehensive.test.ts**: All intersection scenarios
-- **roomDetection.comprehensive.test.ts**: Room detection algorithms
-- **exportUtils2D.comprehensive.test.ts**: Export format generation
-- **alignmentUtils.test.ts**: Element alignment calculations
-- **unitUtils.comprehensive.test.ts**: Unit conversion and validation
+#### Utility Testing
+- **Pure Functions**: Input/output validation
+- **Edge Cases**: Boundary conditions
+- **Performance**: Large datasets
+- **Error Handling**: Invalid inputs
 
-### Hook Tests (`__tests__/hooks/`)
-- **useCanvasControls.comprehensive.test.ts**: Canvas interaction management
-- **useElementMovement.comprehensive.test.ts**: Element manipulation
-- **useMaterialApplication.test.ts**: Material application workflows
-- **useWallTool.test.ts**: Wall creation and editing
-- **useDoorTool.test.ts**: Door placement and configuration
+## Edge Case Mitigations
 
-### Component Tests (`__tests__/components/`)
-- **DrawingCanvas.comprehensive.test.tsx**: Canvas rendering and interactions
-- **PropertiesPanel.test.tsx**: Property editing workflows
-- **MaterialLibrary.test.tsx**: Material selection and management
-- **ExportDialog.comprehensive.test.tsx**: Export functionality
+### Canvas Operations (Risk Score: 85)
+- **Mitigation**: Dimension validation, default fallbacks
+- **Test Plan**: Test with extreme dimensions, negative values, zero values
+- **Implementation**: Boundary condition tests in canvas components
 
-### Integration Tests (`__tests__/integration/`)
-- **wallCreationWorkflow.test.ts**: End-to-end wall creation
-- **roomCreationWorkflow.test.ts**: Complete room design workflow
-- **materialApplicationWorkflow.test.ts**: Material application process
-- **exportWorkflow.test.ts**: Complete export process
+### Memory Management (Risk Score: 90)
+- **Mitigation**: Pagination, lazy loading, cleanup
+- **Test Plan**: Large dataset tests, memory leak detection
+- **Implementation**: Performance tests with monitoring
 
-## Edge Case Handling
+### Data Validation (Risk Score: 75)
+- **Mitigation**: Schema validation, backup systems
+- **Test Plan**: Corrupted data scenarios, version migration
+- **Implementation**: Data integrity tests
 
-### Input Validation
-- Null/undefined checks for all utility functions
-- Coordinate bounds validation
-- Array length validation before processing
+### Network Operations (Risk Score: 70)
+- **Mitigation**: Retry logic, offline fallbacks
+- **Test Plan**: Network failure simulation, timeout handling
+- **Implementation**: Mock network conditions
 
-### Error Recovery
-- Graceful degradation for failed operations
-- User-friendly error messages
-- State rollback for failed transactions
-
-### Performance Considerations
-- Mocked heavy operations in unit tests
-- Timeout handling for async operations
-- Memory leak prevention in cleanup
+### Accessibility (Risk Score: 80)
+- **Mitigation**: ARIA attributes, semantic HTML
+- **Test Plan**: Screen reader testing, keyboard navigation
+- **Implementation**: Accessibility test suite

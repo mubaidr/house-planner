@@ -1,5 +1,38 @@
 // jest.setup.js
 require('jest-canvas-mock');
+require('@testing-library/jest-dom');
+
+// Mock localStorage with actual implementation for tests
+const localStorageMock = (() => {
+  let store = {};
+  return {
+    getItem: jest.fn((key) => store[key] || null),
+    setItem: jest.fn((key, value) => {
+      store[key] = value.toString();
+    }),
+    removeItem: jest.fn((key) => {
+      delete store[key];
+    }),
+    clear: jest.fn(() => {
+      store = {};
+    }),
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: jest.fn((index) => {
+      const keys = Object.keys(store);
+      return keys[index] || null;
+    }),
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+});
+
+// Also define it globally for Node.js environment
+global.localStorage = localStorageMock;
 
 // Mock canvas globally
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {

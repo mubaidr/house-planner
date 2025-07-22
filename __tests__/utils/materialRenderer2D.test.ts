@@ -1,506 +1,211 @@
-import MaterialRenderer2D from '@/utils/materialRenderer2D';
-
-// Mock Konva for testing
-const mockKonva = {
-  Group: jest.fn(() => ({
-    add: jest.fn(),
-    destroy: jest.fn(),
-    getChildren: jest.fn(() => []),
-    removeChildren: jest.fn(),
-  })),
-  Rect: jest.fn(() => ({
-    setAttrs: jest.fn(),
-    destroy: jest.fn(),
-  })),
-  Image: jest.fn(() => ({
-    setAttrs: jest.fn(),
-    destroy: jest.fn(),
-  })),
-  Line: jest.fn(() => ({
-    setAttrs: jest.fn(),
-    destroy: jest.fn(),
-  })),
-};
+import { MaterialRenderer2D, MaterialPatternUtils } from '@/utils/materialRenderer2D';
 
 // Mock material data
 const mockMaterial = {
   id: 'brick-red',
   name: 'Red Brick',
-  type: 'brick' as const,
-  category: 'masonry' as const,
+  category: 'masonry',
+  color: '#CC6666',
   properties: {
-    color: '#CC6666',
-    texture: 'brick',
-    finish: 'matte',
-    pattern: 'running-bond',
+    opacity: 1.0,
+    roughness: 0.5,
+    metallic: 0.0,
+    reflectivity: 0.1,
+    patternScale: 1.0,
+    patternRotation: 0,
+    seamless: true,
+  },
+  cost: {
+    pricePerUnit: 5.50,
+    unit: 'sqft',
+    currency: 'USD',
+    lastUpdated: new Date(),
   },
   metadata: {
-    cost: 5.50,
-    durability: 'high',
-    maintenance: 'low',
-    sustainability: 'medium',
+    description: 'Red brick material',
+    tags: ['brick', 'masonry'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
-};
-
-const mockElement = {
-  id: 'wall-1',
-  x: 10,
-  y: 20,
-  width: 100,
-  height: 50,
-  materialId: 'brick-red',
 };
 
 describe('MaterialRenderer2D', () => {
   let renderer: MaterialRenderer2D;
-  let mockStage: any;
-  let mockLayer: any;
 
   beforeEach(() => {
-    // Reset mocks
-    jest.clearAllMocks();
-    
-    // Mock stage and layer
-    mockLayer = {
-      add: jest.fn(),
-      draw: jest.fn(),
-      getChildren: jest.fn(() => []),
-      findOne: jest.fn(),
-    };
-    
-    mockStage = {
-      getLayers: jest.fn(() => [mockLayer]),
-      getLayer: jest.fn(() => mockLayer),
-    };
-
-    // Create renderer instance
-    renderer = new MaterialRenderer2D(mockStage);
+    renderer = new MaterialRenderer2D('plan');
   });
 
   describe('constructor', () => {
-    it('should initialize with stage', () => {
-      expect(renderer).toBeInstanceOf(MaterialRenderer2D);
+    it('should initialize with plan view', () => {
+      const planRenderer = new MaterialRenderer2D('plan');
+      expect(planRenderer).toBeDefined();
     });
 
-    it('should handle null stage gracefully', () => {
-      expect(() => new MaterialRenderer2D(null)).not.toThrow();
+    it('should initialize with elevation view', () => {
+      const elevationRenderer = new MaterialRenderer2D('elevation');
+      expect(elevationRenderer).toBeDefined();
     });
   });
 
-  describe('renderMaterial', () => {
-    it('should render solid color material', () => {
-      const solidMaterial = {
-        ...mockMaterial,
-        type: 'solid' as const,
-        properties: {
-          color: '#FF0000',
-        },
-      };
-
-      const result = renderer.renderMaterial(mockElement, solidMaterial);
+  describe('getMaterialPattern', () => {
+    it('should get pattern for solid material', () => {
+      const result = renderer.getMaterialPattern(mockMaterial);
       
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.type).toBeDefined();
+      expect(result.color).toBe(mockMaterial.color);
     });
 
-    it('should render textured material', () => {
+    it('should get pattern for textured material', () => {
       const texturedMaterial = {
         ...mockMaterial,
-        type: 'textured' as const,
+        texture: 'https://example.com/texture.jpg',
         properties: {
-          color: '#CC6666',
-          texture: 'brick',
-          textureScale: 1.0,
+          ...mockMaterial.properties,
+          patternScale: 2.0,
         },
       };
 
-      const result = renderer.renderMaterial(mockElement, texturedMaterial);
+      const result = renderer.getMaterialPattern(texturedMaterial);
       
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.scale).toBe(2.0);
     });
 
-    it('should render patterned material', () => {
+    it('should get pattern for rough material', () => {
       const patternedMaterial = {
         ...mockMaterial,
-        type: 'patterned' as const,
         properties: {
-          color: '#CC6666',
-          pattern: 'stripes',
-          patternScale: 0.5,
-          patternRotation: 45,
+          ...mockMaterial.properties,
+          roughness: 0.9, // This should trigger stipple pattern
         },
       };
 
-      const result = renderer.renderMaterial(mockElement, patternedMaterial);
+      const result = renderer.getMaterialPattern(patternedMaterial);
       
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle missing material gracefully', () => {
-      const result = renderer.renderMaterial(mockElement, null);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Material not found');
-    });
-
-    it('should handle invalid element gracefully', () => {
-      const result = renderer.renderMaterial(null, mockMaterial);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid element');
+      expect(result.type).toBe('stipple');
     });
 
     it('should handle material without properties', () => {
       const materialWithoutProps = {
         ...mockMaterial,
-        properties: undefined,
+        properties: {},
       };
 
-      const result = renderer.renderMaterial(mockElement, materialWithoutProps);
+      const result = renderer.getMaterialPattern(materialWithoutProps);
       
-      expect(result.success).toBe(true); // Should use defaults
+      expect(result).toBeDefined();
+      expect(result.type).toBeDefined();
     });
   });
 
-  describe('updateMaterial', () => {
-    beforeEach(() => {
-      // First render a material
-      renderer.renderMaterial(mockElement, mockMaterial);
+  describe('getKonvaFillPattern', () => {
+    it('should get Konva fill pattern for solid material', () => {
+      const result = renderer.getKonvaFillPattern(mockMaterial);
+      
+      expect(result).toBeDefined();
+      expect(result.fill || result.fillPatternImage).toBeDefined();
+      expect(result.opacity).toBeDefined();
     });
 
-    it('should update existing material', () => {
-      const updatedMaterial = {
+    it('should get Konva fill pattern with scale', () => {
+      const result = renderer.getKonvaFillPattern(mockMaterial, 2.0);
+      
+      expect(result).toBeDefined();
+    });
+
+    it('should handle glass material', () => {
+      const glassMaterial = {
         ...mockMaterial,
         properties: {
           ...mockMaterial.properties,
-          color: '#0000FF',
+          opacity: 0.3,
         },
       };
 
-      const result = renderer.updateMaterial(mockElement.id, updatedMaterial);
+      const result = renderer.getKonvaFillPattern(glassMaterial);
       
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle updating non-existent material', () => {
-      const result = renderer.updateMaterial('non-existent', mockMaterial);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('not found');
-    });
-
-    it('should handle null material in update', () => {
-      const result = renderer.updateMaterial(mockElement.id, null);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Material not provided');
+      expect(result).toBeDefined();
+      expect(result.opacity).toBeLessThan(1);
     });
   });
 
-  describe('removeMaterial', () => {
-    beforeEach(() => {
-      renderer.renderMaterial(mockElement, mockMaterial);
-    });
-
-    it('should remove existing material', () => {
-      const result = renderer.removeMaterial(mockElement.id);
+  describe('clearCache', () => {
+    it('should clear pattern cache', () => {
+      // Generate some patterns to populate cache
+      renderer.getMaterialPattern(mockMaterial);
       
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle removing non-existent material', () => {
-      const result = renderer.removeMaterial('non-existent');
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('not found');
-    });
-
-    it('should handle null element ID', () => {
-      const result = renderer.removeMaterial(null);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid element ID');
+      // Clear cache should not throw
+      expect(() => renderer.clearCache()).not.toThrow();
     });
   });
 
-  describe('clearAllMaterials', () => {
-    beforeEach(() => {
-      // Render multiple materials
-      renderer.renderMaterial(mockElement, mockMaterial);
-      renderer.renderMaterial({ ...mockElement, id: 'wall-2' }, mockMaterial);
-      renderer.renderMaterial({ ...mockElement, id: 'wall-3' }, mockMaterial);
-    });
-
-    it('should clear all materials', () => {
-      const result = renderer.clearAllMaterials();
-      
-      expect(result.success).toBe(true);
-      expect(result.clearedCount).toBe(3);
-    });
-
-    it('should handle clearing when no materials exist', () => {
-      renderer.clearAllMaterials(); // Clear once
-      const result = renderer.clearAllMaterials(); // Clear again
-      
-      expect(result.success).toBe(true);
-      expect(result.clearedCount).toBe(0);
-    });
-  });
-
-  describe('getMaterialInfo', () => {
-    beforeEach(() => {
-      renderer.renderMaterial(mockElement, mockMaterial);
-    });
-
-    it('should get material info for existing element', () => {
-      const info = renderer.getMaterialInfo(mockElement.id);
-      
-      expect(info).toBeDefined();
-      expect(info.elementId).toBe(mockElement.id);
-      expect(info.materialId).toBe(mockMaterial.id);
-      expect(info.materialType).toBe(mockMaterial.type);
-    });
-
-    it('should return null for non-existent element', () => {
-      const info = renderer.getMaterialInfo('non-existent');
-      
-      expect(info).toBe(null);
-    });
-
-    it('should handle null element ID', () => {
-      const info = renderer.getMaterialInfo(null);
-      
-      expect(info).toBe(null);
-    });
-  });
-
-  describe('getAllMaterials', () => {
-    it('should return empty array when no materials', () => {
-      const materials = renderer.getAllMaterials();
-      
-      expect(materials).toEqual([]);
-    });
-
-    it('should return all rendered materials', () => {
-      renderer.renderMaterial(mockElement, mockMaterial);
-      renderer.renderMaterial({ ...mockElement, id: 'wall-2' }, mockMaterial);
-      
-      const materials = renderer.getAllMaterials();
-      
-      expect(materials).toHaveLength(2);
-      expect(materials[0].elementId).toBe('wall-1');
-      expect(materials[1].elementId).toBe('wall-2');
-    });
-  });
-
-  describe('setOpacity', () => {
-    beforeEach(() => {
-      renderer.renderMaterial(mockElement, mockMaterial);
-    });
-
-    it('should set opacity for existing material', () => {
-      const result = renderer.setOpacity(mockElement.id, 0.5);
-      
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle invalid opacity values', () => {
-      const result1 = renderer.setOpacity(mockElement.id, -0.5);
-      const result2 = renderer.setOpacity(mockElement.id, 1.5);
-      
-      expect(result1.success).toBe(true); // Should clamp to 0
-      expect(result2.success).toBe(true); // Should clamp to 1
-    });
-
-    it('should handle non-existent element', () => {
-      const result = renderer.setOpacity('non-existent', 0.5);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('not found');
-    });
-  });
-
-  describe('setVisibility', () => {
-    beforeEach(() => {
-      renderer.renderMaterial(mockElement, mockMaterial);
-    });
-
-    it('should set visibility for existing material', () => {
-      const result1 = renderer.setVisibility(mockElement.id, false);
-      const result2 = renderer.setVisibility(mockElement.id, true);
-      
-      expect(result1.success).toBe(true);
-      expect(result2.success).toBe(true);
-    });
-
-    it('should handle non-existent element', () => {
-      const result = renderer.setVisibility('non-existent', false);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('not found');
-    });
-  });
-
-  describe('material type specific rendering', () => {
-    it('should render gradient materials', () => {
-      const gradientMaterial = {
-        ...mockMaterial,
-        type: 'gradient' as const,
-        properties: {
-          startColor: '#FF0000',
-          endColor: '#0000FF',
-          direction: 'horizontal',
+  describe('updateViewConfig', () => {
+    it('should update view configuration', () => {
+      const newConfig = {
+        materialSettings: {
+          patternScale: 2.0,
+          lineWidth: 2,
+          opacity: 0.5,
+          showTextures: false,
+          showPatterns: true,
+          detailLevel: 'high' as const,
         },
       };
 
-      const result = renderer.renderMaterial(mockElement, gradientMaterial);
+      expect(() => renderer.updateViewConfig(newConfig)).not.toThrow();
+    });
+  });
+});
+
+describe('MaterialPatternUtils', () => {
+  describe('getPatternForView', () => {
+    it('should get pattern for plan view', () => {
+      const result = MaterialPatternUtils.getPatternForView(mockMaterial, 'plan');
       
-      expect(result.success).toBe(true);
+      expect(result).toBeDefined();
     });
 
-    it('should render metallic materials', () => {
-      const metallicMaterial = {
-        ...mockMaterial,
-        type: 'metallic' as const,
-        properties: {
-          baseColor: '#C0C0C0',
-          metallic: 0.8,
-          roughness: 0.2,
-          reflectance: 0.9,
-        },
-      };
-
-      const result = renderer.renderMaterial(mockElement, metallicMaterial);
+    it('should get pattern for elevation view', () => {
+      const result = MaterialPatternUtils.getPatternForView(mockMaterial, 'elevation');
       
-      expect(result.success).toBe(true);
-    });
-
-    it('should render glass materials', () => {
-      const glassMaterial = {
-        ...mockMaterial,
-        type: 'glass' as const,
-        properties: {
-          color: '#E6F3FF',
-          transparency: 0.8,
-          refraction: 1.5,
-          tint: '#0066CC',
-        },
-      };
-
-      const result = renderer.renderMaterial(mockElement, glassMaterial);
-      
-      expect(result.success).toBe(true);
+      expect(result).toBeDefined();
     });
   });
 
-  describe('performance and optimization', () => {
-    it('should handle rendering many materials efficiently', () => {
-      const startTime = performance.now();
+  describe('shouldShowPattern', () => {
+    it('should return false for low detail level', () => {
+      const result = MaterialPatternUtils.shouldShowPattern(mockMaterial, 'plan', 'low');
       
-      for (let i = 0; i < 100; i++) {
-        const element = { ...mockElement, id: `element-${i}` };
-        renderer.renderMaterial(element, mockMaterial);
-      }
-      
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      
-      expect(duration).toBeLessThan(1000); // Should complete in under 1 second
+      expect(result).toBe(false);
     });
 
-    it('should reuse resources when possible', () => {
-      // Render same material type multiple times
-      renderer.renderMaterial(mockElement, mockMaterial);
-      renderer.renderMaterial({ ...mockElement, id: 'wall-2' }, mockMaterial);
-      renderer.renderMaterial({ ...mockElement, id: 'wall-3' }, mockMaterial);
+    it('should return true for high detail level', () => {
+      const result = MaterialPatternUtils.shouldShowPattern(mockMaterial, 'plan', 'high');
       
-      // Should not create excessive objects
-      expect(true).toBe(true); // Placeholder for resource reuse verification
+      expect(result).toBe(true);
     });
   });
 
-  describe('error handling and edge cases', () => {
-    it('should handle elements with zero dimensions', () => {
-      const zeroElement = {
-        ...mockElement,
-        width: 0,
-        height: 0,
-      };
-
-      const result = renderer.renderMaterial(zeroElement, mockMaterial);
+  describe('getSimplifiedPattern', () => {
+    it('should get simplified pattern', () => {
+      const result = MaterialPatternUtils.getSimplifiedPattern(mockMaterial);
       
-      expect(result.success).toBe(true); // Should handle gracefully
-    });
-
-    it('should handle elements with negative dimensions', () => {
-      const negativeElement = {
-        ...mockElement,
-        width: -100,
-        height: -50,
-      };
-
-      const result = renderer.renderMaterial(negativeElement, mockMaterial);
-      
-      expect(result.success).toBe(true); // Should handle gracefully
-    });
-
-    it('should handle materials with missing required properties', () => {
-      const incompleteMaterial = {
-        id: 'incomplete',
-        name: 'Incomplete Material',
-        type: 'solid' as const,
-        // Missing properties
-      };
-
-      const result = renderer.renderMaterial(mockElement, incompleteMaterial);
-      
-      expect(result.success).toBe(true); // Should use defaults
-    });
-
-    it('should handle stage destruction gracefully', () => {
-      renderer.destroy();
-      
-      const result = renderer.renderMaterial(mockElement, mockMaterial);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('destroyed');
-    });
-
-    it('should handle concurrent operations', async () => {
-      const promises = [];
-      
-      for (let i = 0; i < 10; i++) {
-        promises.push(
-          Promise.resolve(renderer.renderMaterial(
-            { ...mockElement, id: `concurrent-${i}` },
-            mockMaterial
-          ))
-        );
-      }
-      
-      const results = await Promise.all(promises);
-      
-      expect(results.every(r => r.success)).toBe(true);
+      expect(result).toBeDefined();
+      expect(result.fill).toBe(mockMaterial.color);
+      expect(result.opacity).toBeDefined();
     });
   });
 
-  describe('memory management', () => {
-    it('should clean up resources on destroy', () => {
-      renderer.renderMaterial(mockElement, mockMaterial);
-      renderer.renderMaterial({ ...mockElement, id: 'wall-2' }, mockMaterial);
+  describe('generatePatternPreview', () => {
+    it('should generate pattern preview canvas', () => {
+      const result = MaterialPatternUtils.generatePatternPreview(mockMaterial, 64);
       
-      renderer.destroy();
-      
-      // Verify cleanup
-      expect(renderer.getAllMaterials()).toEqual([]);
-    });
-
-    it('should handle multiple destroy calls', () => {
-      renderer.destroy();
-      
-      expect(() => renderer.destroy()).not.toThrow();
+      expect(result).toBeInstanceOf(HTMLCanvasElement);
+      expect(result.width).toBe(64);
+      expect(result.height).toBe(64);
     });
   });
 });

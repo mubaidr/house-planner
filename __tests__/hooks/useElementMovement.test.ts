@@ -9,10 +9,30 @@ import { Window } from '@/types/elements/Window';
 // Mock the stores
 jest.mock('@/stores/designStore');
 jest.mock('@/stores/uiStore');
-jest.mock('@/stores/historyStore');
-jest.mock('@/utils/snapping');
-jest.mock('@/utils/wallIntersection');
-jest.mock('@/utils/wallElementMovement');
+jest.mock('@/stores/historyStore', () => ({
+  useHistoryStore: jest.fn(() => ({
+    executeCommand: jest.fn(),
+    undo: jest.fn(),
+    redo: jest.fn(),
+    canUndo: jest.fn(() => false),
+    canRedo: jest.fn(() => false),
+    clearHistory: jest.fn(),
+    getUndoDescription: jest.fn(() => null),
+    getRedoDescription: jest.fn(() => null),
+  })),
+}));
+jest.mock('@/utils/snapping', () => ({
+  snapPoint: jest.fn((point) => point), // Return the point as-is
+}));
+jest.mock('@/utils/wallIntersection', () => ({
+  getWallSnapPointsWithIntersections: jest.fn(() => []),
+}));
+jest.mock('@/utils/wallElementMovement', () => ({
+  updateElementsForWallMovement: jest.fn(() => ({
+    updatedDoors: [],
+    updatedWindows: [],
+  })),
+}));
 
 const mockUseDesignStore = useDesignStore as jest.MockedFunction<typeof useDesignStore>;
 const mockUseUIStore = useUIStore as jest.MockedFunction<typeof useUIStore>;

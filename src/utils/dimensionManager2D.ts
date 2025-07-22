@@ -181,7 +181,7 @@ export class DimensionManager2D {
     const generatedDimensions: Dimension2D[] = [];
 
     // Generate dimensions for walls
-    const walls = elements.filter(el => el.type === 'wall') as Wall2D[];
+    const walls = elements.filter(el => el.type === 'wall2d') as Wall2D[];
     walls.forEach(wall => {
       const wallDimensions = this.generateWallDimensions(wall, viewType, floorId);
       generatedDimensions.push(...wallDimensions);
@@ -258,7 +258,7 @@ export class DimensionManager2D {
     const dimensions: Dimension2D[] = [];
     
     // Find rectangular rooms and add overall dimensions
-    const walls = elements.filter(el => el.type === 'wall') as Wall2D[];
+    const walls = elements.filter(el => el.type === 'wall2d') as Wall2D[];
     const rooms = this.detectRectangularRooms(walls);
     
     rooms.forEach((room, index) => {
@@ -307,13 +307,13 @@ export class DimensionManager2D {
     const dimensions: Dimension2D[] = [];
 
     // Door and window heights
-    const doors = elements.filter(el => el.type === 'door') as Door2D[];
-    const windows = elements.filter(el => el.type === 'window') as Window2D[];
+    const doors = elements.filter(el => el.type === 'door2d') as Door2D[];
+    const windows = elements.filter(el => el.type === 'window2d') as Window2D[];
 
     doors.forEach(door => {
       const heightDim = this.createDimension(
-        door.position,
-        { x: door.position.x, y: door.position.y + door.dimensions.height },
+        door.transform.position,
+        { x: door.transform.position.x, y: door.transform.position.y + door.height },
         'elevation',
         viewType,
         floorId,
@@ -327,8 +327,8 @@ export class DimensionManager2D {
 
     windows.forEach(window => {
       const heightDim = this.createDimension(
-        window.position,
-        { x: window.position.x, y: window.position.y + window.dimensions.height },
+        window.transform.position,
+        { x: window.transform.position.x, y: window.transform.position.y + window.height },
         'elevation',
         viewType,
         floorId,
