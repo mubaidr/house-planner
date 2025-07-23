@@ -13,11 +13,23 @@ const CloseIcon = () => (
 );
 
 interface AlertProps {
-  message: string;
-  onClose: () => void;
+  message?: string;
+  onClose?: () => void;
+  children?: React.ReactNode;
+  className?: string;
 }
 
-export const Alert: React.FC<AlertProps> = ({ message, onClose }) => {
+export const Alert: React.FC<AlertProps> = ({ message, onClose, children, className = '' }) => {
+  if (children) {
+    // When used with children, render as a flexible container
+    return (
+      <div className={`border rounded-lg p-4 ${className}`} role="alert">
+        {children}
+      </div>
+    );
+  }
+
+  // Original fixed alert behavior
   return (
     <div
       className="fixed top-4 right-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2"
@@ -26,13 +38,15 @@ export const Alert: React.FC<AlertProps> = ({ message, onClose }) => {
     >
       <AlertIcon />
       <span>{message}</span>
-      <button
-        onClick={onClose}
-        className="text-red-500 hover:text-red-700"
-        aria-label="Close alert"
-      >
-        <CloseIcon />
-      </button>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700"
+          aria-label="Close alert"
+        >
+          <CloseIcon />
+        </button>
+      )}
     </div>
   );
 };
