@@ -23,6 +23,10 @@ export interface AccessibilityState {
   // Audio preferences
   enableAudioFeedback: boolean;
   audioVolume: number;
+
+  // Screen reader announcements
+  enableScreenReaderSupport: boolean;
+  announcements: string[];
 }
 
 export interface AccessibilityActions {
@@ -41,6 +45,11 @@ export interface AccessibilityActions {
   setAudioFeedback: (enabled: boolean) => void;
   setAudioVolume: (volume: number) => void;
   setTabNavigationOrder: (order: string[]) => void;
+
+  // Screen reader support
+  toggleScreenReaderSupport: () => void;
+  addAnnouncement: (message: string) => void;
+  clearAnnouncements: () => void;
 
   // Reset
   resetToDefaults: () => void;
@@ -62,6 +71,8 @@ export const useAccessibilityStore = create<AccessibilityState & AccessibilityAc
       colorBlindMode: 'none',
       enableAudioFeedback: false,
       audioVolume: 0.5,
+      enableScreenReaderSupport: true,
+      announcements: [],
 
       // Actions
       toggleHighContrastMode: () => set((state) => ({ highContrastMode: !state.highContrastMode })),
@@ -78,6 +89,12 @@ export const useAccessibilityStore = create<AccessibilityState & AccessibilityAc
       setAudioVolume: (volume) => set({ audioVolume: Math.max(0, Math.min(1, volume)) }),
       setTabNavigationOrder: (order) => set({ tabNavigationOrder: order }),
 
+      toggleScreenReaderSupport: () => set((state) => ({ enableScreenReaderSupport: !state.enableScreenReaderSupport })),
+      addAnnouncement: (message) => set((state) => ({ 
+        announcements: [...state.announcements, message].slice(-10) // Keep only last 10 announcements
+      })),
+      clearAnnouncements: () => set({ announcements: [] }),
+
       resetToDefaults: () => set({
         highContrastMode: false,
         reducedMotion: false,
@@ -91,6 +108,8 @@ export const useAccessibilityStore = create<AccessibilityState & AccessibilityAc
         colorBlindMode: 'none',
         enableAudioFeedback: false,
         audioVolume: 0.5,
+        enableScreenReaderSupport: true,
+        announcements: [],
       }),
     }),
     {

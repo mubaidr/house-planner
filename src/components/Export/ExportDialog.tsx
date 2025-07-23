@@ -29,6 +29,7 @@ import {
 import { ViewType2D } from '@/types/views';
 import { useViewStore } from '@/stores/viewStore';
 import { useFloorStore } from '@/stores/floorStore';
+import { useDesignStore } from '@/stores/designStore';
 import { useExportProgressStore } from '@/stores/exportProgressStore';
 import ExportPreview from './ExportPreview';
 
@@ -42,6 +43,7 @@ interface ExportDialogProps {
 export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportDialogProps) {
   const { currentView } = useViewStore();
   const { floors } = useFloorStore();
+  const { getCurrentFloorElements } = useDesignStore();
   const {
     startExport,
     updateProgress,
@@ -163,9 +165,22 @@ export default function ExportDialog({ isOpen, onClose, stage, stages }: ExportD
         });
 
         if (Object.keys(validStages).length > 0) {
-          // For now, use a placeholder preview - the actual preview generation
-          // would need to be implemented based on the stages and options
-          const multiPreview = await generateExportPreview();
+          // Get current design elements for preview
+          const { walls, doors, windows, stairs, roofs, rooms } = getCurrentFloorElements();
+          const allElements = [...walls, ...doors, ...windows, ...stairs, ...roofs, ...rooms];
+          
+          // Generate actual preview with real elements
+          const firstViewType = Object.keys(validStages)[0] as ViewType2D;
+          const multiPreview = await generateExportPreview(
+            allElements,
+            firstViewType,
+            {
+              width: 400,
+              height: 300,
+              scale: 1,
+              quality: 0.8
+            }
+          );
           setPreview(multiPreview.dataUrl || '/placeholder-preview.png');
         }
       }

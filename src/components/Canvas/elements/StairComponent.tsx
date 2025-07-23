@@ -8,6 +8,7 @@ interface StairComponentProps {
   stair: Stair;
   isSelected?: boolean;
   onSelect?: () => void;
+  onDragMove?: (e: unknown) => void;
   onDragEnd?: (e: unknown) => void;
 }
 
@@ -15,6 +16,7 @@ export default function StairComponent({
   stair,
   isSelected = false,
   onSelect,
+  onDragMove,
   onDragEnd
 }: StairComponentProps) {
   const stepWidth = stair.orientation === 'horizontal' ? stair.width / stair.steps : stair.width;
@@ -234,6 +236,7 @@ export default function StairComponent({
   return (
     <Group
       draggable
+      onDragMove={onDragMove}
       onDragEnd={onDragEnd}
       onClick={onSelect}
       onTap={onSelect}
