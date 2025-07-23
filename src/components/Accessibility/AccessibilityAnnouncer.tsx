@@ -22,37 +22,37 @@ export function AccessibilityAnnouncer({ announcements = [] }: AccessibilityAnno
 
 // Hook for making accessibility announcements
 export function useAccessibilityAnnouncer() {
-  const { addAnnouncement, preferences } = useAccessibilityStore();
+  const { addAnnouncement, enableScreenReaderSupport } = useAccessibilityStore();
 
   const announceElementSelected = useCallback((elementType: string, elementId: string) => {
-    if (preferences.enableScreenReaderSupport) {
+    if (enableScreenReaderSupport) {
       addAnnouncement(`${elementType} ${elementId} selected`);
     }
-  }, [addAnnouncement, preferences.enableScreenReaderSupport]);
+  }, [addAnnouncement, enableScreenReaderSupport]);
 
   const announceElementDeleted = useCallback((elementType: string, elementId: string) => {
-    if (preferences.enableScreenReaderSupport) {
+    if (enableScreenReaderSupport) {
       addAnnouncement(`${elementType} ${elementId} deleted`);
     }
-  }, [addAnnouncement, preferences.enableScreenReaderSupport]);
+  }, [addAnnouncement, enableScreenReaderSupport]);
 
   const announceElementMoved = useCallback((elementType: string, elementId: string, direction: string, distance: number) => {
-    if (preferences.enableScreenReaderSupport) {
+    if (enableScreenReaderSupport) {
       addAnnouncement(`${elementType} ${elementId} moved ${direction} by ${distance} pixels`);
     }
-  }, [addAnnouncement, preferences.enableScreenReaderSupport]);
+  }, [addAnnouncement, enableScreenReaderSupport]);
 
   const announceElementCreated = useCallback((elementType: string, elementId: string) => {
-    if (preferences.enableScreenReaderSupport) {
+    if (enableScreenReaderSupport) {
       addAnnouncement(`${elementType} ${elementId} created`);
     }
-  }, [addAnnouncement, preferences.enableScreenReaderSupport]);
+  }, [addAnnouncement, enableScreenReaderSupport]);
 
   const announceError = useCallback((message: string) => {
-    if (preferences.enableScreenReaderSupport) {
+    if (enableScreenReaderSupport) {
       addAnnouncement(`Error: ${message}`);
     }
-  }, [addAnnouncement, preferences.enableScreenReaderSupport]);
+  }, [addAnnouncement, enableScreenReaderSupport]);
 
   return {
     announceElementSelected,
