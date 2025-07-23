@@ -36,8 +36,8 @@ const isPointOnWall = (x: number, y: number, wall: Wall): boolean => {
 };
 
 const isPointOnDoor = (x: number, y: number, door: Door): boolean => {
-  // Simple rectangular hit detection for doors
-  const tolerance = 10;
+  // Simple rectangular hit detection for doors with smaller tolerance
+  const tolerance = 5;
   return (
     x >= door.x - tolerance &&
     x <= door.x + door.width + tolerance &&
@@ -173,10 +173,17 @@ export const useMaterialApplication = () => {
   }, [getMaterialApplication]);
 
   const findElementAtPosition = useCallback((x: number, y: number) => {
-    // Check walls first
+    // Check walls first (highest priority)
     for (const wall of walls) {
       if (isPointOnWall(x, y, wall)) {
         return { type: 'wall' as const, element: wall };
+      }
+    }
+
+    // Check windows next (higher priority than doors for overlapping areas)
+    for (const window of windows) {
+      if (isPointOnWindow(x, y, window)) {
+        return { type: 'window' as const, element: window };
       }
     }
 
@@ -187,14 +194,7 @@ export const useMaterialApplication = () => {
       }
     }
 
-    // Check windows
-    for (const window of windows) {
-      if (isPointOnWindow(x, y, window)) {
-        return { type: 'window' as const, element: window };
-      }
-    }
-
-    // Check rooms
+    // Check rooms last
     for (const room of rooms) {
       if (isPointInRoom(x, y, room)) {
         return { type: 'room' as const, element: room };

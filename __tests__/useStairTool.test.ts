@@ -108,7 +108,7 @@ describe('useStairTool', () => {
 
     expect(result.current.isDrawing).toBe(true);
     expect(result.current.previewStair).toEqual({
-      id: expect.stringMatching(/^stair-\d+$/),
+      id: expect.stringMatching(/^stair-\d+-[a-z0-9]+$/),
       x: 100, // Snapped position
       y: 160, // Snapped position (150 rounded to nearest 20)
       width: 120,
@@ -336,7 +336,7 @@ describe('useStairTool', () => {
       'floor-1',
       'stairs',
       expect.objectContaining({
-        id: expect.stringMatching(/^stair-\d+$/),
+        id: expect.stringMatching(/^stair-\d+-[a-z0-9]+$/),
         x: 100,
         y: 100,
       })
@@ -345,7 +345,7 @@ describe('useStairTool', () => {
 
     expect(mockSetActiveTool).toHaveBeenCalledWith('select');
     expect(mockSelectElement).toHaveBeenCalledWith(
-      expect.stringMatching(/^stair-\d+$/),
+      expect.stringMatching(/^stair-\d+-[a-z0-9]+$/),
       'stair'
     );
 
@@ -505,8 +505,8 @@ describe('useStairTool', () => {
     const secondStairId = result.current.previewStair?.id;
 
     expect(firstStairId).not.toBe(secondStairId);
-    expect(firstStairId).toMatch(/^stair-\d+$/);
-    expect(secondStairId).toMatch(/^stair-\d+$/);
+    expect(firstStairId).toMatch(/^stair-\d+-[a-z0-9]+$/);
+    expect(secondStairId).toMatch(/^stair-\d+-[a-z0-9]+$/);
   });
 
   it('should handle complete drawing workflow', () => {

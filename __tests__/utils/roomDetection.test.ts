@@ -339,11 +339,11 @@ describe('roomDetection', () => {
 
       const rooms = detectRooms(walls);
       
-      expect(rooms).toHaveLength(1);
-      expect(rooms[0].area).toBe(10000);
-      expect(rooms[0].center.x).toBe(50);
-      expect(rooms[0].center.y).toBe(50);
-      expect(rooms[0].walls).toHaveLength(4);
+      expect(rooms.rooms).toHaveLength(1);
+      expect(rooms.rooms[0].area).toBe(10000);
+      expect(rooms.rooms[0].center.x).toBe(50);
+      expect(rooms.rooms[0].center.y).toBe(50);
+      expect(rooms.rooms[0].walls).toHaveLength(4);
     });
 
     it('should detect multiple rooms', () => {
@@ -401,9 +401,9 @@ describe('roomDetection', () => {
 
       const rooms = detectRooms(walls);
       
-      expect(rooms).toHaveLength(1);
-      expect(rooms[0].area).toBeGreaterThan(0);
-      expect(rooms[0].walls).toHaveLength(6);
+      expect(rooms.rooms).toHaveLength(1);
+      expect(rooms.rooms[0].area).toBeGreaterThan(0);
+      expect(rooms.rooms[0].walls).toHaveLength(6);
     });
 
     it('should handle rooms with shared walls correctly', () => {
@@ -459,8 +459,8 @@ describe('roomDetection', () => {
       ];
 
       const rooms = detectRooms(walls);
-      expect(rooms).toHaveLength(1);
-      expect(rooms[0].area).toBe(10000);
+      expect(rooms.rooms).toHaveLength(1);
+      expect(rooms.rooms[0].area).toBe(10000);
     });
 
     it('should handle floating point coordinates', () => {
@@ -472,8 +472,8 @@ describe('roomDetection', () => {
       ];
 
       const rooms = detectRooms(walls);
-      expect(rooms).toHaveLength(1);
-      expect(rooms[0].area).toBeCloseTo(10000, 1);
+      expect(rooms.rooms).toHaveLength(1);
+      expect(rooms.rooms[0].area).toBeCloseTo(10000, 1);
     });
 
     it('should handle duplicate walls', () => {

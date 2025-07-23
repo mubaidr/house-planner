@@ -33,7 +33,7 @@ export const useStairTool = () => {
     const snappedPos = snapPoint(pos, gridSize, snapPoints, snapToGrid);
 
     const newStair: Stair = {
-      id: `stair-${Date.now()}`,
+      id: `stair-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       x: snappedPos.x,
       y: snappedPos.y,
       width: 120,

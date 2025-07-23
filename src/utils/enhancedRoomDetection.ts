@@ -75,13 +75,13 @@ const ROOM_TYPE_RULES: RoomTypeRule[] = [
   {
     type: 'bedroom',
     minArea: 80,
-    maxArea: 400,
+    maxArea: 200,
     requiredFeatures: [],
     preferredFeatures: ['windows', 'single_door', 'rectangular'],
     excludedFeatures: ['multiple_external_doors'],
-    areaWeight: 0.3,
-    featureWeight: 0.3,
-    accessWeight: 0.4,
+    areaWeight: 0.4,
+    featureWeight: 0.4,
+    accessWeight: 0.2,
   },
   {
     type: 'living',
@@ -113,7 +113,7 @@ const ROOM_TYPE_RULES: RoomTypeRule[] = [
     preferredFeatures: ['windows', 'single_door', 'quiet_location'],
     excludedFeatures: [],
     areaWeight: 0.3,
-    featureWeight: 0.4,
+    featureWeight: 0.2,
     accessWeight: 0.3,
   },
   {
@@ -146,14 +146,15 @@ const ROOM_TYPE_RULES: RoomTypeRule[] = [
 const analyzeRoomFeatures = (
   room: Room,
   doors: Door[],
-  windows: Window[]
+  windows: Window[],
+  walls: Wall[]
 ): RoomFeature[] => {
   const features: RoomFeature[] = [];
 
   // Analyze doors
   doors.forEach(door => {
     if (room.walls.includes(door.wallId)) {
-      const wall = getWallById(door.wallId, room.walls);
+      const wall = getWallById(door.wallId, walls);
       if (wall) {
         features.push({
           type: 'door',
@@ -169,7 +170,7 @@ const analyzeRoomFeatures = (
   // Analyze windows
   windows.forEach(window => {
     if (room.walls.includes(window.wallId)) {
-      const wall = getWallById(window.wallId, room.walls);
+      const wall = getWallById(window.wallId, walls);
       if (wall) {
         features.push({
           type: 'window',
@@ -252,7 +253,7 @@ const classifyRoomType = (
     maxScore += rule.areaWeight;
 
     // Feature score
-    const featureScore = calculateFeatureScore(features, accessibility, lighting, rule);
+    const featureScore = calculateFeatureScore(room, features, accessibility, lighting, rule);
     score += featureScore * rule.featureWeight;
     maxScore += rule.featureWeight;
 
@@ -301,6 +302,7 @@ const calculateAreaScore = (area: number, rule: RoomTypeRule): number => {
  * Calculate feature score for a room type rule
  */
 const calculateFeatureScore = (
+  room: Room,
   features: RoomFeature[],
   accessibility: AccessibilityInfo,
   lighting: LightingInfo,
@@ -312,14 +314,14 @@ const calculateFeatureScore = (
   // Check preferred features
   rule.preferredFeatures.forEach(feature => {
     maxScore += 1;
-    if (hasFeature(feature, features, accessibility, lighting)) {
+    if (hasFeature(feature, features, accessibility, lighting, room)) {
       score += 1;
     }
   });
 
   // Penalize excluded features
   rule.excludedFeatures.forEach(feature => {
-    if (hasFeature(feature, features, accessibility, lighting)) {
+    if (hasFeature(feature, features, accessibility, lighting, room)) {
       score -= 0.5;
     }
   });
@@ -342,68 +344,73 @@ const hasFeature = (
   feature: string,
   features: RoomFeature[],
   accessibility: AccessibilityInfo,
-  _lighting: LightingInfo,
+  lighting: LightingInfo,
   room?: Room
 ): boolean => {
+  const area = room ? room.area / 144 : 0;
+
   switch (feature) {
     case 'small_area':
-      return true
+      return area < 70;
     case 'medium_area':
-      return true
+      return area >= 70 && area < 150;
     case 'large_area':
-      return true
+      return area >= 150;
     case 'single_door':
-      return accessibility.doorCount === 1
+      return accessibility.doorCount === 1;
     case 'multiple_doors':
-      return accessibility.doorCount > 1
+      return accessibility.doorCount > 1;
     case 'windows':
-      return accessibility.windowCount > 0
+      return accessibility.windowCount > 0;
     case 'no_windows':
-      return accessibility.windowCount === 0
+      return accessibility.windowCount === 0;
     case 'no_windows_ok':
-      return true
+      return true; // This feature is subjective, so we'll assume it's always true
     case 'external_access':
-      return accessibility.hasExternalAccess
+      return accessibility.hasExternalAccess;
     case 'multiple_external_doors':
-      return accessibility.doorCount > 1
+      // This logic might need to be more sophisticated based on door properties
+      return accessibility.doorCount > 1;
     case 'rectangular': {
-      const pts = (room && (room as any).points && Array.isArray((room as any).points)) ? (room as any).points : []
-      if (pts.length < 4) return false
-      const xs = pts.map((p: any) => p.x)
-      const ys = pts.map((p: any) => p.y)
-      const minX = Math.min(...xs)
-      const maxX = Math.max(...xs)
-      const minY = Math.min(...ys)
-      const maxY = Math.max(...ys)
-      const width = maxX - minX
-      const height = maxY - minY
-      const aspect = width / height
-      return aspect > 0.8 && aspect < 1.2
+      if (!room || !room.points || room.points.length < 4) return false;
+      const xs = room.points.map(p => p.x);
+      const ys = room.points.map(p => p.y);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      const width = maxX - minX;
+      const height = maxY - minY;
+      const aspectRatio = width / height;
+      // Consider a room rectangular if its aspect ratio is close to 1
+      return aspectRatio > 0.7 && aspectRatio < 1.3;
     }
     case 'narrow': {
-      const pts = (room && (room as any).points && Array.isArray((room as any).points)) ? (room as any).points : []
-      if (pts.length < 4) return false
-      const xsN = pts.map((p: any) => p.x)
-      const ysN = pts.map((p: any) => p.y)
-      const minXN = Math.min(...xsN)
-      const maxXN = Math.max(...xsN)
-      const minYN = Math.min(...ysN)
-      const maxYN = Math.max(...ysN)
-      const widthN = maxXN - minXN
-      const heightN = maxYN - minYN
-      const aspectN = widthN / heightN
-      return aspectN < 0.5 || aspectN > 2
+      if (!room || !room.points || room.points.length < 4) return false;
+      const xs = room.points.map(p => p.x);
+      const ys = room.points.map(p => p.y);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      const width = maxX - minX;
+      const height = maxY - minY;
+      const aspectRatio = width / height;
+      // Consider a room narrow if its aspect ratio is far from 1
+      return aspectRatio < 0.5 || aspectRatio > 2;
     }
     case 'connecting':
-      return accessibility.doorCount >= 2
+      return accessibility.doorCount >= 2;
     case 'quiet_location':
-      return features.filter(f => f.type === 'door').length === 1 && accessibility.windowCount <= 1
+      // This is a subjective feature, we can approximate it by checking for single door and limited windows
+      return accessibility.doorCount === 1 && accessibility.windowCount <= 1;
     case 'adjacent_to_kitchen':
-      return false
+      // This would require a more complex analysis of the entire floor plan
+      return false;
     default:
-      return false
+      return false;
   }
-}
+};
 
 /**
  * Generate suggested room names based on type and characteristics
@@ -453,9 +460,8 @@ const generateRoomNames = (type: string, area: number): string[] => {
 /**
  * Helper functions (these would need to be implemented based on your wall/door/window data structures)
  */
-const getWallById = (_wallId: string, _wallIds: string[]): Wall | null => {
-  // This would need to be implemented to get wall by ID
-  return null;
+const getWallById = (wallId: string, walls: Wall[]): Wall | null => {
+  return walls.find(wall => wall.id === wallId) || null;
 };
 
 const getDoorPosition = (door: Door, wall: Wall): Point => {
@@ -508,7 +514,7 @@ export const detectEnhancedRooms = (
 
   // Enhance each room with additional analysis
   const enhancedRooms: EnhancedRoom[] = basicRooms.map((room: Room) => {
-    const features = analyzeRoomFeatures(room, doors, windows);
+    const features = analyzeRoomFeatures(room, doors, windows, walls);
     const accessibility = calculateAccessibility(features);
     const lighting = calculateLighting(features, room);
     const classification = classifyRoomType(room, features, accessibility, lighting);
@@ -530,8 +536,8 @@ export const detectEnhancedRooms = (
 /**
  * Get room type suggestions based on current room data
  */
-export const getRoomTypeSuggestions = (room: Room, doors: Door[], windows: Window[]): string[] => {
-  const features = analyzeRoomFeatures(room, doors, windows);
+export const getRoomTypeSuggestions = (room: Room, doors: Door[], windows: Window[], walls: Wall[]): string[] => {
+  const features = analyzeRoomFeatures(room, doors, windows, walls);
   const accessibility = calculateAccessibility(features);
   const lighting = calculateLighting(features, room);
   const classification = classifyRoomType(room, features, accessibility, lighting);
@@ -542,12 +548,12 @@ export const getRoomTypeSuggestions = (room: Room, doors: Door[], windows: Windo
 /**
  * Analyze room and provide detailed insights
  */
-export const analyzeRoomInsights = (room: Room, doors: Door[], windows: Window[]): {
+export const analyzeRoomInsights = (room: Room, doors: Door[], windows: Window[], walls: Wall[]): {
   insights: string[];
   recommendations: string[];
   warnings: string[];
 } => {
-  const features = analyzeRoomFeatures(room, doors, windows);
+  const features = analyzeRoomFeatures(room, doors, windows, walls);
   const accessibility = calculateAccessibility(features);
   const lighting = calculateLighting(features, room);
   const areaInSqFt = room.area / 144;

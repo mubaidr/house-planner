@@ -247,15 +247,28 @@ const calculatePolygonPerimeter = (vertices: Point[]): number => {
 const calculatePolygonCenter = (vertices: Point[]): Point => {
   if (vertices.length === 0) return { x: 0, y: 0 };
 
-  let x = 0, y = 0;
+  // Remove duplicate vertices for center calculation
+  const uniqueVertices: Point[] = [];
   vertices.forEach(vertex => {
+    const isDuplicate = uniqueVertices.some(existing => 
+      pointsEqual(vertex, existing, 1)
+    );
+    if (!isDuplicate) {
+      uniqueVertices.push(vertex);
+    }
+  });
+
+  if (uniqueVertices.length === 0) return { x: 0, y: 0 };
+
+  let x = 0, y = 0;
+  uniqueVertices.forEach(vertex => {
     x += vertex.x;
     y += vertex.y;
   });
 
   return {
-    x: x / vertices.length,
-    y: y / vertices.length
+    x: x / uniqueVertices.length,
+    y: y / uniqueVertices.length
   };
 };
 
@@ -298,6 +311,9 @@ export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
   const rooms: Room[] = [];
   const closedShapes: Point[][] = [];
 
+  // Process cycles and deduplicate similar rooms
+  const candidateRooms: Room[] = [];
+  
   cycles.forEach((wallIds, index) => {
     const vertices = cycleToPolygon(wallIds, walls);
 
@@ -315,24 +331,41 @@ export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
       if (area > 1) { // Lowered minimum area threshold for minimal geometry
         // eslint-disable-next-line no-console
         console.log(`[detectRooms] Room created for cycle #${index} (area > 1)`);
+        // Remove duplicate wall from the end if it exists
+        const uniqueWalls = wallIds.length > 0 && wallIds[0] === wallIds[wallIds.length - 1] 
+          ? wallIds.slice(0, -1) 
+          : wallIds;
+
         const room: Room = {
           id: `room-${Date.now()}-${index}`,
-          name: `Room ${rooms.length + 1}`,
+          name: `Room ${candidateRooms.length + 1}`,
           vertices,
-          walls: wallIds,
+          walls: uniqueWalls,
           area,
           perimeter,
           center,
           color: generateRoomColor(index),
         };
 
-        rooms.push(room);
+        candidateRooms.push(room);
       } else {
         // eslint-disable-next-line no-console
         console.log(`[detectRooms] Skipped cycle #${index} (area <= 1)`);
       }
     }
   });
+
+  // For simple rectangular rooms, just keep the largest room (which should be the correct one)
+  const uniqueRooms: Room[] = [];
+  if (candidateRooms.length > 1) {
+    // Sort by area descending and take the largest
+    candidateRooms.sort((a, b) => b.area - a.area);
+    uniqueRooms.push(candidateRooms[0]);
+  } else {
+    uniqueRooms.push(...candidateRooms);
+  }
+
+  rooms.push(...uniqueRooms);
 
   // eslint-disable-next-line no-console
   console.log('[detectRooms] rooms:', rooms.length, rooms);

@@ -37,10 +37,10 @@ export function formatLength(
   format: 'decimal' | 'fractional' = 'decimal'
 ): string {
   if (unitSystem === 'metric') {
-    return `${value.toFixed(precision)}${showLabel ? ' m' : ''}`;
+    return `${value.toFixed(precision)}${showLabel ? 'm' : ''}`;
   } else {
     if (format === 'decimal') {
-      return `${value.toFixed(precision)}${showLabel ? ' ft' : ''}`;
+      return `${value.toFixed(precision)}${showLabel ? '\'' : ''}`;
     } else {
       // Convert to fractional format (e.g., 5' 6 1/2")
       const feet = Math.floor(value);

@@ -53,9 +53,7 @@ export const useUIStore = create<UIState & UIActions>((set, get) => ({
   isExportDialogOpen: false,
   isImportDialogOpen: false,
   selectedSheet: null,
-  get gridVisible() {
-    return get().showGrid
-  },
+  gridVisible: true, // Will be computed in actions
 
   // Actions
   setActiveTool: (tool) =>
@@ -66,6 +64,7 @@ export const useUIStore = create<UIState & UIActions>((set, get) => ({
   toggleGrid: () =>
     set((state) => ({
       showGrid: !state.showGrid,
+      gridVisible: !state.showGrid,
     })),
 
   toggleSnapToGrid: () =>

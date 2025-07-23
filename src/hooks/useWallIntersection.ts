@@ -75,13 +75,6 @@ export const useWallIntersection = () => {
     
     // Also update all affected walls in floor store for visual rendering
     if (currentFloorId) {
-      updateElementInFloor(currentFloorId, 'walls', wallId, {
-        startX: updatedWall.startX,
-        startY: updatedWall.startY,
-        endX: updatedWall.endX,
-        endY: updatedWall.endY,
-      });
-      
       // Update other affected walls in floor store
       joinResult.wallsToUpdate.forEach(({ wallId: affectedWallId, updates: wallUpdates }) => {
         updateElementInFloor(currentFloorId, 'walls', affectedWallId, wallUpdates);

@@ -47,8 +47,7 @@ export async function exportStageToSVG(
   options: Partial<SVGExportOptions> = {}
 ): Promise<{ success: boolean; svg?: string; blob?: Blob; error?: string }> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _options = options;
+    const opts = { ...DEFAULT_SVG_OPTIONS, ...options };
     
     // Get stage dimensions
     const stageRect = stage.getClientRect();
@@ -165,7 +164,7 @@ function createSVGDocument(width: number, height: number, options: SVGExportOpti
     <units>${options.units}</units>
     <scale>${options.scale}</scale>
   </metadata>
-`;
+</svg>`;`;
 }
 
 /**
@@ -197,12 +196,12 @@ function generateGridSVG(width: number, height: number, options: SVGExportOption
   
   // Vertical lines
   for (let x = 0; x <= width; x += gridSize) {
-    svg += `<line x1="${x}" y1="0" x2="${x}" y2="${height}" class="grid" />\n`;
+    svg += `<line x1="${x}" y1="0" x2="${x}" y2="${height}" class="grid" />`;
   }
   
   // Horizontal lines
   for (let y = 0; y <= height; y += gridSize) {
-    svg += `<line x1="0" y1="${y}" x2="${width}" y2="${y}" class="grid" />\n`;
+    svg += `<line x1="0" y1="${y}" x2="${width}" y2="${y}" class="grid" />\n`
   }
   
   svg += '</g>\n';

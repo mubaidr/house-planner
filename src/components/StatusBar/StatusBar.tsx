@@ -47,6 +47,8 @@ export default function StatusBar() {
               ? 'bg-blue-100 text-blue-700' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
+          aria-label={`Toggle grid ${showGrid ? 'off' : 'on'}`}
+          title="Toggle grid visibility"
         >
           Grid: {showGrid ? 'ON' : 'OFF'}
         </button>
@@ -58,6 +60,8 @@ export default function StatusBar() {
               ? 'bg-blue-100 text-blue-700' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
+          aria-label={`Toggle snap to grid ${snapToGrid ? 'off' : 'on'}`}
+          title="Toggle snap to grid"
         >
           Snap: {snapToGrid ? 'ON' : 'OFF'}
         </button>
@@ -65,11 +69,13 @@ export default function StatusBar() {
         <span>Grid: {gridSize}px</span>
 
         <div className="flex items-center space-x-2">
-          <span>Units:</span>
+          <label htmlFor="unit-system">Units:</label>
           <select
+            id="unit-system"
             value={unitSystem}
             onChange={(e) => setUnitSystem(e.target.value as 'metric' | 'imperial')}
             className="px-2 py-1 text-xs border border-gray-300 rounded bg-white"
+            aria-label="Unit system"
           >
             <option value="metric">Metric (m)</option>
             <option value="imperial">Imperial (ft)</option>
@@ -81,6 +87,7 @@ export default function StatusBar() {
                 ? 'bg-blue-100 text-blue-700' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
+            aria-label={`Toggle unit labels ${showUnitLabels ? 'off' : 'on'}`}
             title="Toggle unit labels"
           >
             Labels: {showUnitLabels ? 'ON' : 'OFF'}

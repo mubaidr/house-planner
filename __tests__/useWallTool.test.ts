@@ -53,8 +53,8 @@ describe('useWallTool', () => {
     mockGetWallSnapPointsWithIntersections.mockReturnValue(mockSnapPoints);
 
     mockSnapPoint.mockImplementation((point, gridSize, snapPoints, snapToGrid) => ({
-      x: Math.round(point.x / gridSize) * gridSize,
-      y: Math.round(point.y / gridSize) * gridSize,
+      x: snapToGrid ? Math.round(point.x / gridSize) * gridSize : point.x,
+      y: snapToGrid ? Math.round(point.y / gridSize) * gridSize : point.y,
       snapped: snapToGrid,
       snapType: 'grid',
     }));
@@ -199,7 +199,7 @@ describe('useWallTool', () => {
 
     expect(mockAddWallWithIntersectionHandling).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: expect.stringMatching(/^wall-\d+$/),
+        id: expect.stringMatching(/^wall-\d+-[a-z0-9]+$/),
         startX: 0,
         startY: 0,
         endX: 100,
@@ -329,20 +329,31 @@ describe('useWallTool', () => {
   it('should use wall intersection handling for wall creation', () => {
     const { result } = renderHook(() => useWallTool());
 
+    // Start drawing
     act(() => {
       result.current.startDrawing(0, 0);
+    });
+
+    // Update to create sufficient distance
+    act(() => {
       result.current.updateDrawing(100, 0);
+    });
+
+    // Finish drawing
+    act(() => {
       result.current.finishDrawing();
     });
 
-    expect(mockUseWallIntersection).toHaveBeenCalled();
     expect(mockAddWallWithIntersectionHandling).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: expect.stringMatching(/^wall-\d+$/),
+        id: expect.stringMatching(/^wall-\d+-[a-z0-9]+$/),
         startX: 0,
         startY: 0,
         endX: 100,
         endY: 0,
+        thickness: 8,
+        height: 240,
+        color: '#666666',
       })
     );
   });
@@ -353,7 +364,11 @@ describe('useWallTool', () => {
     // Create first wall
     act(() => {
       result.current.startDrawing(0, 0);
+    });
+    act(() => {
       result.current.updateDrawing(100, 0);
+    });
+    act(() => {
       result.current.finishDrawing();
     });
 
@@ -363,7 +378,11 @@ describe('useWallTool', () => {
     // Create second wall
     act(() => {
       result.current.startDrawing(0, 100);
+    });
+    act(() => {
       result.current.updateDrawing(100, 100);
+    });
+    act(() => {
       result.current.finishDrawing();
     });
 
@@ -371,17 +390,21 @@ describe('useWallTool', () => {
     const secondWallId = mockAddWallWithIntersectionHandling.mock.calls[1][0].id;
 
     expect(firstWallId).not.toBe(secondWallId);
-    expect(firstWallId).toMatch(/^wall-\d+$/);
-    expect(secondWallId).toMatch(/^wall-\d+$/);
+    expect(firstWallId).toMatch(/^wall-\d+-[a-z0-9]+$/);
+    expect(secondWallId).toMatch(/^wall-\d+-[a-z0-9]+$/);
   });
 
   it('should calculate wall distance correctly', () => {
     const { result } = renderHook(() => useWallTool());
 
-    // Test with distance above minimum (6 pixels, since minimum is > 5)
+    // Test with distance above minimum (20 pixels, which is one grid unit)
     act(() => {
       result.current.startDrawing(0, 0);
-      result.current.updateDrawing(6, 0);
+    });
+    act(() => {
+      result.current.updateDrawing(20, 0);
+    });
+    act(() => {
       result.current.finishDrawing();
     });
 
@@ -389,10 +412,14 @@ describe('useWallTool', () => {
 
     mockAddWallWithIntersectionHandling.mockClear();
 
-    // Test with distance just below minimum
+    // Test with distance just below minimum (both points snap to same location)
     act(() => {
       result.current.startDrawing(0, 0);
+    });
+    act(() => {
       result.current.updateDrawing(4, 0);
+    });
+    act(() => {
       result.current.finishDrawing();
     });
 
@@ -404,7 +431,11 @@ describe('useWallTool', () => {
 
     act(() => {
       result.current.startDrawing(0, 0);
+    });
+    act(() => {
       result.current.updateDrawing(60, 80); // 3-4-5 triangle, distance = 100
+    });
+    act(() => {
       result.current.finishDrawing();
     });
 

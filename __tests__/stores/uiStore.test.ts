@@ -1,4 +1,4 @@
-import { act } from 'react-dom/test-utils';
+import { act } from 'react';
 import { useUIStore, Tool } from '../../src/stores/uiStore';
 
 describe('uiStore - Comprehensive Tests', () => {
@@ -20,6 +20,7 @@ describe('uiStore - Comprehensive Tests', () => {
         isExportDialogOpen: false,
         isImportDialogOpen: false,
         selectedSheet: null,
+        gridVisible: true,
       });
     });
   });
@@ -64,7 +65,7 @@ describe('uiStore - Comprehensive Tests', () => {
 
       const state = useUIStore.getState();
       expect(state.showGrid).toBe(!initialState);
-      expect(state.gridVisible).toBe(!initialState);
+      expect(state.gridVisible).toBe(state.showGrid); // gridVisible is a getter that returns showGrid
     });
 
     it('should toggle snap to grid', () => {
@@ -323,8 +324,12 @@ describe('uiStore - Comprehensive Tests', () => {
 
   describe('Computed Properties', () => {
     it('should compute gridVisible based on showGrid', () => {
+      // Test that gridVisible always matches showGrid
+      const initialState = useUIStore.getState();
+      expect(initialState.gridVisible).toBe(initialState.showGrid);
+      
       act(() => {
-        useUIStore.getState().toggleGrid(); // Assuming starts true, becomes false
+        useUIStore.getState().toggleGrid();
       });
 
       const state = useUIStore.getState();

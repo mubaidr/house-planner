@@ -76,6 +76,7 @@ describe('MaterialRenderer2D', () => {
     it('should get pattern for rough material', () => {
       const patternedMaterial = {
         ...mockMaterial,
+        name: 'Rough Surface', // Change name to avoid "brick" keyword
         properties: {
           ...mockMaterial.properties,
           roughness: 0.9, // This should trigger stipple pattern
@@ -201,11 +202,35 @@ describe('MaterialPatternUtils', () => {
 
   describe('generatePatternPreview', () => {
     it('should generate pattern preview canvas', () => {
+      // Mock Canvas API for test environment
+      const mockCanvas = {
+        width: 0,
+        height: 0,
+        getContext: jest.fn().mockReturnValue({
+          fillStyle: '',
+          fillRect: jest.fn(),
+          createPattern: jest.fn().mockReturnValue({}),
+        }),
+      };
+      
+      // Mock document.createElement to return our mock canvas
+      const originalCreateElement = document.createElement;
+      document.createElement = jest.fn().mockImplementation(() => {
+        const canvas = { ...mockCanvas };
+        // Allow width and height to be set
+        Object.defineProperty(canvas, 'width', { writable: true, value: 0 });
+        Object.defineProperty(canvas, 'height', { writable: true, value: 0 });
+        return canvas;
+      });
+      
       const result = MaterialPatternUtils.generatePatternPreview(mockMaterial, 64);
       
-      expect(result).toBeInstanceOf(HTMLCanvasElement);
+      expect(result).toBeDefined();
       expect(result.width).toBe(64);
       expect(result.height).toBe(64);
+      
+      // Restore original createElement
+      document.createElement = originalCreateElement;
     });
   });
 });

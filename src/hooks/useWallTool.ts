@@ -77,7 +77,7 @@ export const useWallTool = () => {
 
     if (distance > 5) { // Minimum wall length
       const newWall: Wall = {
-        id: `wall-${Date.now()}`,
+        id: `wall-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         startX: drawingState.startPoint.x,
         startY: drawingState.startPoint.y,
         endX: drawingState.currentPoint.x,
@@ -97,7 +97,7 @@ export const useWallTool = () => {
       currentPoint: null,
       currentSnapResult: null,
     });
-  }, [drawingState, addWallWithIntersectionHandling]);
+  }, [drawingState.isDrawing, drawingState.startPoint, drawingState.currentPoint, addWallWithIntersectionHandling]);
 
   const cancelDrawing = useCallback(() => {
     setDrawingState({

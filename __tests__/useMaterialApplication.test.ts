@@ -24,7 +24,7 @@ describe('useMaterialApplication', () => {
   ];
 
   const mockWindows = [
-    { id: 'window-1', x: 100, y: 0, width: 60, height: 120, wallId: 'wall-1', materialId: undefined },
+    { id: 'window-1', x: 140, y: 0, width: 60, height: 120, wallId: 'wall-1', materialId: undefined },
   ];
 
   const mockRooms = [
@@ -298,9 +298,9 @@ describe('useMaterialApplication', () => {
   it('should find window element at position', () => {
     const { result } = renderHook(() => useMaterialApplication());
 
-    // Point on window-1 (at x: 100, y: 0, width: 60, height: 120)
+    // Point on window-1 (at x: 140, y: 0, width: 60, height: 120)
     // Use a position that's clearly in the window but not overlapping with door
-    const hitResult = result.current.findElementAtPosition(120, 30);
+    const hitResult = result.current.findElementAtPosition(160, 30);
 
     expect(hitResult).toEqual({
       type: 'window',
@@ -469,8 +469,8 @@ describe('useMaterialApplication', () => {
   it('should handle window hit detection with tolerance', () => {
     const { result } = renderHook(() => useMaterialApplication());
 
-    // Point slightly outside window but within tolerance (window starts at x=100, so x=105 should be inside)
-    const hitResult = result.current.findElementAtPosition(105, 60);
+    // Point slightly outside window but within tolerance (window starts at x=140, so x=135 should be within tolerance)
+    const hitResult = result.current.findElementAtPosition(135, 60);
 
     expect(hitResult?.type).toBe('window');
   });
@@ -503,12 +503,12 @@ describe('useMaterialApplication', () => {
 
     const { result } = renderHook(() => useMaterialApplication());
 
-    // Point inside the L-shape (first rectangle)
-    const hitResult1 = result.current.findElementAtPosition(50, 25);
+    // Point inside the L-shape (first rectangle) but away from door area
+    const hitResult1 = result.current.findElementAtPosition(25, 25);
     expect(hitResult1?.type).toBe('room');
 
-    // Point in the extended part of the L (second rectangle)
-    const hitResult2 = result.current.findElementAtPosition(150, 75);
+    // Point in the extended part of the L (second rectangle) but away from window area
+    const hitResult2 = result.current.findElementAtPosition(120, 75);
     expect(hitResult2?.type).toBe('room');
 
     // Point outside the L-shape (in the "notch") - this might still hit the room depending on the algorithm
