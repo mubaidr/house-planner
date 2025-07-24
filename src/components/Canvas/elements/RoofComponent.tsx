@@ -8,6 +8,7 @@ interface RoofComponentProps {
   roof: Roof;
   isSelected?: boolean;
   onSelect?: () => void;
+  onDragMove?: (e: unknown) => void;
   onDragEnd?: (e: unknown) => void;
 }
 
@@ -15,6 +16,7 @@ export default function RoofComponent({
   roof,
   isSelected = false,
   onSelect,
+  onDragMove,
   onDragEnd
 }: RoofComponentProps) {
 
@@ -155,6 +157,7 @@ export default function RoofComponent({
   return (
     <Group
       draggable
+      onDragMove={onDragMove}
       onDragEnd={onDragEnd}
       onClick={onSelect}
       onTap={onSelect}

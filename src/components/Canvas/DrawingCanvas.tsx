@@ -992,8 +992,12 @@ export default function DrawingCanvas() {
               isSelected={selectedElementId === door.id && selectedElementType === 'door'}
               onSelect={() => selectElement(door.id, 'door')}
               onStartDrag={() => {}}
-              onDrag={() => {}}
-              onEndDrag={() => {}}
+              onDrag={(e: KonvaEventObject<DragEvent>) => {
+                handleDoorDragMove(e, door.id);
+              }}
+              onEndDrag={() => {
+                handleElementDragEnd(door.id, 'door');
+              }}
             />
           ))}
 
@@ -1013,7 +1017,12 @@ export default function DrawingCanvas() {
               stair={stair}
               isSelected={selectedElementId === stair.id && selectedElementType === 'stair'}
               onSelect={() => selectElement(stair.id, 'stair')}
-              onDragEnd={() => {}}
+              onDragMove={(e) => {
+                handleStairDragMove(e as KonvaEventObject<DragEvent>, stair.id);
+              }}
+              onDragEnd={() => {
+                handleElementDragEnd(stair.id, 'stair');
+              }}
             />
           ))}
 
@@ -1024,7 +1033,12 @@ export default function DrawingCanvas() {
               roof={roof}
               isSelected={selectedElementId === roof.id && selectedElementType === 'roof'}
               onSelect={() => selectElement(roof.id, 'roof')}
-              onDragEnd={() => {}}
+              onDragMove={(e) => {
+                handleRoofDragMove(e as KonvaEventObject<DragEvent>, roof.id);
+              }}
+              onDragEnd={() => {
+                handleElementDragEnd(roof.id, 'roof');
+              }}
             />
           ))}
 
@@ -1062,6 +1076,7 @@ export default function DrawingCanvas() {
               stair={previewStair}
               isSelected={false}
               onSelect={() => {}}
+              onDragMove={() => {}}
               onDragEnd={() => {}}
             />
           )}
@@ -1072,6 +1087,7 @@ export default function DrawingCanvas() {
               roof={previewRoof}
               isSelected={false}
               onSelect={() => {}}
+              onDragMove={() => {}}
               onDragEnd={() => {}}
             />
           )}
@@ -1228,7 +1244,16 @@ export default function DrawingCanvas() {
           }
         }}
         onEdit={() => {
-          // TODO: Implement direct editing
+          // Implement direct editing by focusing on the first editable property
+          if (selectedElementId && selectedElementType) {
+            // For now, we'll trigger the properties panel focus
+            // In the future, this could enable inline editing on the canvas
+            const propertiesPanel = document.querySelector('[data-testid="properties-panel"]');
+            const firstInput = propertiesPanel?.querySelector('input, textarea, select');
+            if (firstInput instanceof HTMLElement) {
+              firstInput.focus();
+            }
+          }
         }}
         onProperties={() => {
           // Properties panel is already visible when element is selected

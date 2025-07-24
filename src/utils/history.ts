@@ -137,3 +137,255 @@ export function compressHistory(): void {
   historyState.entries = compressed;
   historyState.currentIndex = Math.min(historyState.currentIndex, compressed.length - 1);
 }
+
+// Command implementations for element updates
+export class UpdateWallCommand implements Command {
+  private wallId: string;
+  private updateFn: (id: string, updates: any) => void;
+  private originalData: any;
+  private newData: any;
+  
+  constructor(wallId: string, updateFn: (id: string, updates: any) => void, originalData: any, newData: any) {
+    this.wallId = wallId;
+    this.updateFn = updateFn;
+    this.originalData = originalData;
+    this.newData = newData;
+  }
+  
+  execute(): void {
+    this.updateFn(this.wallId, this.newData);
+  }
+  
+  undo(): void {
+    this.updateFn(this.wallId, this.originalData);
+  }
+  
+  get description(): string {
+    return `Update wall ${this.wallId}`;
+  }
+}
+
+export class UpdateDoorCommand implements Command {
+  private doorId: string;
+  private updateFn: (id: string, updates: any) => void;
+  private originalData: any;
+  private newData: any;
+  
+  constructor(doorId: string, updateFn: (id: string, updates: any) => void, originalData: any, newData: any) {
+    this.doorId = doorId;
+    this.updateFn = updateFn;
+    this.originalData = originalData;
+    this.newData = newData;
+  }
+  
+  execute(): void {
+    this.updateFn(this.doorId, this.newData);
+  }
+  
+  undo(): void {
+    this.updateFn(this.doorId, this.originalData);
+  }
+  
+  get description(): string {
+    return `Update door ${this.doorId}`;
+  }
+}
+
+export class UpdateWindowCommand implements Command {
+  private windowId: string;
+  private updateFn: (id: string, updates: any) => void;
+  private originalData: any;
+  private newData: any;
+  
+  constructor(windowId: string, updateFn: (id: string, updates: any) => void, originalData: any, newData: any) {
+    this.windowId = windowId;
+    this.updateFn = updateFn;
+    this.originalData = originalData;
+    this.newData = newData;
+  }
+  
+  execute(): void {
+    this.updateFn(this.windowId, this.newData);
+  }
+  
+  undo(): void {
+    this.updateFn(this.windowId, this.originalData);
+  }
+  
+  get description(): string {
+    return `Update window ${this.windowId}`;
+  }
+}
+
+export class RemoveDoorCommand implements Command {
+  private doorId: string;
+  private removeFn: (id: string) => void;
+  private addFn: (door: any) => void;
+  private doorData: any;
+  
+  constructor(doorId: string, removeFn: (id: string) => void, addFn: (door: any) => void, doorData: any) {
+    this.doorId = doorId;
+    this.removeFn = removeFn;
+    this.addFn = addFn;
+    this.doorData = doorData;
+  }
+  
+  execute(): void {
+    this.removeFn(this.doorId);
+  }
+  
+  undo(): void {
+    this.addFn(this.doorData);
+  }
+  
+  get description(): string {
+    return `Remove door ${this.doorId}`;
+  }
+}
+
+export class RemoveWallCommand implements Command {
+  private wallId: string;
+  private removeFn: (id: string) => void;
+  private addFn: (wall: any) => void;
+  private wallData: any;
+  
+  constructor(wallId: string, removeFn: (id: string) => void, addFn: (wall: any) => void, wallData: any) {
+    this.wallId = wallId;
+    this.removeFn = removeFn;
+    this.addFn = addFn;
+    this.wallData = wallData;
+  }
+  
+  execute(): void {
+    this.removeFn(this.wallId);
+  }
+  
+  undo(): void {
+    this.addFn(this.wallData);
+  }
+  
+  get description(): string {
+    return `Remove wall ${this.wallId}`;
+  }
+}
+
+export class AddWallCommand implements Command {
+  private wallData: any;
+  private addFn: (wall: any) => void;
+  private removeFn: (id: string) => void;
+  
+  constructor(wallData: any, addFn: (wall: any) => void, removeFn: (id: string) => void) {
+    this.wallData = wallData;
+    this.addFn = addFn;
+    this.removeFn = removeFn;
+  }
+  
+  execute(): void {
+    this.addFn(this.wallData);
+  }
+  
+  undo(): void {
+    this.removeFn(this.wallData.id);
+  }
+  
+  get description(): string {
+    return `Add wall ${this.wallData.id}`;
+  }
+}
+
+export class BatchCommand implements Command {
+  private commands: Command[];
+  
+  constructor(commands: Command[]) {
+    this.commands = commands;
+  }
+  
+  execute(): void {
+    this.commands.forEach(cmd => cmd.execute());
+  }
+  
+  undo(): void {
+    // Undo commands in reverse order
+    for (let i = this.commands.length - 1; i >= 0; i--) {
+      this.commands[i].undo();
+    }
+  }
+  
+  get description(): string {
+    return `Batch operation (${this.commands.length} commands)`;
+  }
+}
+
+export class RemoveWindowCommand implements Command {
+  private windowId: string;
+  private removeFn: (id: string) => void;
+  private addFn: (window: any) => void;
+  private windowData: any;
+  
+  constructor(windowId: string, removeFn: (id: string) => void, addFn: (window: any) => void, windowData: any) {
+    this.windowId = windowId;
+    this.removeFn = removeFn;
+    this.addFn = addFn;
+    this.windowData = windowData;
+  }
+  
+  execute(): void {
+    this.removeFn(this.windowId);
+  }
+  
+  undo(): void {
+    this.addFn(this.windowData);
+  }
+  
+  get description(): string {
+    return `Remove window ${this.windowId}`;
+  }
+}
+
+export class ChangeViewCommand implements Command {
+  private oldView: any;
+  private newView: any;
+  private setViewFn: (view: any) => void;
+  
+  constructor(oldView: any, newView: any, setViewFn: (view: any) => void) {
+    this.oldView = oldView;
+    this.newView = newView;
+    this.setViewFn = setViewFn;
+  }
+  
+  execute(): void {
+    this.setViewFn(this.newView);
+  }
+  
+  undo(): void {
+    this.setViewFn(this.oldView);
+  }
+  
+  get description(): string {
+    return `Change view`;
+  }
+}
+
+export class ChangeViewTransformCommand implements Command {
+  private oldTransform: any;
+  private newTransform: any;
+  private setTransformFn: (transform: any) => void;
+  
+  constructor(oldTransform: any, newTransform: any, setTransformFn: (transform: any) => void) {
+    this.oldTransform = oldTransform;
+    this.newTransform = newTransform;
+    this.setTransformFn = setTransformFn;
+  }
+  
+  execute(): void {
+    this.setTransformFn(this.newTransform);
+  }
+  
+  undo(): void {
+    this.setTransformFn(this.oldTransform);
+  }
+  
+  get description(): string {
+    return `Change view transform`;
+  }
+}

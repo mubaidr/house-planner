@@ -79,34 +79,63 @@ export default function AlternativeElementList({ isOpen, onClose }: AlternativeE
           name: `Stair ${stair.id.substring(0, 8)}`,
           floor: floor.name,
           position: `(${Math.round(stair.x)}, ${Math.round(stair.y)})`,
-          dimensions: `${stair.width} × ${stair.height} units`,
-          description: `Staircase on ${floor.name}, width: ${stair.width}, height: ${stair.height} units`
+          dimensions: `${stair.width} × ${stair.length} units`,
+          description: `Staircase on ${floor.name}, width: ${stair.width}, length: ${stair.length} units`
         });
       });
 
       // Roofs
       floor.elements.roofs.forEach(roof => {
+        const roofBounds = roof.points.length > 0 
+          ? roof.points.reduce((bounds, point) => ({
+              minX: Math.min(bounds.minX, point.x),
+              minY: Math.min(bounds.minY, point.y),
+              maxX: Math.max(bounds.maxX, point.x),
+              maxY: Math.max(bounds.maxY, point.y)
+            }), { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity })
+          : { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+        
+        const roofWidth = roofBounds.maxX - roofBounds.minX;
+        const roofHeight = roofBounds.maxY - roofBounds.minY;
+        const roofCenterX = (roofBounds.minX + roofBounds.maxX) / 2;
+        const roofCenterY = (roofBounds.minY + roofBounds.maxY) / 2;
+
         elements.push({
           id: roof.id,
           type: 'Roof',
           name: `Roof ${roof.id.substring(0, 8)}`,
           floor: floor.name,
-          position: `(${Math.round(roof.x)}, ${Math.round(roof.y)})`,
-          dimensions: `${roof.width} × ${roof.height} units`,
-          description: `Roof on ${floor.name}, width: ${roof.width}, height: ${roof.height} units`
+          position: `(${Math.round(roofCenterX)}, ${Math.round(roofCenterY)})`,
+          dimensions: `${Math.round(roofWidth)} × ${Math.round(roofHeight)} units`,
+          description: `Roof on ${floor.name}, width: ${Math.round(roofWidth)}, height: ${Math.round(roofHeight)} units`
         });
       });
 
       // Rooms
       floor.elements.rooms.forEach(room => {
+        // Calculate room bounds from vertices
+        const bounds = room.vertices && room.vertices.length > 0 
+          ? room.vertices.reduce((b, vertex) => ({
+              minX: Math.min(b.minX, vertex.x),
+              minY: Math.min(b.minY, vertex.y),
+              maxX: Math.max(b.maxX, vertex.x),
+              maxY: Math.max(b.maxY, vertex.y)
+            }), { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity })
+          : { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+        
+        const roomWidth = bounds.maxX - bounds.minX;
+        const roomHeight = bounds.maxY - bounds.minY;
+        const centerX = room.center ? room.center.x : (bounds.minX + bounds.maxX) / 2;
+        const centerY = room.center ? room.center.y : (bounds.minY + bounds.maxY) / 2;
+
         elements.push({
           id: room.id,
           type: 'Room',
           name: room.name || `Room ${room.id.substring(0, 8)}`,
           floor: floor.name,
-          position: `(${Math.round(room.x)}, ${Math.round(room.y)})`,
-          dimensions: `${room.width} × ${room.height} units`,
-          description: `${room.name || 'Room'} on ${floor.name}, area: ${room.area} units²`
+          position: `(${Math.round(centerX)}, ${Math.round(centerY)})`,
+          dimensions: `${Math.round(roomWidth)} × ${Math.round(roomHeight)} units`,
+          description: `${room.name || 'Room'} on ${floor.name}, area: ${Math.round(room.area || 0)} units²`
         });
       });
     });
