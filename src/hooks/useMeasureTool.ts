@@ -132,8 +132,13 @@ export const useMeasureTool = () => {
         measurements: [...prev.measurements, newMeasurement],
       }));
     } else {
-      // Cancel if distance is too small
-      cancelMeasurement();
+      // If distance is too small, just reset the state without adding a measurement
+      setMeasureState(prev => ({
+        ...prev,
+        isMeasuring: false,
+        startPoint: null,
+        currentPoint: null,
+      }));
     }
   }, [measureState, calculateDistance, calculateAngle, cancelMeasurement]);
 

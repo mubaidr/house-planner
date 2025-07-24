@@ -1,21 +1,29 @@
 import { exportStageToSVG, exportMultiViewToSVG, DEFAULT_SVG_OPTIONS, generateSVGFilename } from '@/utils/exportFormatsSVG';
 import Konva from 'konva';
 
-// Mock Blob for testing Blob.text()
-const mockBlobText = jest.fn((content) => Promise.resolve(content));
-const mockBlob = jest.fn(function (this: Blob, content, options) {
-  return {
-    text: () => mockBlobText(content[0]),
-  };
-});
-
+/**
+ * Mock Blob for testing Blob.text()
+ * Blob is used as a constructor and should return an object with a text() method.
+ */
+class MockBlob {
+  _content: any;
+  _options: any;
+  constructor(content: any, options: any) {
+    this._content = content;
+    this._options = options;
+  }
+  async text() {
+    // Return the first content as string for test
+    return typeof this._content[0] === 'string' ? this._content[0] : String(this._content[0]);
+  }
+}
 Object.defineProperty(global, 'Blob', {
   writable: true,
-  value: mockBlob,
+  value: MockBlob,
 });
 
 // Mock Konva objects and methods
-const mockKonvaNode = {
+const mockKonvaNode: any = {
   x: jest.fn(() => 0),
   y: jest.fn(() => 0),
   width: jest.fn(() => 100),
@@ -38,7 +46,7 @@ const mockKonvaNode = {
   data: jest.fn(() => 'M0 0L10 10'),
 };
 
-const mockKonvaLayer = {
+const mockKonvaLayer: any = {
   getChildren: jest.fn(() => []),
 };
 
@@ -76,7 +84,7 @@ describe('exportFormatsSVG', () => {
 
   it('should include a line entity in SVG', async () => {
     mockKonvaLayer.getChildren.mockReturnValue([
-      { ...mockKonvaNode, className: 'Line', points: jest.fn(() => [0, 0, 100, 100]) },
+      { ...mockKonvaNode, className: 'Line', points: jest.fn(() => [0, 0, 100, 100]) } as any,
     ]);
     const result = await exportStageToSVG(mockKonvaStage as any);
     expect(result.svg).toContain('<path d="M 0 0 L 100 100"');
@@ -84,7 +92,7 @@ describe('exportFormatsSVG', () => {
 
   it('should include a rectangle entity in SVG', async () => {
     mockKonvaLayer.getChildren.mockReturnValue([
-      { ...mockKonvaNode, className: 'Rect', x: jest.fn(() => 10), y: jest.fn(() => 20), width: jest.fn(() => 50), height: jest.fn(() => 30) },
+      { ...mockKonvaNode, className: 'Rect', x: jest.fn(() => 10), y: jest.fn(() => 20), width: jest.fn(() => 50), height: jest.fn(() => 30) } as any,
     ]);
     const result = await exportStageToSVG(mockKonvaStage as any);
     expect(result.svg).toContain('<rect x="10" y="20" width="50" height="30"');
@@ -92,7 +100,7 @@ describe('exportFormatsSVG', () => {
 
   it('should include a circle entity in SVG', async () => {
     mockKonvaLayer.getChildren.mockReturnValue([
-      { ...mockKonvaNode, className: 'Circle', x: jest.fn(() => 10), y: jest.fn(() => 20), radius: jest.fn(() => 30) },
+      { ...mockKonvaNode, className: 'Circle', x: jest.fn(() => 10), y: jest.fn(() => 20), radius: jest.fn(() => 30) } as any,
     ]);
     const result = await exportStageToSVG(mockKonvaStage as any);
     expect(result.svg).toContain('<circle cx="10" cy="20" r="30"');
@@ -100,7 +108,7 @@ describe('exportFormatsSVG', () => {
 
   it('should include a text entity in SVG', async () => {
     mockKonvaLayer.getChildren.mockReturnValue([
-      { ...mockKonvaNode, className: 'Text', x: jest.fn(() => 10), y: jest.fn(() => 20), text: jest.fn(() => 'Hello'), fontSize: jest.fn(() => 15) },
+      { ...mockKonvaNode, className: 'Text', x: jest.fn(() => 10), y: jest.fn(() => 20), text: jest.fn(() => 'Hello'), fontSize: jest.fn(() => 15) } as any,
     ]);
     const result = await exportStageToSVG(mockKonvaStage as any);
     expect(result.svg).toContain('<text x="10" y="20" font-family="Arial" font-size="15" fill="#000">Hello</text>');
@@ -108,7 +116,7 @@ describe('exportFormatsSVG', () => {
 
   it('should include a path entity in SVG', async () => {
     mockKonvaLayer.getChildren.mockReturnValue([
-      { ...mockKonvaNode, className: 'Path', data: jest.fn(() => 'M10 10L20 20') },
+      { ...mockKonvaNode, className: 'Path', data: jest.fn(() => 'M10 10L20 20') } as any,
     ]);
     const result = await exportStageToSVG(mockKonvaStage as any);
     expect(result.svg).toContain('<path d="M10 10L20 20"');
@@ -116,7 +124,7 @@ describe('exportFormatsSVG', () => {
 
   it('should include a group entity in SVG', async () => {
     mockKonvaLayer.getChildren.mockReturnValue([
-      { ...mockKonvaNode, className: 'Group', getChildren: jest.fn(() => [{ ...mockKonvaNode, className: 'Line', points: jest.fn(() => [0, 0, 10, 10]) }]) },
+      { ...mockKonvaNode, className: 'Group', getChildren: jest.fn(() => [{ ...mockKonvaNode, className: 'Line', points: jest.fn(() => [0, 0, 10, 10]) } as any]) } as any,
     ]);
     const result = await exportStageToSVG(mockKonvaStage as any);
     expect(result.svg).toContain('<g>');
@@ -144,6 +152,7 @@ describe('exportFormatsSVG', () => {
 
   it('should generate SVG filename correctly', () => {
     const filename = generateSVGFilename('My House Plan');
+    // Implementation uses ISO string sliced to 19 chars, replaces ":" and "." with "-"
     expect(filename).toMatch(/^my-house-plan-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.svg$/);
   });
 });

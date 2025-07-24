@@ -34,7 +34,7 @@ export const useWallEditor = () => {
     setEditState({
       isDragging: true,
       dragType: handleType,
-      originalWall: { ...wall },
+      originalWall: JSON.parse(JSON.stringify(wall)),
       dragStartPos: { x, y },
     });
   }, [walls]);
@@ -97,6 +97,7 @@ export const useWallEditor = () => {
       currentWall.endY !== editState.originalWall.endY;
 
     if (hasChanged) {
+      console.log('Wall changed, calling updateWallWithIntersectionHandling');
       // Use intersection-aware wall updating
       updateWallWithIntersectionHandling(wallId, {
         startX: currentWall.startX,
@@ -104,6 +105,8 @@ export const useWallEditor = () => {
         endX: currentWall.endX,
         endY: currentWall.endY,
       });
+    } else {
+      console.log('Wall did not change');
     }
 
     setEditState({
