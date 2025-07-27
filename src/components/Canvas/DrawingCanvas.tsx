@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer, Line, Group } from 'react-konva';
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/lib/Node';
+import { handleError } from '@/utils/errorHandler';
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
@@ -272,27 +273,8 @@ export default function DrawingCanvas() {
     // View changed - any necessary side effects can be added here
   }, [currentView]);
 
-  // Apply view-specific transformations to the stage
-  const getStageProps = React.useCallback(() => {
-    return {
-      width: canvasWidth,
-      height: canvasHeight,
-      scaleX: zoomLevel * viewTransform.zoom,
-      scaleY: zoomLevel * viewTransform.zoom,
-      rotation: viewTransform.rotation,
-      offsetX: viewTransform.pan.x,
-      offsetY: viewTransform.pan.y,
-      draggable: activeTool === 'select',
-      onWheel: handleWheel,
-      onMouseDown: handleStageMouseDown,
-      onMouseMove: handleStageMouseMove,
-      onMouseUp: handleStageMouseUp,
-      className: "bg-white",
-    };
-  }, [canvasWidth, canvasHeight, zoomLevel, viewTransform, activeTool, handleWheel, handleStageMouseDown, handleStageMouseMove, handleStageMouseUp]);
-
   // Handle wheel zoom
-  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
+  const handleWheel = React.useCallback((e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
 
     const stage = stageRef.current;
@@ -321,7 +303,26 @@ export default function DrawingCanvas() {
     };
 
     stage.position(newPos);
-  };
+  }, []);
+
+  // Apply view-specific transformations to the stage
+  const getStageProps = React.useCallback(() => {
+    return {
+      width: canvasWidth,
+      height: canvasHeight,
+      scaleX: zoomLevel * viewTransform.zoom,
+      scaleY: zoomLevel * viewTransform.zoom,
+      rotation: viewTransform.rotation,
+      offsetX: viewTransform.pan.x,
+      offsetY: viewTransform.pan.y,
+      draggable: activeTool === 'select',
+      onWheel: handleWheel,
+      onMouseDown: handleStageMouseDown,
+      onMouseMove: handleStageMouseMove,
+      onMouseUp: handleStageMouseUp,
+      className: "bg-white",
+    };
+  }, [canvasWidth, canvasHeight, zoomLevel, viewTransform, activeTool, handleWheel]);
 
   // Handle canvas interactions
   const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>) => {
@@ -459,13 +460,13 @@ export default function DrawingCanvas() {
   useEffect(() => {
     const detectScreenReader = () => {
       // Check for common screen reader indicators
-      const hasScreenReader = 
+      const hasScreenReader =
         navigator.userAgent.includes('NVDA') ||
         navigator.userAgent.includes('JAWS') ||
         navigator.userAgent.includes('VoiceOver') ||
         window.speechSynthesis ||
         document.querySelector('[aria-live]') !== null;
-      
+
       if (hasScreenReader && !isAccessibilityMode) {
         setAccessibilityMode(true);
       }
@@ -487,7 +488,7 @@ export default function DrawingCanvas() {
         measure: 'Measurement',
         dimension: 'Dimension annotation'
       };
-      
+
       const toolName = toolNames[activeTool as keyof typeof toolNames] || activeTool;
       announceToolChange(toolName);
     }
@@ -633,7 +634,26 @@ export default function DrawingCanvas() {
                 saveDesign(`Quick Save - ${timestamp}`, designData);
                 // You could show a toast notification here
               } catch (error) {
-                console.error('Failed to save design:', error);
+                handleError(
+                  error instanceof Error ? error : new Error('Failed to save design'),
+                  {
+                    category: 'save',
+                    source: 'DrawingCanvas',
+                    operation: 'quickSave'
+                  },
+                  {
+                    userMessage: 'Failed to save your design automatically. Please try saving manually.',
+                    retryAction: () => {
+                      const timestamp = new Date().toLocaleString();
+                      saveDesign(`Quick Save - ${timestamp}`, designData);
+                    },
+                    suggestions: [
+                      'Try saving with a different name',
+                      'Check if you have enough storage space',
+                      'Export your work as backup'
+                    ]
+                  }
+                );
               }
             }
             break;
@@ -764,8 +784,8 @@ export default function DrawingCanvas() {
   }, [setActiveTool, drawingState.isDrawing, doorPlacementState.isPlacing, windowPlacementState.isPlacing, measureState.isMeasuring, cancelDrawing, cancelDoorPlacement, cancelWindowPlacement, cancelMeasurement, clearSelection, undo, redo, canUndo, canRedo, selectedElementId, selectedElementType, deleteSelectedWall, deleteSelectedDoor, deleteSelectedWindow, setMouseCoordinates, cancelRoofDrawing, cancelStairDrawing, isDrawingRoof, isDrawingStair, copyElement, pasteElement, hasClipboardData]);
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className={`w-full h-full ${preferences.highContrastMode ? 'high-contrast' : ''}`}
       tabIndex={0}
       onFocus={() => setIsCanvasFocused(true)}
@@ -780,24 +800,24 @@ export default function DrawingCanvas() {
       aria-describedby="canvas-instructions accessibility-status"
       aria-live="polite"
       style={{
-        outline: isCanvasFocused && preferences.largerFocusIndicators 
-          ? '3px solid #005fcc' 
+        outline: isCanvasFocused && preferences.largerFocusIndicators
+          ? '3px solid #005fcc'
           : 'none',
         outlineOffset: '2px'
       }}
     >
       {/* Hidden instructions for screen readers */}
       <div id="canvas-instructions" className="sr-only">
-        Interactive house design canvas. Use Tab to navigate between elements, 
-        arrow keys to move selection, Enter or Space to select elements, 
-        and keyboard shortcuts to activate tools. Press 'i' to hear detailed 
+        Interactive house design canvas. Use Tab to navigate between elements,
+        arrow keys to move selection, Enter or Space to select elements,
+        and keyboard shortcuts to activate tools. Press 'i' to hear detailed
         information about the focused element.
       </div>
-      
+
       {/* Accessibility status information */}
       <div id="accessibility-status" className="sr-only" aria-live="polite">
         {isAccessibilityMode ? 'Accessibility mode active. ' : ''}
-        {getAllElements().length} elements on canvas. 
+        {getAllElements().length} elements on canvas.
         {focusedElementId ? `Currently focused: ${getFocusedElement()?.ariaLabel}` : 'No element focused.'}
       </div>
 
@@ -808,8 +828,8 @@ export default function DrawingCanvas() {
         ref={stageRef}
         {...getStageProps()}
         style={{
-          transition: isTransitioning && !preferences.reducedMotion 
-            ? 'all 0.3s ease-in-out' 
+          transition: isTransitioning && !preferences.reducedMotion
+            ? 'all 0.3s ease-in-out'
             : 'none',
           opacity: isTransitioning ? 0.7 : 1,
         }}

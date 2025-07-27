@@ -1,5 +1,6 @@
 import { Stage } from 'konva/lib/Stage';
 import jsPDF from 'jspdf';
+import { handleError } from '@/utils/errorHandler';
 
 export interface ExportOptions {
   format: 'png' | 'pdf' | 'svg' | 'dxf';
@@ -35,53 +36,53 @@ export const exportToPNG = async (
     // Configure stage for export
     const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
     const originalPosition = { x: stage.x(), y: stage.y() };
-    
+
     // Reset stage position and apply export scale
     stage.position({ x: 0, y: 0 });
     if (options.scale && options.scale !== 1) {
-      stage.scale({ 
-        x: originalScale.x * options.scale, 
-        y: originalScale.y * options.scale 
+      stage.scale({
+        x: originalScale.x * options.scale,
+        y: originalScale.y * options.scale
       });
     }
-    
+
     // Hide grid if not included in export
     if (!options.includeGrid) {
       const gridLayers = stage.find('.grid-layer');
       gridLayers.forEach(layer => layer.hide());
     }
-    
+
     // Hide measurements if not included
     if (!options.includeMeasurements) {
       const measurementLayers = stage.find('.measurement-layer');
       measurementLayers.forEach(layer => layer.hide());
     }
-    
+
     // Generate the image
     const dataUrl = stage.toDataURL({
       mimeType: 'image/png',
       quality: options.quality,
       pixelRatio: options.quality >= 0.9 ? 2 : 1, // High quality uses 2x pixel ratio
     });
-    
+
     // Convert to blob
     const blob = await dataURLToBlob(dataUrl);
-    
+
     // Restore original stage state
     stage.scale(originalScale);
     stage.position(originalPosition);
-    
+
     // Show hidden layers
     if (!options.includeGrid) {
       const gridLayers = stage.find('.grid-layer');
       gridLayers.forEach(layer => layer.show());
     }
-    
+
     if (!options.includeMeasurements) {
       const measurementLayers = stage.find('.measurement-layer');
       measurementLayers.forEach(layer => layer.show());
     }
-    
+
     return {
       success: true,
       dataUrl,
@@ -108,35 +109,35 @@ export const exportToPDF = async (
     if (!pngResult.success || !pngResult.dataUrl) {
       return { success: false, error: 'Failed to generate PNG for PDF' };
     }
-    
+
     // Create PDF
     const pdf = new jsPDF({
       orientation: options.orientation || 'landscape',
       unit: 'mm',
       format: options.paperSize || 'A4',
     });
-    
+
     // Get PDF dimensions
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    
+
     // Add title if provided
     if (options.title) {
       pdf.setFontSize(16);
       pdf.text(options.title, 20, 20);
     }
-    
+
     // Add description if provided
     if (options.description) {
       pdf.setFontSize(10);
       pdf.text(options.description, 20, options.title ? 30 : 20);
     }
-    
+
     // Calculate image position and size
     const margin = 20;
     const availableWidth = pdfWidth - (margin * 2);
     const availableHeight = pdfHeight - (margin * 2) - (options.title ? 20 : 0) - (options.description ? 10 : 0);
-    
+
     // Add the image
     const yPosition = margin + (options.title ? 20 : 0) + (options.description ? 10 : 0);
     pdf.addImage(
@@ -149,7 +150,7 @@ export const exportToPDF = async (
       undefined,
       'FAST'
     );
-    
+
     // Add metadata
     pdf.setProperties({
       title: options.title || 'House Plan',
@@ -157,10 +158,10 @@ export const exportToPDF = async (
       creator: '2D House Planner',
       keywords: 'house plan, architecture, design',
     });
-    
+
     // Convert to blob
     const pdfBlob = pdf.output('blob');
-    
+
     return {
       success: true,
       blob: pdfBlob,
@@ -187,7 +188,7 @@ export const getExportPreview = async (
     const scaleX = maxWidth / stageBounds.width;
     const scaleY = maxHeight / stageBounds.height;
     const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
-    
+
     const previewResult = await exportToPNG(stage, {
       format: 'png',
       quality: 0.7,
@@ -196,10 +197,17 @@ export const getExportPreview = async (
       includeRooms: true,
       includeMeasurements: false,
     });
-    
+
     return previewResult.dataUrl || '';
   } catch (error) {
-    console.error('Failed to generate preview:', error);
+    handleError(error instanceof Error ? error : new Error('Preview generation failed'), {
+      category: 'export',
+      source: 'exportUtils.generatePreview',
+      operation: 'previewGeneration'
+    }, {
+      userMessage: 'Failed to generate design preview. The preview could not be created.',
+      suggestions: ['Check that the design has valid elements', 'Try simplifying the design', 'Ensure canvas is properly initialized']
+    });
     return '';
   }
 };
@@ -255,20 +263,20 @@ const exportToPDFDuplicate = async (
       Letter: { width: 215.9, height: 279.4 },
       Legal: { width: 215.9, height: 355.6 },
     };
-    
+
     const paperSize = paperSizes[options.paperSize || 'A4'];
     const isLandscape = options.orientation === 'landscape';
-    
+
     const pdfWidth = isLandscape ? paperSize.height : paperSize.width;
     const pdfHeight = isLandscape ? paperSize.width : paperSize.height;
-    
+
     // Create PDF document
     const pdf = new jsPDF({
       orientation: options.orientation || 'portrait',
       unit: 'mm',
       format: options.paperSize || 'A4',
     });
-    
+
     // Get stage image
     const stageBounds = stage.getClientRect();
     const dataUrl = stage.toDataURL({
@@ -276,41 +284,41 @@ const exportToPDFDuplicate = async (
       quality: 1.0,
       pixelRatio: 2,
     });
-    
+
     // Calculate dimensions to fit the page with margins
     const margin = 20; // 20mm margin
     const availableWidth = pdfWidth - 2 * margin;
     const availableHeight = pdfHeight - 2 * margin - 30; // Extra space for title
-    
+
     const aspectRatio = stageBounds.width / stageBounds.height;
     let imageWidth = availableWidth;
     let imageHeight = availableWidth / aspectRatio;
-    
+
     if (imageHeight > availableHeight) {
       imageHeight = availableHeight;
       imageWidth = availableHeight * aspectRatio;
     }
-    
+
     // Add title if provided
     if (options.title) {
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
       pdf.text(options.title, pdfWidth / 2, margin, { align: 'center' });
     }
-    
+
     // Add description if provided
     if (options.description) {
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.text(options.description, pdfWidth / 2, margin + 10, { align: 'center' });
     }
-    
+
     // Add the image
     const imageY = options.title ? margin + 20 : margin;
     const imageX = (pdfWidth - imageWidth) / 2;
-    
+
     pdf.addImage(dataUrl, 'PNG', imageX, imageY, imageWidth, imageHeight);
-    
+
     // Add metadata
     pdf.setProperties({
       title: options.title || 'House Plan',
@@ -318,11 +326,11 @@ const exportToPDFDuplicate = async (
       author: '2D House Planner',
       creator: '2D House Planner Web App',
     });
-    
+
     // Convert to blob
     const pdfBlob = pdf.output('blob');
     const pdfDataUrl = pdf.output('datauristring');
-    
+
     return {
       success: true,
       dataUrl: pdfDataUrl,
@@ -377,17 +385,17 @@ const getExportPreviewDuplicate = async (
 ): Promise<string> => {
   const stageBounds = stage.getClientRect();
   const aspectRatio = stageBounds.width / stageBounds.height;
-  
+
   let previewWidth = maxWidth;
   let previewHeight = maxWidth / aspectRatio;
-  
+
   if (previewHeight > maxHeight) {
     previewHeight = maxHeight;
     previewWidth = maxHeight * aspectRatio;
   }
-  
+
   const scale = previewWidth / stageBounds.width;
-  
+
   return stage.toDataURL({
     mimeType: 'image/png',
     quality: 0.8,

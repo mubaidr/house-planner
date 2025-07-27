@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Keyboard, X } from 'lucide-react';
 
 interface KeyboardShortcutsProps {
@@ -9,6 +9,27 @@ interface KeyboardShortcutsProps {
 }
 
 export default function KeyboardShortcuts({ isOpen, onClose }: KeyboardShortcutsProps) {
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, onClose]);
+
+  // Handle click outside
+  const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   const shortcuts = [
@@ -69,24 +90,34 @@ export default function KeyboardShortcuts({ isOpen, onClose }: KeyboardShortcuts
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={handleBackdropClick}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shortcuts-title"
+        aria-describedby="shortcuts-content"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <Keyboard className="w-6 h-6 text-blue-500" />
-            <h2 className="text-xl font-semibold text-gray-900">Keyboard Shortcuts</h2>
+            <h2 id="shortcuts-title" className="text-xl font-semibold text-gray-900">Keyboard Shortcuts</h2>
           </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close keyboard shortcuts dialog"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div id="shortcuts-content" className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {shortcuts.map((category, categoryIndex) => (
               <div key={categoryIndex}>

@@ -1,12 +1,20 @@
 import { useDesignStore, DesignState } from '@/stores/designStore';
-import { useErrorStore } from '@/stores/errorStore';
+import { handleError } from '@/utils/errorHandler';
 
 // Basic localStorage operations
 export const saveToLocalStorage = (key: string, data: any): void => {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
-    console.error('Error saving to localStorage:', error);
+    handleError(error instanceof Error ? error : new Error('localStorage save failed'), {
+      category: 'storage',
+      source: 'storage.saveToLocalStorage',
+      operation: 'save',
+      additionalData: { key }
+    }, {
+      userMessage: 'Failed to save data locally. Your browser storage may be full.',
+      suggestions: ['Clear browser storage', 'Try incognito mode', 'Check available space']
+    });
   }
 };
 
@@ -15,7 +23,15 @@ export const loadFromLocalStorage = (key: string): any => {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : null;
   } catch (error) {
-    console.error('Error loading from localStorage:', error);
+    handleError(error instanceof Error ? error : new Error('localStorage load failed'), {
+      category: 'storage',
+      source: 'storage.loadFromLocalStorage',
+      operation: 'load',
+      additionalData: { key }
+    }, {
+      userMessage: 'Failed to load saved data. The data may be corrupted.',
+      suggestions: ['Clear browser storage', 'Try refreshing the page', 'Check browser settings']
+    });
     return null;
   }
 };
@@ -24,7 +40,15 @@ export const removeFromLocalStorage = (key: string): void => {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    console.error('Error removing from localStorage:', error);
+    handleError(error instanceof Error ? error : new Error('localStorage remove failed'), {
+      category: 'storage',
+      source: 'storage.removeFromLocalStorage',
+      operation: 'remove',
+      additionalData: { key }
+    }, {
+      userMessage: 'Failed to remove data from local storage.',
+      severity: 'warning'
+    });
   }
 };
 
@@ -32,7 +56,14 @@ export const clearAllStorage = (): void => {
   try {
     localStorage.clear();
   } catch (error) {
-    console.error('Error clearing localStorage:', error);
+    handleError(error instanceof Error ? error : new Error('localStorage clear failed'), {
+      category: 'storage',
+      source: 'storage.clearAllStorage',
+      operation: 'clear'
+    }, {
+      userMessage: 'Failed to clear all local storage data.',
+      severity: 'warning'
+    });
   }
 };
 
@@ -86,7 +117,7 @@ export const loadUserPreferences = (): any => {
 export const exportToFile = async (data: any, format: string): Promise<{ data: string; filename: string }> => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const filename = `design-export-${timestamp}.${format}`;
-  
+
   let exportData: string;
   switch (format) {
     case 'json':
@@ -95,7 +126,7 @@ export const exportToFile = async (data: any, format: string): Promise<{ data: s
     default:
       exportData = JSON.stringify(data, null, 2);
   }
-  
+
   return { data: exportData, filename };
 };
 
@@ -106,7 +137,7 @@ export const importFromFile = async (file: File): Promise<any> => {
       try {
         const data = JSON.parse(e.target?.result as string);
         resolve(data);
-      } catch (error) {
+      } catch {
         reject(new Error('Invalid file format'));
       }
     };
@@ -119,7 +150,7 @@ export const importFromFile = async (file: File): Promise<any> => {
 export const getStorageInfo = (): { used: number; available: number; total: number } => {
   try {
     let used = 0;
-    
+
     // Calculate used storage by iterating through all keys
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -130,13 +161,13 @@ export const getStorageInfo = (): { used: number; available: number; total: numb
         }
       }
     }
-    
+
     // Estimate total available storage (5MB is typical for localStorage)
     const total = 5 * 1024 * 1024; // 5MB in bytes
     const available = total - used;
-    
+
     return { used, available, total };
-  } catch (error) {
+  } catch {
     return { used: 0, available: 0, total: 0 };
   }
 };
@@ -155,16 +186,16 @@ export const compressData = (data: any): string => {
       }
       return value;
     });
-    
+
     // Simple compression - remove JSON formatting whitespace and encode
     // In a real implementation, you might use a proper compression library like pako
     const compactJson = JSON.stringify(JSON.parse(jsonString)); // Remove formatting whitespace
     try {
       return btoa(compactJson);
-    } catch (error) {
+    } catch {
       return compactJson;
     }
-  } catch (error) {
+  } catch {
     // Return a safe fallback for circular references or other JSON errors
     return btoa('{}');
   }
@@ -174,11 +205,11 @@ export const decompressData = (compressedData: string): any => {
   try {
     const jsonString = atob(compressedData);
     return JSON.parse(jsonString);
-  } catch (error) {
+  } catch {
     // Fallback - try to parse as regular JSON
     try {
       return JSON.parse(compressedData);
-    } catch (fallbackError) {
+    } catch {
       throw new Error('Failed to decompress data');
     }
   }
@@ -206,8 +237,19 @@ export const saveDesign = async () => {
     await writable.write(blob);
     await writable.close();
   } catch (error) {
-    console.error('Error saving design:', error);
-    useErrorStore.getState().setError('Failed to save design.');
+    handleError(error instanceof Error ? error : new Error('Design save failed'), {
+      category: 'save',
+      source: 'storage.saveDesign',
+      operation: 'saveFile'
+    }, {
+      userMessage: 'Failed to save your design file. Please try again or save to a different location.',
+      retryAction: () => saveDesign(),
+      suggestions: [
+        'Try saving to a different location',
+        'Check available disk space',
+        'Ensure you have write permissions'
+      ]
+    });
   }
 };
 
@@ -230,8 +272,19 @@ export const loadDesign = async () => {
 
     useDesignStore.setState(design);
   } catch (error) {
-    console.error('Error loading design:', error);
-    useErrorStore.getState().setError('Failed to load design.');
+    handleError(error instanceof Error ? error : new Error('Design load failed'), {
+      category: 'load',
+      source: 'storage.loadDesign',
+      operation: 'loadFile'
+    }, {
+      userMessage: 'Failed to load the design file. The file may be corrupted or in an unsupported format.',
+      retryAction: () => loadDesign(),
+      suggestions: [
+        'Verify the file is a valid design file',
+        'Try opening a different file',
+        'Check if the file was created with this application'
+      ]
+    });
   }
 };
 

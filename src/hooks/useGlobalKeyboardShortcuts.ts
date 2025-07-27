@@ -4,6 +4,7 @@ import { useDesignStore } from '@/stores/designStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { useUIStore } from '@/stores/uiStore';
 import { saveDesign } from '@/utils/storage';
+import { handleInfo } from '@/utils/errorHandler';
 
 type ShortcutAction = () => void;
 
@@ -34,7 +35,14 @@ const getShortcuts = (designStore: any, historyStore: any, uiStore: any): Shortc
     ctrl: true,
     action: () => {
       saveDesign();
-      console.log('Save triggered');
+      handleInfo('Design saved successfully', {
+        category: 'save',
+        source: 'useGlobalKeyboardShortcuts.saveShortcut',
+        operation: 'saveProject'
+      }, {
+        autoDismiss: true,
+        duration: 2000
+      });
     },
     description: 'Save project',
   },
@@ -44,7 +52,14 @@ const getShortcuts = (designStore: any, historyStore: any, uiStore: any): Shortc
     ctrl: true,
     action: () => {
       historyStore.undo();
-      console.log('Undo triggered');
+      handleInfo('Action undone', {
+        category: 'drawing',
+        source: 'useGlobalKeyboardShortcuts.undoShortcut',
+        operation: 'undoAction'
+      }, {
+        autoDismiss: true,
+        duration: 1500
+      });
     },
     description: 'Undo',
   },
@@ -55,7 +70,14 @@ const getShortcuts = (designStore: any, historyStore: any, uiStore: any): Shortc
     shift: true,
     action: () => {
       historyStore.redo();
-      console.log('Redo triggered');
+      handleInfo('Action redone', {
+        category: 'drawing',
+        source: 'useGlobalKeyboardShortcuts.redoShortcut',
+        operation: 'redoAction'
+      }, {
+        autoDismiss: true,
+        duration: 1500
+      });
     },
     description: 'Redo',
   },
@@ -65,7 +87,14 @@ const getShortcuts = (designStore: any, historyStore: any, uiStore: any): Shortc
     ctrl: true,
     action: () => {
       uiStore.setExportDialogOpen(true);
-      console.log('Export dialog triggered');
+      handleInfo('Export dialog opened', {
+        category: 'export',
+        source: 'useGlobalKeyboardShortcuts.exportShortcut',
+        operation: 'openExportDialog'
+      }, {
+        autoDismiss: true,
+        duration: 1500
+      });
     },
     description: 'Open export dialog',
   },

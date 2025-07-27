@@ -1,6 +1,6 @@
 /**
  * Stage Generator for Multi-View Export
- * 
+ *
  * This utility creates Konva stages for different views to enable
  * multi-view export functionality.
  */
@@ -9,6 +9,7 @@ import Konva from 'konva';
 import { Stage } from 'konva/lib/Stage';
 import { Layer } from 'konva/lib/Layer';
 import { ViewType2D } from '@/types/views';
+import { handleError } from '@/utils/errorHandler';
 import { Element2D } from '@/types/elements2D';
 import { convertElementsToElement2D } from './elementTypeConverter';
 import { Wall } from '@/types/elements/Wall';
@@ -61,7 +62,7 @@ export async function generateStageForView(
 ): Promise<Stage> {
   // Merge options with defaults
   const opts = { ...DEFAULT_STAGE_OPTIONS, ...options };
-  
+
   // Create a temporary container for the stage
   const container = document.createElement('div');
   container.style.position = 'absolute';
@@ -70,7 +71,7 @@ export async function generateStageForView(
   container.style.width = `${opts.width}px`;
   container.style.height = `${opts.height}px`;
   document.body.appendChild(container);
-  
+
   try {
     // Create the stage
     const stage = new Konva.Stage({
@@ -78,14 +79,14 @@ export async function generateStageForView(
       width: opts.width,
       height: opts.height,
     });
-    
+
     // Create main layer
     const layer = new Konva.Layer();
     stage.add(layer);
-    
+
     // Filter elements based on view type
     const filteredElements = filterElementsForView(viewType, elements);
-    
+
     // Convert to Element2D format
     const elements2D = convertElementsToElement2D(
       filteredElements.walls,
@@ -96,24 +97,24 @@ export async function generateStageForView(
       filteredElements.rooms,
       floorId
     );
-    
+
     // Add grid if enabled
     if (opts.showGrid) {
       addGridToLayer(layer, opts.width, opts.height);
     }
-    
+
     // Render elements based on view type
     if (viewType === 'plan') {
       await renderPlanViewElements(layer, elements2D, opts);
     } else {
       await renderElevationViewElements(layer, elements2D, viewType, opts);
     }
-    
+
     // Center the content
     centerStageContent(stage, layer);
-    
+
     layer.draw();
-    
+
     return stage;
   } finally {
     // Clean up the temporary container
@@ -150,7 +151,7 @@ function filterElementsForView(viewType: ViewType2D, elements: ViewElements): Vi
 function addGridToLayer(layer: Layer, width: number, height: number): void {
   const gridSize = 20; // Grid spacing in pixels
   const gridColor = '#E5E5E5';
-  
+
   // Vertical lines
   for (let x = 0; x <= width; x += gridSize) {
     const line = new Konva.Line({
@@ -161,7 +162,7 @@ function addGridToLayer(layer: Layer, width: number, height: number): void {
     });
     layer.add(line);
   }
-  
+
   // Horizontal lines
   for (let y = 0; y <= height; y += gridSize) {
     const line = new Konva.Line({
@@ -187,7 +188,7 @@ async function renderPlanViewElements(
     const layerOrder = { room2d: 0, wall2d: 1, door2d: 2, window2d: 2, stair2d: 3 };
     return (layerOrder[a.type] || 999) - (layerOrder[b.type] || 999);
   });
-  
+
   for (const element of sortedElements) {
     switch (element.type) {
       case 'wall2d':
@@ -222,7 +223,7 @@ async function renderElevationViewElements(
   const sortedElements = elements.sort((a, b) => {
     return (a.transform.position.y || 0) - (b.transform.position.y || 0);
   });
-  
+
   for (const element of sortedElements) {
     switch (element.type) {
       case 'wall2d':
@@ -242,7 +243,7 @@ async function renderElevationViewElements(
         break;
     }
   }
-  
+
   // Add ground line
   addGroundLineToElevationView(layer, options);
 }
@@ -282,7 +283,7 @@ function addDoorToPlanView(layer: Layer, door: any, options: StageGenerationOpti
     listening: false,
   });
   layer.add(rect);
-  
+
   // Add door swing arc
   const arc = new Konva.Arc({
     x: door.transform.position.x,
@@ -333,11 +334,11 @@ function addStairToPlanView(layer: Layer, stair: any, options: StageGenerationOp
     listening: false,
   });
   layer.add(rect);
-  
+
   // Add step lines
   const stepCount = stair.steps?.length || 10;
   const stepHeight = stair.dimensions.height / stepCount;
-  
+
   for (let i = 1; i < stepCount; i++) {
     const line = new Konva.Line({
       points: [
@@ -360,9 +361,9 @@ function addStairToPlanView(layer: Layer, stair: any, options: StageGenerationOp
  */
 function addRoomToPlanView(layer: Layer, room: any, options: StageGenerationOptions): void {
   if (!room.points || room.points.length < 3) return;
-  
+
   const points = room.points.flatMap((p: any) => [p.x, p.y]);
-  
+
   const polygon = new Konva.Line({
     points,
     closed: true,
@@ -384,12 +385,12 @@ function addWallToElevationView(layer: Layer, wall: any, viewType: ViewType2D, o
     x: wall.endPoint.x - wall.startPoint.x,
     y: wall.endPoint.y - wall.startPoint.y
   };
-  
+
   // Determine if wall is perpendicular to view direction
   let isVisible = false;
   let wallLength = 0;
   let wallPosition = 0;
-  
+
   switch (viewType) {
     case 'front':
     case 'back':
@@ -410,11 +411,11 @@ function addWallToElevationView(layer: Layer, wall: any, viewType: ViewType2D, o
       }
       break;
   }
-  
+
   if (isVisible && wallLength > 0.1) {
     const groundLevel = options.height * 0.8; // Ground at 80% of canvas height
     const wallHeight = wall.height || 96;
-    
+
     const rect = new Konva.Rect({
       x: wallPosition,
       y: groundLevel - wallHeight,
@@ -436,7 +437,7 @@ function addDoorToElevationView(layer: Layer, door: any, viewType: ViewType2D, o
   // Check if door is visible in this elevation view (similar to wall logic)
   const groundLevel = options.height * 0.8;
   const doorHeight = door.height || 84;
-  
+
   // For now, render all doors - in a real implementation, you'd check wall visibility
   const rect = new Konva.Rect({
     x: door.transform.position.x - door.width / 2,
@@ -458,7 +459,7 @@ function addWindowToElevationView(layer: Layer, window: any, viewType: ViewType2
   const groundLevel = options.height * 0.8;
   const sillHeight = 36; // 3 feet default
   const windowHeight = window.height || 48;
-  
+
   // For now, render all windows - in a real implementation, you'd check wall visibility
   const rect = new Konva.Rect({
     x: window.transform.position.x - window.width / 2,
@@ -478,14 +479,14 @@ function addWindowToElevationView(layer: Layer, window: any, viewType: ViewType2
  */
 function addStairToElevationView(layer: Layer, stair: any, viewType: ViewType2D, options: StageGenerationOptions): void {
   const groundLevel = options.height * 0.8;
-  
+
   // Draw stair profile
   const stepCount = stair.steps?.length || 10;
   const stepRise = 7; // inches
   const stepRun = 11; // inches
-  
+
   const points: number[] = [stair.transform.position.x, groundLevel]; // Start at ground
-  
+
   for (let i = 0; i < stepCount; i++) {
     const x = stair.transform.position.x + i * stepRun;
     const y = groundLevel - i * stepRise;
@@ -494,7 +495,7 @@ function addStairToElevationView(layer: Layer, stair: any, viewType: ViewType2D,
       points.push(x + stepRun, y - stepRise); // Vertical riser
     }
   }
-  
+
   const line = new Konva.Line({
     points,
     stroke: '#696969',
@@ -509,12 +510,12 @@ function addStairToElevationView(layer: Layer, stair: any, viewType: ViewType2D,
  */
 function addRoofToElevationView(layer: Layer, roof: any, viewType: ViewType2D, options: StageGenerationOptions): void {
   if (!roof.points || roof.points.length < 3) return;
-  
+
   // Project roof points to elevation
   const projectedPoints = roof.points
     .map((p: any) => projectPointToElevation(p, viewType))
     .flatMap((p: any) => [p.x, p.y - 200]); // Raise roof above walls
-  
+
   const polygon = new Konva.Line({
     points: projectedPoints,
     closed: true,
@@ -531,7 +532,7 @@ function addRoofToElevationView(layer: Layer, roof: any, viewType: ViewType2D, o
  */
 function addGroundLineToElevationView(layer: Layer, options: StageGenerationOptions): void {
   const groundLevel = options.height * 0.8; // Ground at 80% of canvas height
-  
+
   const line = new Konva.Line({
     points: [0, groundLevel, options.width, groundLevel],
     stroke: '#8B7355',
@@ -539,7 +540,7 @@ function addGroundLineToElevationView(layer: Layer, options: StageGenerationOpti
     listening: false,
   });
   layer.add(line);
-  
+
   // Add sky background
   const sky = new Konva.Rect({
     x: 0,
@@ -586,7 +587,7 @@ function centerStageContent(stage: Stage, layer: Layer): void {
       (stage.width() * 0.8) / bbox.width,
       (stage.height() * 0.8) / bbox.height
     );
-    
+
     layer.scale({ x: scale, y: scale });
     layer.position({
       x: (stage.width() - bbox.width * scale) / 2 - bbox.x * scale,
@@ -611,16 +612,23 @@ export async function generateAllViewStages(
     left: null,
     right: null,
   };
-  
+
   for (const view of views) {
     try {
       stages[view] = await generateStageForView(view, elements, floorId, options);
     } catch (error) {
-      console.error(`Failed to generate stage for ${view} view:`, error);
+      handleError(error instanceof Error ? error : new Error(`Stage generation failed for ${view} view`), {
+        category: 'export',
+        source: 'stageGenerator.generateMultiViewStages',
+        operation: 'stageGeneration'
+      }, {
+        userMessage: `Failed to generate stage for ${view} view. This view will be skipped in the export.`,
+        suggestions: ['Try exporting with fewer views selected', 'Check that the design has valid elements for this view', 'Verify the view configuration is correct']
+      });
       stages[view] = null;
     }
   }
-  
+
   return stages;
 }
 

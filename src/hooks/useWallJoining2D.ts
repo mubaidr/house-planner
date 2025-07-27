@@ -10,6 +10,7 @@ import { WallJoiningSystem2D, WallJoint2D, WallJoinConfiguration, WallJoinResult
 import { convertElementsToElement2D } from '@/utils/elementTypeConverter';
 import { Wall2D } from '@/types/elements2D';
 import { useHistoryStore } from '@/stores/historyStore';
+import { handleError, handleWarning } from '@/utils/errorHandler';
 
 export interface UseWallJoining2DOptions {
   autoUpdate?: boolean;
@@ -69,7 +70,14 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
       const elements2D = convertElementsToElement2D(walls, [], [], [], [], [], '');
       return elements2D.filter(el => el.type === 'wall2d') as Wall2D[];
     } catch (err) {
-      console.error('Error converting walls to 2D:', err);
+      handleError(err instanceof Error ? err : new Error('Wall conversion failed'), {
+        category: 'rendering',
+        source: 'useWallJoining2D.convertToWall2D',
+        operation: 'wallConversion'
+      }, {
+        userMessage: 'Failed to process wall elements for joining analysis.',
+        suggestions: ['Check that all walls have valid coordinates', 'Verify wall data is complete']
+      });
       return [];
     }
   }, [walls, enabled]);
@@ -96,13 +104,27 @@ export function useWallJoining2D(options: UseWallJoining2DOptions = {}): UseWall
 
       // Log warnings if any
       if (result.warnings.length > 0) {
-        console.warn('Wall joining warnings:', result.warnings);
+        handleWarning('Wall joining warnings detected', {
+          category: 'integration',
+          source: 'useWallJoining2D.analyzeWalls',
+          operation: 'wallJoining'
+        }, {
+          userMessage: `Found ${result.warnings.length} wall joining issues that need attention.`,
+          suggestions: ['Review wall placement and intersections', 'Check for overlapping walls', 'Verify wall endpoints align properly']
+        });
       }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during wall analysis';
       setError(errorMessage);
-      console.error('Wall joining analysis failed:', err);
+      handleError(err instanceof Error ? err : new Error('Wall joining analysis failed'), {
+        category: 'integration',
+        source: 'useWallJoining2D.analyzeWalls',
+        operation: 'wallJoining'
+      }, {
+        userMessage: 'Failed to analyze wall joining. The analysis could not be completed.',
+        suggestions: ['Check wall geometry', 'Verify all walls are properly placed', 'Try refreshing the analysis']
+      });
     } finally {
       setIsAnalyzing(false);
     }

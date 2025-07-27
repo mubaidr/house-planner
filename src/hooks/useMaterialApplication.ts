@@ -7,6 +7,7 @@ import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
 import { Room } from '@/utils/roomDetection';
+import { handleError } from '@/utils/errorHandler';
 
 // Hit detection helper functions
 const isPointOnWall = (x: number, y: number, wall: Wall): boolean => {
@@ -230,7 +231,14 @@ export const useMaterialApplication = () => {
         // No element found at drop position
       }
     } catch (error) {
-      console.error('Error handling material drop:', error);
+      handleError(error instanceof Error ? error : new Error('Material drop failed'), {
+        category: 'drawing',
+        source: 'useMaterialApplication.handleCanvasDrop',
+        operation: 'materialApplication'
+      }, {
+        userMessage: 'Failed to apply material to the element. Please try again.',
+        suggestions: ['Ensure you drop the material on a valid element', 'Check that the material is compatible with the element type']
+      });
     }
   }, [findElementAtPosition, applyMaterialToElement]);
 

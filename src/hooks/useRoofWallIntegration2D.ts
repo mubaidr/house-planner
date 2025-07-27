@@ -14,6 +14,7 @@ import {
 } from '@/utils/roofWallIntegration2D';
 import { convertElementsToElement2D } from '@/utils/elementTypeConverter';
 import { Wall2D, Roof2D } from '@/types/elements2D';
+import { handleError, handleWarning } from '@/utils/errorHandler';
 import { useHistoryStore } from '@/stores/historyStore';
 
 export interface UseRoofWallIntegration2DOptions {
@@ -81,7 +82,14 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
       const roofs2D = elements2D.filter(el => el.type === 'roof2d') as Roof2D[];
       return { walls2D, roofs2D };
     } catch (err) {
-      console.error('Error converting elements to 2D:', err);
+      handleError(err instanceof Error ? err : new Error('Element conversion failed'), {
+        category: 'rendering',
+        source: 'useRoofWallIntegration2D.convertToElement2D',
+        operation: 'elementConversion'
+      }, {
+        userMessage: 'Failed to process roof and wall elements for integration analysis.',
+        suggestions: ['Check that all elements have valid coordinates', 'Verify roof and wall data is complete']
+      });
       return { walls2D: [], roofs2D: [] };
     }
   }, [walls, roofs, enabled]);
@@ -108,13 +116,27 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
 
       // Log warnings if any
       if (result.warnings.length > 0) {
-        console.warn('Roof-wall integration warnings:', result.warnings);
+        handleWarning('Roof-wall integration warnings detected', {
+          category: 'integration',
+          source: 'useRoofWallIntegration2D.analyzeIntegration',
+          operation: 'integration'
+        }, {
+          userMessage: `Found ${result.warnings.length} integration issues that need attention.`,
+          suggestions: ['Review roof and wall placement', 'Check for overlapping elements', 'Verify roof pitch settings']
+        });
       }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during roof-wall analysis';
       setError(errorMessage);
-      console.error('Roof-wall integration analysis failed:', err);
+      handleError(err instanceof Error ? err : new Error('Roof-wall integration failed'), {
+        category: 'integration',
+        source: 'useRoofWallIntegration2D.analyzeIntegration',
+        operation: 'integration'
+      }, {
+        userMessage: 'Failed to analyze roof-wall integration. The analysis could not be completed.',
+        suggestions: ['Check roof and wall geometry', 'Verify all elements are properly placed', 'Try refreshing the analysis']
+      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -172,7 +194,14 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
     const wall = walls2D.find(w => w.id === wallId);
 
     if (!roof || !wall) {
-      console.warn('Roof or wall not found for pitch calculation');
+      handleWarning('Roof or wall element not found for pitch calculation', {
+        category: 'calculation',
+        source: 'useRoofWallIntegration2D.calculateOptimalPitch',
+        operation: 'pitchCalculation'
+      }, {
+        userMessage: 'Cannot calculate optimal pitch: roof or wall element not found.',
+        suggestions: ['Verify the roof and wall elements exist', 'Check element IDs are correct']
+      });
       return null;
     }
 

@@ -15,6 +15,8 @@ jest.mock('@/stores/designStore', () => ({
     roofs: [],
     doors: [],
     windows: [],
+    stairs: [],
+    rooms: [],
     addWall: jest.fn(),
     removeWall: jest.fn(),
     addRoof: jest.fn(),
@@ -23,6 +25,12 @@ jest.mock('@/stores/designStore', () => ({
     removeDoor: jest.fn(),
     addWindow: jest.fn(),
     removeWindow: jest.fn(),
+    addStair: jest.fn(),
+    removeStair: jest.fn(),
+    addRoom: jest.fn(),
+    removeRoom: jest.fn(),
+    selectElement: jest.fn(),
+    clearSelection: jest.fn()
   })
 }));
 jest.mock('@/stores/uiStore', () => ({
@@ -79,6 +87,30 @@ jest.mock('@/stores/floorStore', () => ({
     floorOpacity: 1,
     getFloorsOrderedByLevel: jest.fn(() => [])
   })
+}));
+
+jest.mock('@/stores/accessibilityStore', () => ({
+  useAccessibilityStore: () => ({
+    isAccessibilityMode: false,
+    preferences: {
+      enableScreenReaderSupport: false,
+      enableKeyboardNavigation: true,
+      highContrastMode: false,
+      largerFocusIndicators: false,
+      reducedMotion: false
+    },
+    setAccessibilityMode: jest.fn(),
+    setFocusedElement: jest.fn(),
+    getAccessibilityDescription: jest.fn(() => '')
+  })
+}));
+
+jest.mock('@/components/Accessibility/AccessibilityAnnouncer', () => ({
+  useAccessibilityAnnouncer: () => ({
+    announceToolChange: jest.fn(),
+    announceViewChange: jest.fn()
+  }),
+  AccessibilityAnnouncer: () => null
 }));
 
 describe('DrawingCanvas', () => {

@@ -7,6 +7,7 @@ import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
 import { Stair } from '@/types/elements/Stair';
 import { Roof } from '@/types/elements/Roof';
+import { handleError } from '@/utils/errorHandler';
 
 interface ClipboardData {
   type: 'wall' | 'door' | 'window' | 'stair' | 'roof';
@@ -184,7 +185,14 @@ export const useClipboard = () => {
       return newElement;
 
     } catch (error) {
-      console.error('Error pasting element:', error);
+      handleError(error instanceof Error ? error : new Error('Paste operation failed'), {
+        category: 'drawing',
+        source: 'useClipboard.paste',
+        operation: 'pasteElement'
+      }, {
+        userMessage: 'Failed to paste the copied element. The clipboard data may be corrupted.',
+        suggestions: ['Try copying the element again', 'Check if the element type is supported', 'Ensure clipboard data is valid']
+      });
       return null;
     }
   }, [executeCommand, currentFloorId, addElementToFloor, addWall, addDoor, addWindow, addStair, addRoof, selectElement]);
