@@ -36,7 +36,7 @@ export default function MaterialPropertiesSection({
     <div className="space-y-4">
       <div className="border-t border-gray-200 pt-4">
         <h4 className="font-medium text-gray-900 mb-3">Material</h4>
-        
+
         {/* Current Material Display */}
         {currentMaterial ? (
           <div className="mb-3 p-3 bg-gray-50 rounded-lg">
@@ -46,13 +46,13 @@ export default function MaterialPropertiesSection({
                 className="w-12 h-12 rounded border border-gray-300 flex-shrink-0"
                 style={{
                   backgroundColor: currentMaterial.color,
-                  backgroundImage: currentMaterial.texture ? `url(${currentMaterial.texture})` : undefined,
+                  backgroundImage: currentMaterial.textureImage ? `url(${currentMaterial.textureImage})` : undefined,
                   backgroundRepeat: 'repeat',
                   backgroundSize: `${(currentMaterial.properties.patternScale || 1) * 16}px`,
                   opacity: currentMaterial.properties.opacity,
                 }}
               />
-              
+
               {/* Material Info */}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-gray-900 truncate">
@@ -67,7 +67,7 @@ export default function MaterialPropertiesSection({
                   </div>
                 )}
               </div>
-              
+
               {/* Remove Button */}
               <button
                 onClick={() => handleMaterialChange('none')}

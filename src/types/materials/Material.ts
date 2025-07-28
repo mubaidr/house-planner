@@ -1,8 +1,27 @@
 
+export type MaterialCategory =
+  | 'wood'
+  | 'metal'
+  | 'concrete'
+  | 'stone'
+  | 'brick'
+  | 'glass'
+  | 'fabric'
+  | 'ceramic'
+  | 'plastic'
+  | 'composite'
+  | 'paint'
+  | 'flooring'
+  | 'roofing'
+  | 'insulation'
+  | 'wall'
+  | 'siding'
+  | 'other';export type MaterialProperties = Material['properties'];
+
 export interface Material {
   id: string;
   name: string;
-  category: string;
+  category: MaterialCategory;
   color: string;
   textureImage?: string;
   bumpMapImage?: string;
@@ -24,6 +43,7 @@ export interface Material {
     unit: string;
     currency: string;
     lastUpdated: Date;
+    supplier?: string;
   };
   metadata: {
     description: string;
@@ -39,7 +59,7 @@ export interface Material {
 export interface MaterialTemplate {
   id: string;
   name: string;
-  category: string;
+  category: MaterialCategory;
   baseProperties: Partial<Material['properties']>;
   variations: {
     id: string;

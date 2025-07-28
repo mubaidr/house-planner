@@ -185,7 +185,16 @@ async function renderPlanViewElements(
 ): Promise<void> {
   // Sort elements by layer index (rooms first, then walls, then openings)
   const sortedElements = elements.sort((a, b) => {
-    const layerOrder = { room2d: 0, wall2d: 1, door2d: 2, window2d: 2, stair2d: 3 };
+    const layerOrder: Record<string, number> = {
+      room2d: 0,
+      wall2d: 1,
+      door2d: 2,
+      window2d: 2,
+      stair2d: 3,
+      roof2d: 4,
+      annotation2d: 5,
+      dimension2d: 6
+    };
     return (layerOrder[a.type] || 999) - (layerOrder[b.type] || 999);
   });
 
@@ -552,7 +561,7 @@ function addGroundLineToElevationView(layer: Layer, options: StageGenerationOpti
     listening: false,
   });
   layer.add(sky);
-  layer.moveToBottom(sky);
+  sky.moveToBottom();
 }
 
 /**

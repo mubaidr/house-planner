@@ -7,7 +7,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Element2D, Dimensions2D } from '@/types/elements2D';
+import { Element2D, Dimensions2D, Point2D, Roof2D, Wall2D } from '@/types/elements2D';
 import { ViewType2D } from '@/types/views';
 import { RoofPitchCalculator, RoofPitchData, RoofGeometry } from './roofPitchCalculations';
 import { handleError, handleWarning } from '@/utils/errorHandler';

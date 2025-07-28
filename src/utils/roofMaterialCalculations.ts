@@ -1,43 +1,42 @@
 /**
  * Roof Material Calculations for Advanced Roof Types
- * 
+ *
  * This module provides comprehensive material quantity calculations
  * for different roof types including gambrel and mansard roofs.
  */
 
 import { Roof } from '@/types/elements/Roof';
 import { Roof2D } from '@/types/elements2D';
-import { Material } from '@/types/materials/Material';
 
 export interface RoofMaterialQuantities {
   // Primary roofing materials
   roofingArea: number;           // Total roof surface area (sq ft/m)
   roofingMaterial: number;       // Roofing material quantity with waste factor
   underlayment: number;          // Underlayment area
-  
+
   // Structural materials
   rafterLength: number;          // Total rafter length needed
   ridgeLength: number;           // Ridge beam length
   hipLength?: number;            // Hip beam length (for hip roofs)
   valleyLength?: number;         // Valley length (for complex roofs)
-  
+
   // Trim and finishing
   fascia: number;                // Fascia board length
   soffit: number;                // Soffit area
   gutterLength: number;          // Gutter length needed
   downspouts: number;            // Number of downspouts
-  
+
   // Hardware and accessories
   nails: number;                 // Roofing nails (lbs)
   screws: number;                // Screws for metal roofing (count)
   flashing: number;              // Flashing length (linear ft/m)
   ventilation: number;           // Vent count needed
-  
+
   // Cost estimates
   materialCost: number;          // Total material cost
   laborCost: number;             // Estimated labor cost
   totalCost: number;             // Total project cost
-  
+
   // Waste factors applied
   wasteFactor: number;           // Waste percentage used
   complexityFactor: number;      // Complexity multiplier
@@ -54,7 +53,7 @@ export interface RoofCalculationOptions {
 
 export class RoofMaterialCalculator {
   private options: RoofCalculationOptions;
-  
+
   // Material coverage rates (sq ft per unit)
   private static readonly COVERAGE_RATES = {
     asphalt: {
@@ -117,7 +116,7 @@ export class RoofMaterialCalculator {
     const roofData = this.normalizeRoofData(roof);
     const baseArea = this.calculateBaseRoofArea(roofData);
     const actualArea = this.calculateActualRoofArea(roofData, baseArea);
-    
+
     // Apply complexity and waste factors
     const complexityFactor = this.getComplexityFactor(roofData.type);
     const wasteFactor = this.options.wasteFactor;
@@ -125,13 +124,13 @@ export class RoofMaterialCalculator {
 
     // Calculate structural elements
     const structural = this.calculateStructuralMaterials(roofData);
-    
+
     // Calculate roofing materials
     const roofingMaterials = this.calculateRoofingMaterials(adjustedArea);
-    
+
     // Calculate trim and accessories
     const trimMaterials = this.calculateTrimMaterials(roofData);
-    
+
     // Calculate costs
     const costs = this.calculateCosts(adjustedArea);
 
@@ -139,26 +138,26 @@ export class RoofMaterialCalculator {
       roofingArea: actualArea,
       roofingMaterial: roofingMaterials.quantity,
       underlayment: roofingMaterials.underlayment,
-      
+
       rafterLength: structural.rafterLength,
       ridgeLength: structural.ridgeLength,
       hipLength: structural.hipLength,
       valleyLength: structural.valleyLength,
-      
+
       fascia: trimMaterials.fascia,
       soffit: trimMaterials.soffit,
       gutterLength: trimMaterials.gutterLength,
       downspouts: trimMaterials.downspouts,
-      
+
       nails: roofingMaterials.nails,
       screws: roofingMaterials.screws,
       flashing: trimMaterials.flashing,
       ventilation: trimMaterials.ventilation,
-      
+
       materialCost: costs.material,
       laborCost: costs.labor,
       totalCost: costs.total,
-      
+
       wasteFactor: wasteFactor,
       complexityFactor: complexityFactor
     };
@@ -169,21 +168,21 @@ export class RoofMaterialCalculator {
    */
   public calculateGambrelMaterials(roof: Roof | Roof2D): RoofMaterialQuantities {
     const roofData = this.normalizeRoofData(roof);
-    
+
     // Gambrel has two different pitches
     const lowerPitch = roofData.pitch; // Main pitch
     const upperPitch = Math.min(roofData.pitch * 1.5, 60); // Steeper upper section
-    
+
     // Calculate areas for both sections
     const span = roofData.width;
     const lowerRun = span * 0.6; // Lower section covers 60% of span
     const upperRun = span * 0.4; // Upper section covers 40% of span
-    
+
     const lowerArea = this.calculateSectionArea(lowerRun, lowerPitch, roofData.length);
     const upperArea = this.calculateSectionArea(upperRun, upperPitch, roofData.length);
-    
+
     const totalArea = (lowerArea + upperArea) * 2; // Both sides
-    
+
     // Apply gambrel complexity factor
     const complexityFactor = 1.25; // Gambrel roofs are more complex
     const wasteFactor = this.options.wasteFactor + 0.05; // Extra waste for cuts
@@ -191,13 +190,13 @@ export class RoofMaterialCalculator {
 
     // Calculate structural materials specific to gambrel
     const structural = this.calculateGambrelStructural(roofData, lowerRun, upperRun);
-    
+
     // Calculate roofing materials
     const roofingMaterials = this.calculateRoofingMaterials(adjustedArea);
-    
+
     // Calculate trim materials
     const trimMaterials = this.calculateTrimMaterials(roofData);
-    
+
     // Calculate costs with complexity premium
     const costs = this.calculateCosts(adjustedArea, 1.15); // 15% premium for complexity
 
@@ -205,26 +204,26 @@ export class RoofMaterialCalculator {
       roofingArea: totalArea,
       roofingMaterial: roofingMaterials.quantity,
       underlayment: roofingMaterials.underlayment,
-      
+
       rafterLength: structural.rafterLength,
       ridgeLength: structural.ridgeLength,
       hipLength: structural.hipLength,
       valleyLength: structural.valleyLength,
-      
+
       fascia: trimMaterials.fascia,
       soffit: trimMaterials.soffit,
       gutterLength: trimMaterials.gutterLength,
       downspouts: trimMaterials.downspouts,
-      
+
       nails: roofingMaterials.nails,
       screws: roofingMaterials.screws,
       flashing: trimMaterials.flashing + roofData.length * 2, // Extra flashing for break line
       ventilation: trimMaterials.ventilation,
-      
+
       materialCost: costs.material,
       laborCost: costs.labor,
       totalCost: costs.total,
-      
+
       wasteFactor: wasteFactor,
       complexityFactor: complexityFactor
     };
@@ -235,27 +234,26 @@ export class RoofMaterialCalculator {
    */
   public calculateMansardMaterials(roof: Roof | Roof2D): RoofMaterialQuantities {
     const roofData = this.normalizeRoofData(roof);
-    
+
     // Mansard has steep lower section and flatter upper section
-    const lowerPitch = Math.max(roofData.pitch, 60); // Steep lower section
+    const _lowerPitch = Math.max(roofData.pitch, 60); // Steep lower section
     const upperPitch = Math.min(roofData.pitch * 0.3, 15); // Flat upper section
-    
+
     // Calculate areas for mansard sections using both pitches
     const span = roofData.width;
     const lowerHeight = span * 0.3; // Lower section height
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _lowerSlopeLength = lowerSlopeLength;
-    const upperSlopeLength = (span * 0.4) / Math.cos(upperPitch * Math.PI / 180);
+    const _lowerSlopeLength = (span * 0.6) / Math.cos(_lowerPitch * Math.PI / 180);
+    const _upperSlopeLength = (span * 0.4) / Math.cos(upperPitch * Math.PI / 180);
     const upperWidth = span * 0.4; // Upper flat section width
-    
+
     // Lower steep sections (4 sides)
     const lowerArea = this.calculateMansardLowerArea(span, roofData.length, lowerHeight);
-    
+
     // Upper flat section
     const upperArea = upperWidth * roofData.length;
-    
+
     const totalArea = lowerArea + upperArea;
-    
+
     // Apply mansard complexity factor
     const complexityFactor = 1.35; // Mansard roofs are very complex
     const wasteFactor = this.options.wasteFactor + 0.08; // Extra waste for complex cuts
@@ -263,13 +261,13 @@ export class RoofMaterialCalculator {
 
     // Calculate structural materials specific to mansard
     const structural = this.calculateMansardStructural(roofData, lowerHeight, upperWidth);
-    
+
     // Calculate roofing materials
     const roofingMaterials = this.calculateRoofingMaterials(adjustedArea);
-    
+
     // Calculate trim materials
     const trimMaterials = this.calculateTrimMaterials(roofData);
-    
+
     // Calculate costs with complexity premium
     const costs = this.calculateCosts(adjustedArea, 1.25); // 25% premium for complexity
 
@@ -277,26 +275,26 @@ export class RoofMaterialCalculator {
       roofingArea: totalArea,
       roofingMaterial: roofingMaterials.quantity,
       underlayment: roofingMaterials.underlayment,
-      
+
       rafterLength: structural.rafterLength,
       ridgeLength: structural.ridgeLength,
       hipLength: structural.hipLength,
       valleyLength: structural.valleyLength,
-      
+
       fascia: trimMaterials.fascia,
       soffit: trimMaterials.soffit,
       gutterLength: trimMaterials.gutterLength,
       downspouts: trimMaterials.downspouts,
-      
+
       nails: roofingMaterials.nails,
       screws: roofingMaterials.screws,
       flashing: trimMaterials.flashing + (roofData.width + roofData.length) * 4, // Extra flashing for transitions
       ventilation: trimMaterials.ventilation + 2, // Extra vents for complex roof
-      
+
       materialCost: costs.material,
       laborCost: costs.labor,
       totalCost: costs.total,
-      
+
       wasteFactor: wasteFactor,
       complexityFactor: complexityFactor
     };
@@ -307,12 +305,12 @@ export class RoofMaterialCalculator {
    */
   public calculateComplexRoofMaterials(roof: Roof | Roof2D): RoofMaterialQuantities {
     const roofData = this.normalizeRoofData(roof);
-    
+
     let baseArea: number;
     let complexityFactor: number;
     let extraFlashing: number = 0;
     let extraVentilation: number = 0;
-    
+
     switch (roofData.type) {
       case 'butterfly':
         baseArea = this.calculateButterflyArea(roofData);
@@ -320,51 +318,51 @@ export class RoofMaterialCalculator {
         extraFlashing = roofData.width * 2; // Central valley flashing
         extraVentilation = 1; // Extra ventilation for valley
         break;
-        
+
       case 'saltbox':
         baseArea = this.calculateSaltboxArea(roofData);
         complexityFactor = 1.2; // Moderate complexity
         extraFlashing = roofData.length; // Ridge flashing
         break;
-        
+
       case 'monitor':
         baseArea = this.calculateMonitorArea(roofData);
         complexityFactor = 1.5; // High complexity due to clerestory
         extraFlashing = (roofData.width + roofData.length) * 2; // Clerestory flashing
         extraVentilation = 2; // Extra vents for monitor section
         break;
-        
+
       case 'sawtooth':
         baseArea = this.calculateSawtoothArea(roofData);
         complexityFactor = 1.6; // Very high complexity
         extraFlashing = roofData.length * 6; // Multiple valley flashings
         extraVentilation = 3; // Multiple vents needed
         break;
-        
+
       case 'shed-dormer':
         baseArea = this.calculateShedDormerArea(roofData);
         complexityFactor = 1.3; // Moderate-high complexity
         extraFlashing = roofData.width * 0.8; // Dormer flashing
         extraVentilation = 1; // Dormer ventilation
         break;
-        
+
       default:
         return this.calculateMaterials(roof);
     }
-    
+
     // Apply complexity and waste factors
     const wasteFactor = this.options.wasteFactor + 0.05; // Extra waste for complex roofs
     const adjustedArea = baseArea * (1 + wasteFactor) * complexityFactor;
 
     // Calculate structural materials
     const structural = this.calculateComplexStructuralMaterials(roofData);
-    
+
     // Calculate roofing materials
     const roofingMaterials = this.calculateRoofingMaterials(adjustedArea);
-    
+
     // Calculate trim materials with extras
     const trimMaterials = this.calculateTrimMaterials(roofData);
-    
+
     // Calculate costs with complexity premium
     const costs = this.calculateCosts(adjustedArea, complexityFactor * 0.8);
 
@@ -372,26 +370,26 @@ export class RoofMaterialCalculator {
       roofingArea: baseArea,
       roofingMaterial: roofingMaterials.quantity,
       underlayment: roofingMaterials.underlayment,
-      
+
       rafterLength: structural.rafterLength,
       ridgeLength: structural.ridgeLength,
       hipLength: structural.hipLength,
       valleyLength: structural.valleyLength,
-      
+
       fascia: trimMaterials.fascia,
       soffit: trimMaterials.soffit,
       gutterLength: trimMaterials.gutterLength,
       downspouts: trimMaterials.downspouts,
-      
+
       nails: roofingMaterials.nails,
       screws: roofingMaterials.screws,
       flashing: trimMaterials.flashing + extraFlashing,
       ventilation: trimMaterials.ventilation + extraVentilation,
-      
+
       materialCost: costs.material,
       laborCost: costs.labor,
       totalCost: costs.total,
-      
+
       wasteFactor: wasteFactor,
       complexityFactor: complexityFactor
     };
@@ -453,13 +451,13 @@ export class RoofMaterialCalculator {
       recommendations.suitable = recommendations.suitable.filter(m => m !== 'membrane');
       recommendations.reasons.complexity = 'Complex roof shapes require materials that handle transitions well';
     }
-    
+
     // Special recommendations for specific roof types
     if (roofType === 'butterfly') {
       recommendations.notRecommended.push('tile', 'slate');
       recommendations.reasons.butterfly = 'Valley drainage requires materials suitable for low slopes';
     }
-    
+
     if (roofType === 'sawtooth' || roofType === 'monitor') {
       recommendations.recommended = recommendations.recommended.filter(m => m !== 'wood');
       if (!recommendations.recommended.includes('metal')) {
@@ -514,7 +512,7 @@ export class RoofMaterialCalculator {
   private calculateActualRoofArea(roofData: any, baseArea: number): number {
     const pitchRadians = (roofData.pitch * Math.PI) / 180;
     const pitchFactor = 1 / Math.cos(pitchRadians);
-    
+
     switch (roofData.type) {
       case 'gable':
         return baseArea * pitchFactor;
@@ -538,13 +536,13 @@ export class RoofMaterialCalculator {
     const length = roofData.length;
     const lowerPitch = roofData.pitch;
     const upperPitch = Math.min(lowerPitch * 1.5, 60);
-    
+
     const lowerRun = span * 0.6;
     const upperRun = span * 0.4;
-    
+
     const lowerArea = this.calculateSectionArea(lowerRun, lowerPitch, length);
     const upperArea = this.calculateSectionArea(upperRun, upperPitch, length);
-    
+
     return (lowerArea + upperArea) * 2; // Both sides
   }
 
@@ -553,13 +551,13 @@ export class RoofMaterialCalculator {
     const length = roofData.length;
     const lowerHeight = span * 0.3;
     const upperWidth = span * 0.4;
-    
+
     // Lower steep sections (4 sides)
     const lowerArea = this.calculateMansardLowerArea(span, length, lowerHeight);
-    
+
     // Upper flat section
     const upperArea = upperWidth * length;
-    
+
     return lowerArea + upperArea;
   }
 
@@ -592,12 +590,12 @@ export class RoofMaterialCalculator {
     const span = roofData.width;
     const length = roofData.length;
     const pitchRadians = (roofData.pitch * Math.PI) / 180;
-    
+
     // Basic rafter calculation
     const rafterLength = (span / 2) / Math.cos(pitchRadians);
     const rafterCount = Math.ceil(length / 2) * 2; // 24" OC typical
     const totalRafterLength = rafterLength * rafterCount;
-    
+
     return {
       rafterLength: totalRafterLength,
       ridgeLength: length,
@@ -610,13 +608,13 @@ export class RoofMaterialCalculator {
     const length = roofData.length;
     const lowerPitch = roofData.pitch;
     const upperPitch = Math.min(lowerPitch * 1.5, 60);
-    
+
     const lowerRafterLength = lowerRun / Math.cos((lowerPitch * Math.PI) / 180);
     const upperRafterLength = upperRun / Math.cos((upperPitch * Math.PI) / 180);
-    
+
     const rafterCount = Math.ceil(length / 2) * 2;
     const totalRafterLength = (lowerRafterLength + upperRafterLength) * rafterCount;
-    
+
     return {
       rafterLength: totalRafterLength,
       ridgeLength: length,
@@ -628,11 +626,11 @@ export class RoofMaterialCalculator {
   private calculateMansardStructural(roofData: any, lowerHeight: number, upperWidth: number) {
     const span = roofData.width;
     const length = roofData.length;
-    
+
     // Simplified structural calculation for mansard
     const rafterCount = Math.ceil((span + length) * 2 / 2);
     const avgRafterLength = lowerHeight * 1.2; // Approximate
-    
+
     return {
       rafterLength: avgRafterLength * rafterCount,
       ridgeLength: upperWidth + length,
@@ -643,12 +641,12 @@ export class RoofMaterialCalculator {
 
   private calculateRoofingMaterials(area: number) {
     const coverage = RoofMaterialCalculator.COVERAGE_RATES[this.options.materialType];
-    
+
     let quantity = 0;
     let nails = 0;
     let screws = 0;
     let underlayment = 0;
-    
+
     switch (this.options.materialType) {
       case 'asphalt':
         const asphaltCoverage = coverage as typeof RoofMaterialCalculator.COVERAGE_RATES.asphalt;
@@ -686,7 +684,7 @@ export class RoofMaterialCalculator {
         underlayment = 0; // Membrane doesn't typically use separate underlayment
         break;
     }
-    
+
     return {
       quantity,
       underlayment,
@@ -698,7 +696,7 @@ export class RoofMaterialCalculator {
   private calculateTrimMaterials(roofData: any) {
     const perimeter = (roofData.width + roofData.length) * 2;
     const area = roofData.width * roofData.length;
-    
+
     return {
       fascia: perimeter,
       soffit: perimeter * roofData.overhang,
@@ -711,10 +709,10 @@ export class RoofMaterialCalculator {
 
   private calculateCosts(area: number, complexityMultiplier: number = 1) {
     const costs = RoofMaterialCalculator.MATERIAL_COSTS[this.options.materialType];
-    
+
     const materialCost = area * costs.material * complexityMultiplier;
     const laborCost = this.options.includeLabor ? area * costs.labor * complexityMultiplier : 0;
-    
+
     return {
       material: materialCost,
       labor: laborCost,
@@ -737,11 +735,11 @@ export class RoofMaterialCalculator {
     const span = roofData.width;
     const length = roofData.length;
     const pitchRadians = (roofData.pitch * Math.PI) / 180;
-    
+
     // Short slope (35% of span) and long slope (65% of span)
     const shortSlope = (span * 0.35) / Math.cos(pitchRadians);
     const longSlope = (span * 0.65) / Math.cos(pitchRadians);
-    
+
     return (shortSlope + longSlope) * length;
   }
 
@@ -750,13 +748,13 @@ export class RoofMaterialCalculator {
     const span = roofData.width;
     const length = roofData.length;
     const pitchRadians = (roofData.pitch * Math.PI) / 180;
-    
+
     // Lower roof sections (70% of total area)
     const lowerArea = span * length * 0.7 / Math.cos(pitchRadians);
-    
+
     // Monitor section (30% additional area for raised section)
     const monitorArea = span * length * 0.3;
-    
+
     return lowerArea + monitorArea;
   }
 
@@ -765,13 +763,13 @@ export class RoofMaterialCalculator {
     const span = roofData.width;
     const length = roofData.length;
     const pitchRadians = (roofData.pitch * Math.PI) / 180;
-    
+
     // Each tooth has a sloped section and a vertical glazed section
     const numTeeth = 3; // Typical number of teeth
     const toothWidth = span / numTeeth;
     const slopeLength = (toothWidth * 0.7) / Math.cos(pitchRadians);
     const verticalArea = toothWidth * 0.3 * roofData.height;
-    
+
     return (slopeLength * length + verticalArea) * numTeeth;
   }
 
@@ -780,13 +778,13 @@ export class RoofMaterialCalculator {
     const span = roofData.width;
     const length = roofData.length;
     const pitchRadians = (roofData.pitch * Math.PI) / 180;
-    
+
     // Main roof area
     const mainArea = span * length / Math.cos(pitchRadians);
-    
+
     // Dormer area (typically 20% additional)
     const dormerArea = span * length * 0.2;
-    
+
     return mainArea + dormerArea;
   }
 
@@ -794,14 +792,14 @@ export class RoofMaterialCalculator {
     const span = roofData.width;
     const length = roofData.length;
     const pitchRadians = (roofData.pitch * Math.PI) / 180;
-    
+
     // Base rafter calculation with complexity multiplier
     const baseRafterLength = (span / 2) / Math.cos(pitchRadians);
     const rafterCount = Math.ceil(length / 2) * 2; // 24" OC typical
-    
+
     let multiplier = 1;
     let valleyLength = 0;
-    
+
     switch (roofData.type) {
       case 'butterfly':
         multiplier = 1.2;
@@ -823,32 +821,15 @@ export class RoofMaterialCalculator {
         valleyLength = span * 0.4; // Dormer integration
         break;
     }
-    
+
     const totalRafterLength = baseRafterLength * rafterCount * multiplier;
-    
+
     return {
       rafterLength: totalRafterLength,
       ridgeLength: length * multiplier,
       hipLength: 0,
       valleyLength
     };
-  }
-
-  private getComplexityFactor(roofType: string): number {
-    const factors: Record<string, number> = {
-      'flat': 1.0,
-      'shed': 1.05,
-      'gable': 1.1,
-      'hip': 1.15,
-      'saltbox': 1.2,
-      'gambrel': 1.25,
-      'shed-dormer': 1.3,
-      'mansard': 1.35,
-      'butterfly': 1.4,
-      'monitor': 1.5,
-      'sawtooth': 1.6
-    };
-    return factors[roofType] || 1.1;
   }
 }
 

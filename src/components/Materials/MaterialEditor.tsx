@@ -46,8 +46,8 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
   useEffect(() => {
     if (existingMaterial) {
       setFormData(existingMaterial);
-      if (existingMaterial.texture) {
-        setTexturePreview(existingMaterial.texture);
+      if (existingMaterial.textureImage) {
+        setTexturePreview(existingMaterial.textureImage);
       }
     }
   }, [existingMaterial]);
@@ -114,9 +114,14 @@ export default function MaterialEditor({ materialId, onClose }: MaterialEditorPr
       name: formData.name,
       category: formData.category as MaterialCategory,
       color: formData.color || '#FFFFFF',
-      texture: texturePreview || undefined,
+      textureImage: texturePreview || undefined,
       properties: formData.properties as MaterialProperties,
-      cost: formData.cost,
+      cost: formData.cost || {
+        pricePerUnit: 0,
+        unit: 'sqft',
+        currency: 'USD',
+        lastUpdated: new Date()
+      },
       metadata: {
         ...formData.metadata!,
         updatedAt: new Date(),

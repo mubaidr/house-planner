@@ -1,0 +1,28 @@
+edge_cases:
+  - id: edge-001
+    description: TypeScript property access on Wall2D with wrong property names
+    likelihood: 5
+    impact: 5
+    risk_score: 25
+    mitigation: Fix property names from start/end to startPoint/endPoint
+
+  - id: edge-002
+    description: Missing type imports causing compilation failures
+    likelihood: 5
+    impact: 5
+    risk_score: 25
+    mitigation: Add proper imports for Point2D, Roof2D, Wall2D types
+
+  - id: edge-003
+    description: React hooks violations causing ESLint failures
+    likelihood: 4
+    impact: 3
+    risk_score: 12
+    mitigation: Fix useEffect dependencies and conditional hook calls
+
+  - id: edge-004
+    description: Test infrastructure broken preventing quality assurance
+    likelihood: 4
+    impact: 4
+    risk_score: 16
+    mitigation: Fix Jest configuration and mock setup

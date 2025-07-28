@@ -1,6 +1,6 @@
 /**
  * Opening Integration System for 2D Views
- * 
+ *
  * This system handles the integration of doors and windows (openings) with walls
  * in all 2D views (plan, front, back, left, right). It provides validation,
  * geometry calculation, and rendering utilities for openings.
@@ -61,8 +61,8 @@ export class OpeningIntegrator2D {
    * Validate opening placement on a wall
    */
   static validateOpeningPlacement(
-    opening: Opening2D, 
-    wall: Wall2D, 
+    opening: Opening2D,
+    wall: Wall2D,
     config: Partial<OpeningIntegrationConfig> = {}
   ): ValidationResult2D {
     const cfg = { ...this.defaultConfig, ...config };
@@ -71,8 +71,8 @@ export class OpeningIntegrator2D {
 
     // Calculate wall length
     const wallLength = Math.sqrt(
-      Math.pow(wall.end.x - wall.start.x, 2) + 
-      Math.pow(wall.end.y - wall.start.y, 2)
+      Math.pow(wall.endPoint.x - wall.startPoint.x, 2) +
+      Math.pow(wall.endPoint.y - wall.startPoint.y, 2)
     );
 
     // Check minimum wall length
@@ -120,8 +120,8 @@ export class OpeningIntegrator2D {
    */
   static calculateOpeningGeometry(opening: Opening2D, wall: Wall2D): OpeningGeometry2D {
     const wallLength = Math.sqrt(
-      Math.pow(wall.end.x - wall.start.x, 2) + 
-      Math.pow(wall.end.y - wall.start.y, 2)
+      Math.pow(wall.endPoint.x - wall.startPoint.x, 2) +
+      Math.pow(wall.endPoint.y - wall.startPoint.y, 2)
     );
 
     // Validate opening size against wall length
@@ -130,15 +130,15 @@ export class OpeningIntegrator2D {
     }
 
     const wallAngle = Math.atan2(
-      wall.end.y - wall.start.y,
-      wall.end.x - wall.start.x
+      wall.endPoint.y - wall.startPoint.y,
+      wall.endPoint.x - wall.startPoint.x
     );
 
     const wallPosition = this.calculateWallPosition(opening, wall);
-    
+
     // Calculate opening position along wall
-    const positionX = wall.start.x + (wall.end.x - wall.start.x) * wallPosition;
-    const positionY = wall.start.y + (wall.end.y - wall.start.y) * wallPosition;
+    const positionX = wall.startPoint.x + (wall.endPoint.x - wall.startPoint.x) * wallPosition;
+    const positionY = wall.startPoint.y + (wall.endPoint.y - wall.startPoint.y) * wallPosition;
 
     const validation = this.validateOpeningPlacement(opening, wall);
 
@@ -157,17 +157,17 @@ export class OpeningIntegrator2D {
    */
   private static calculateWallPosition(opening: Opening2D, wall: Wall2D): number {
     const wallVector = {
-      x: wall.end.x - wall.start.x,
-      y: wall.end.y - wall.start.y
+      x: wall.endPoint.x - wall.startPoint.x,
+      y: wall.endPoint.y - wall.startPoint.y
     };
 
     const openingVector = {
-      x: opening.position.x - wall.start.x,
-      y: opening.position.y - wall.start.y
+      x: opening.transform.position.x - wall.startPoint.x,
+      y: opening.transform.position.y - wall.startPoint.y
     };
 
     const wallLengthSquared = wallVector.x * wallVector.x + wallVector.y * wallVector.y;
-    
+
     if (wallLengthSquared === 0) return 0;
 
     const dotProduct = openingVector.x * wallVector.x + openingVector.y * wallVector.y;
@@ -183,7 +183,7 @@ export class OpeningIntegrator2D {
       height: opening.dimensions.height,
       depth: opening.dimensions.depth || 0.2,
       wallOffset: 0, // Offset from wall centerline
-      floorOffset: opening.type === 'door' ? 0 : 0.8 // Windows typically start 0.8m from floor
+      floorOffset: opening.type === 'door2d' ? 0 : 0.8 // Windows typically start 0.8m from floor
     };
   }
 
@@ -202,10 +202,10 @@ export class OpeningIntegrator2D {
    */
   private static isOpeningOnWall(opening: Opening2D, wall: Wall2D): boolean {
     const tolerance = 0.1; // 10cm tolerance
-    
+
     // Calculate distance from opening to wall line
-    const distance = this.pointToLineDistance(opening.position, wall.start, wall.end);
-    
+    const distance = this.pointToLineDistance(opening.transform.position, wall.startPoint, wall.endPoint);
+
     return distance <= tolerance;
   }
 
@@ -220,7 +220,7 @@ export class OpeningIntegrator2D {
 
     const dot = A * C + B * D;
     const lenSq = C * C + D * D;
-    
+
     if (lenSq === 0) {
       // Line start and end are the same point
       return Math.sqrt(A * A + B * B);
@@ -234,7 +234,7 @@ export class OpeningIntegrator2D {
 
     const dx = point.x - xx;
     const dy = point.y - yy;
-    
+
     return Math.sqrt(dx * dx + dy * dy);
   }
 
@@ -242,18 +242,18 @@ export class OpeningIntegrator2D {
    * Snap opening to wall constraints
    */
   static snapOpeningToWall(
-    opening: Opening2D, 
-    wall: Wall2D, 
+    opening: Opening2D,
+    wall: Wall2D,
     config: Partial<OpeningIntegrationConfig> = {}
   ): Opening2D {
     const cfg = { ...this.defaultConfig, ...config };
-    
+
     if (!cfg.autoAlign) return opening;
 
     const wallPosition = this.calculateWallPosition(opening, wall);
     const wallLength = Math.sqrt(
-      Math.pow(wall.end.x - wall.start.x, 2) + 
-      Math.pow(wall.end.y - wall.start.y, 2)
+      Math.pow(wall.endPoint.x - wall.startPoint.x, 2) +
+      Math.pow(wall.endPoint.y - wall.startPoint.y, 2)
     );
 
     // Snap to minimum distance from corners
@@ -265,12 +265,15 @@ export class OpeningIntegrator2D {
     snappedPosition = Math.max(minPos, Math.min(maxPos, snappedPosition));
 
     // Calculate new position
-    const newX = wall.start.x + (wall.end.x - wall.start.x) * snappedPosition;
-    const newY = wall.start.y + (wall.end.y - wall.start.y) * snappedPosition;
+    const newX = wall.startPoint.x + (wall.endPoint.x - wall.startPoint.x) * snappedPosition;
+    const newY = wall.startPoint.y + (wall.endPoint.y - wall.startPoint.y) * snappedPosition;
 
     return {
       ...opening,
-      position: { x: newX, y: newY }
+      transform: {
+        ...opening.transform,
+        position: { x: newX, y: newY }
+      }
     };
   }
 
@@ -278,23 +281,23 @@ export class OpeningIntegrator2D {
    * Get constraint indicators for opening placement
    */
   static getConstraintIndicators(
-    wall: Wall2D, 
+    wall: Wall2D,
     config: Partial<OpeningIntegrationConfig> = {}
   ): Array<{ type: 'min-distance' | 'max-opening', position: Point2D, size: number }> {
     const cfg = { ...this.defaultConfig, ...config };
-    const indicators = [];
+    const indicators: Array<{ type: 'min-distance' | 'max-opening', position: Point2D, size: number }> = [];
 
     if (!cfg.showConstraints) return indicators;
 
     const wallLength = Math.sqrt(
-      Math.pow(wall.end.x - wall.start.x, 2) + 
-      Math.pow(wall.end.y - wall.start.y, 2)
+      Math.pow(wall.endPoint.x - wall.startPoint.x, 2) +
+      Math.pow(wall.endPoint.y - wall.startPoint.y, 2)
     );
 
     // Min distance from start
     const startRatio = cfg.minDistanceFromCorner / wallLength;
-    const startX = wall.start.x + (wall.end.x - wall.start.x) * startRatio;
-    const startY = wall.start.y + (wall.end.y - wall.start.y) * startRatio;
+    const startX = wall.startPoint.x + (wall.endPoint.x - wall.startPoint.x) * startRatio;
+    const startY = wall.startPoint.y + (wall.endPoint.y - wall.startPoint.y) * startRatio;
 
     indicators.push({
       type: 'min-distance',
@@ -304,8 +307,8 @@ export class OpeningIntegrator2D {
 
     // Min distance from end
     const endRatio = 1 - cfg.minDistanceFromCorner / wallLength;
-    const endX = wall.start.x + (wall.end.x - wall.start.x) * endRatio;
-    const endY = wall.start.y + (wall.end.y - wall.start.y) * endRatio;
+    const endX = wall.startPoint.x + (wall.endPoint.x - wall.startPoint.x) * endRatio;
+    const endY = wall.startPoint.y + (wall.endPoint.y - wall.startPoint.y) * endRatio;
 
     indicators.push({
       type: 'min-distance',

@@ -1,0 +1,62 @@
+functions:
+  - name: fixWallPropertyAccess
+    inputs:
+      - name: wall
+        type: Wall2D
+    outputs:
+      - name: startPoint
+        type: Point2D
+      - name: endPoint
+        type: Point2D
+    logic_flow:
+      - step: Replace wall.start with wall.startPoint
+      - step: Replace wall.end with wall.endPoint
+      - step: Update all property access in openingIntegration2D.ts
+    dependencies:
+      - Wall2D type definition
+    edge_cases:
+      - id: edge-001
+        description: TypeScript property access errors
+        risk_score: 25
+        mitigation: Systematic property name correction
+        test: Verify TypeScript compilation
+
+  - name: addMissingTypeImports
+    inputs:
+      - name: utilityFiles
+        type: string[]
+    outputs:
+      - name: status
+        type: enum[success, error]
+    logic_flow:
+      - step: Identify files with missing type imports
+      - step: Add imports for Point2D, Roof2D, Wall2D, etc.
+      - step: Verify compilation after each import
+    dependencies:
+      - Element2D type definitions
+    edge_cases:
+      - id: edge-002
+        description: Missing imports causing compilation failures
+        risk_score: 25
+        mitigation: Add comprehensive type imports
+        test: TypeScript compilation check
+
+  - name: fixReactHooksViolations
+    inputs:
+      - name: componentFiles
+        type: string[]
+    outputs:
+      - name: fixedFiles
+        type: string[]
+    logic_flow:
+      - step: Fix conditional React hook calls
+      - step: Add missing useEffect dependencies
+      - step: Remove unused variables and imports
+    dependencies:
+      - React hooks rules
+    edge_cases:
+      - id: edge-003
+        description: React hooks rule violations
+        risk_score: 12
+        mitigation: Systematic hooks fixes
+        test: ESLint validation

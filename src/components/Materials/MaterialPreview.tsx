@@ -15,7 +15,7 @@ interface MaterialPreviewProps {
 export default function MaterialPreview({ material, onEdit, onClose }: MaterialPreviewProps) {
   const { duplicateMaterial, removeMaterial } = useMaterialStore();
   const [selectedView, setSelectedView] = useState<ViewType2D | 'plan'>('plan');
-  
+
   // Canvas refs for different view previews
   const planCanvasRef = useRef<HTMLCanvasElement>(null);
   const elevationCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -85,7 +85,7 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
     const pattern = renderer.getMaterialPattern(material);
     return {
       type: pattern.type,
-      hasTexture: !!material.texture,
+      hasTexture: !!material.textureImage,
       isSeamless: material.properties.seamless !== false,
       scale: material.properties.patternScale || 1,
       rotation: material.properties.patternRotation || 0,
@@ -152,7 +152,7 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
               imageRendering: 'pixelated',
             }}
           />
-          
+
           {/* Fallback background */}
           <div
             className="absolute inset-0 w-full h-full -z-10"
@@ -161,14 +161,14 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
               opacity: material.properties.opacity,
             }}
           />
-          
+
           {/* Pattern Type Badge */}
           <div className="absolute top-2 left-2">
             <span className="px-2 py-1 bg-black bg-opacity-70 text-white text-xs rounded-md font-mono">
               {patternInfo.type.toUpperCase()}
             </span>
           </div>
-          
+
           {/* Metallic overlay */}
           {material.properties.metallic > 0.5 && (
             <div
@@ -177,7 +177,7 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
             />
           )}
         </div>
-        
+
         {/* View Comparison */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="text-center">
@@ -287,7 +287,7 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
               <span className="text-gray-600">Reflectivity:</span>
               <span>{formatProperty(material.properties.reflectivity)}</span>
             </div>
-            {material.texture && (
+            {material.textureImage && (
               <>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Pattern Scale:</span>
@@ -384,7 +384,7 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
         >
           Edit Material
         </button>
-        
+
         <div className="flex space-x-2">
           <button
             onClick={handleDuplicate}
@@ -392,7 +392,7 @@ export default function MaterialPreview({ material, onEdit, onClose }: MaterialP
           >
             Duplicate
           </button>
-          
+
           {material.metadata.isCustom && (
             <button
               onClick={handleDelete}

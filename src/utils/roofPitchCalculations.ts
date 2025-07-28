@@ -1,12 +1,12 @@
 /**
  * Roof Pitch Calculations for 2D Architectural System
- * 
+ *
  * This module provides comprehensive roof pitch calculations, slope analysis,
  * and geometric computations for accurate roof-wall integration.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Wall2D } from '@/types/elements2D';
+import { Wall2D, Point2D, Roof2D } from '@/types/elements2D';
 
 export interface RoofPitchData {
   pitch: number;           // Pitch in degrees
@@ -18,7 +18,7 @@ export interface RoofPitchData {
   category: RoofPitchCategory;
 }
 
-export type RoofPitchCategory = 
+export type RoofPitchCategory =
   | 'flat'        // 0° to 2°
   | 'low'         // 2° to 10°
   | 'conventional' // 10° to 30°
@@ -90,7 +90,7 @@ export class RoofPitchCalculator {
 
     const slope = rise / run;
     const pitch = Math.atan(slope) * (180 / Math.PI);
-    
+
     return this.createPitchData(pitch, rise, run);
   }
 
@@ -102,7 +102,7 @@ export class RoofPitchCalculator {
       Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
     );
     const verticalDistance = Math.abs(height2 - height1);
-    
+
     return this.calculatePitchFromRiseRun(verticalDistance, horizontalDistance);
   }
 
@@ -117,11 +117,11 @@ export class RoofPitchCalculator {
     for (let i = 0; i < roofPoints.length - 1; i++) {
       const point1 = roofPoints[i];
       const point2 = roofPoints[i + 1];
-      
+
       // Get heights from metadata or use default calculation
       const height1 = this.getRoofHeightAtPoint(roof, point1);
       const height2 = this.getRoofHeightAtPoint(roof, point2);
-      
+
       try {
         const pitch = this.calculatePitchFromPoints(point1, point2, height1, height2);
         pitches.push(pitch);
@@ -141,7 +141,7 @@ export class RoofPitchCalculator {
     const rise = (span / 2) * Math.tan(pitchRadians);
     const rafter = (span / 2) / Math.cos(pitchRadians);
     const ridgeHeight = eaveHeight + rise;
-    
+
     // Calculate areas
     const roofArea = span * rafter * 2; // Both sides
     const projectedArea = span * span; // Horizontal projection
@@ -161,29 +161,29 @@ export class RoofPitchCalculator {
    * Find optimal pitch for given constraints
    */
   public findOptimalPitch(
-    span: number, 
-    maxHeight: number, 
+    span: number,
+    maxHeight: number,
     minHeight: number = 0,
     preferredCategory: RoofPitchCategory = 'conventional'
   ): RoofPitchData {
     const maxPitch = Math.atan((maxHeight - minHeight) / (span / 2)) * (180 / Math.PI);
     const minPitch = this.config.minPitch;
-    
+
     // Get pitches in preferred category
     const categoryPitches = this.getPitchesInCategory(preferredCategory);
-    
+
     // Find best pitch within constraints
     const validPitches = categoryPitches.filter(p => p >= minPitch && p <= maxPitch);
-    
+
     if (validPitches.length === 0) {
       // Use maximum allowable pitch
       return this.createPitchData(Math.min(maxPitch, this.config.maxPitch), 0, 0);
     }
-    
+
     // Use middle pitch from valid options
     const optimalPitch = validPitches[Math.floor(validPitches.length / 2)];
     const rise = (span / 2) * Math.tan(optimalPitch * (Math.PI / 180));
-    
+
     return this.calculatePitchFromRiseRun(rise, span / 2);
   }
 
@@ -192,7 +192,7 @@ export class RoofPitchCalculator {
    */
   public convertPitch(pitch: number, fromUnit: 'degrees' | 'ratio' | 'percent', toUnit: 'degrees' | 'ratio' | 'percent'): number {
     let degrees: number;
-    
+
     // Convert to degrees first
     switch (fromUnit) {
       case 'degrees':
@@ -205,7 +205,7 @@ export class RoofPitchCalculator {
         degrees = Math.atan(pitch / 100) * (180 / Math.PI);
         break;
     }
-    
+
     // Convert from degrees to target unit
     switch (toUnit) {
       case 'degrees':
@@ -223,7 +223,7 @@ export class RoofPitchCalculator {
    * Get nearest standard pitch
    */
   public getNearestStandardPitch(pitch: number): number {
-    return this.config.standardPitches.reduce((prev, curr) => 
+    return this.config.standardPitches.reduce((prev, curr) =>
       Math.abs(curr - pitch) < Math.abs(prev - pitch) ? curr : prev
     );
   }
@@ -233,19 +233,19 @@ export class RoofPitchCalculator {
    */
   public validatePitch(pitch: number): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     if (pitch < this.config.minPitch) {
       errors.push(`Pitch ${pitch}° is below minimum ${this.config.minPitch}°`);
     }
-    
+
     if (pitch > this.config.maxPitch) {
       errors.push(`Pitch ${pitch}° exceeds maximum ${this.config.maxPitch}°`);
     }
-    
+
     if (isNaN(pitch) || !isFinite(pitch)) {
       errors.push('Pitch must be a valid number');
     }
-    
+
     return {
       valid: errors.length === 0,
       errors
@@ -262,11 +262,11 @@ export class RoofPitchCalculator {
     flowRate: number; // gallons per minute
   } {
     const category = this.categorizePitch(pitch);
-    
+
     // Simplified drainage calculations
     let drainageType: 'gutters' | 'scuppers' | 'internal';
     let gutterSize: number;
-    
+
     switch (category) {
       case 'flat':
         drainageType = 'internal';
@@ -280,13 +280,13 @@ export class RoofPitchCalculator {
         drainageType = 'gutters';
         gutterSize = 5;
     }
-    
+
     // Calculate downspout count (1 per 600 sq ft)
     const downspoutCount = Math.ceil(roofArea / 600);
-    
+
     // Calculate flow rate (simplified)
     const flowRate = roofArea * 0.623; // gallons per minute per sq ft
-    
+
     return {
       drainageType,
       gutterSize,
@@ -303,7 +303,7 @@ export class RoofPitchCalculator {
     const pitchRatio = this.calculatePitchRatio(pitch);
     const pitchFraction = this.calculatePitchFraction(slope);
     const category = this.categorizePitch(pitch);
-    
+
     return {
       pitch: this.roundToPrecision(pitch),
       slope: this.roundToPrecision(slope),
@@ -344,11 +344,11 @@ export class RoofPitchCalculator {
       { decimal: 3/2, fraction: '3/2' },
       { decimal: 2, fraction: '2/1' }
     ];
-    
-    const closest = fractions.reduce((prev, curr) => 
+
+    const closest = fractions.reduce((prev, curr) =>
       Math.abs(curr.decimal - slope) < Math.abs(prev.decimal - slope) ? curr : prev
     );
-    
+
     return closest.fraction;
   }
 
@@ -390,13 +390,13 @@ export class RoofPitchCalculator {
     if (roof.metadata && roof.metadata.points) {
       return roof.metadata.points as Point2D[];
     }
-    
+
     // Generate points from dimensions
     const width = roof.dimensions.width;
     const height = roof.dimensions.height;
     const centerX = roof.transform.position.x;
     const centerY = roof.transform.position.y;
-    
+
     return [
       { x: centerX - width/2, y: centerY - height/2 },
       { x: centerX + width/2, y: centerY - height/2 },
@@ -412,13 +412,13 @@ export class RoofPitchCalculator {
     // Simplified - in reality would calculate based on roof type and pitch
     const baseHeight = roof.metadata?.baseHeight as number || 0;
     const roofHeight = roof.metadata?.height as number || roof.dimensions.height || 3;
-    
+
     // For now, assume linear interpolation from center
     const center = roof.transform.position;
     const distanceFromCenter = Math.sqrt(
       Math.pow(point.x - center.x, 2) + Math.pow(point.y - center.y, 2)
     );
-    
+
     // Simple height calculation - would be more complex for different roof types
     return baseHeight + roofHeight * (1 - distanceFromCenter / (roof.dimensions.width / 2));
   }
@@ -501,7 +501,7 @@ export class RoofPitchUtils {
       'sawtooth': { min: 20, max: 45, optimal: 30 },
       'shed-dormer': { min: 25, max: 45, optimal: 35 }
     };
-    
+
     return recommendations[roofType] || { min: 15, max: 45, optimal: 30 };
   }
 
@@ -515,25 +515,25 @@ export class RoofPitchUtils {
   } {
     const warnings: string[] = [];
     const recommendations: string[] = [];
-    
+
     // Snow load considerations
     if (climate === 'snow' && pitch < 30) {
       warnings.push('Low pitch may cause snow load issues');
       recommendations.push('Consider increasing pitch to 30° or higher for snow shedding');
     }
-    
+
     // Drainage considerations
     if (pitch < 2 && roofType !== 'flat') {
       warnings.push('Pitch too low for effective drainage');
       recommendations.push('Minimum 2° pitch required for drainage');
     }
-    
+
     // Wind considerations
     if (pitch > 45) {
       warnings.push('High pitch may increase wind load');
       recommendations.push('Consider structural reinforcement for high-pitch roofs');
     }
-    
+
     return {
       compliant: warnings.length === 0,
       warnings,

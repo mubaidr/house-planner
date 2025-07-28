@@ -26,6 +26,7 @@ export interface ErrorContext {
   category: ErrorCategory;
   operation?: string;
   severity?: 'info' | 'warning' | 'error' | 'critical';
+  additionalData?: Record<string, unknown>;
 }
 
 export interface ErrorOptions {
