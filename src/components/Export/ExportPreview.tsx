@@ -7,7 +7,9 @@ import { composeSheet } from '@/utils/exportUtils2D';
 import { DrawingSheet, DEFAULT_SHEETS } from '@/types/drawingSheet2D';
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
-pdfMake.vfs = pdfFonts.pdfMake.vfs
+if (typeof window !== 'undefined' && pdfFonts?.pdfMake?.vfs) {
+  (pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
+}
 
 interface ExportPreviewProps {
   isOpen: boolean;
@@ -63,7 +65,7 @@ export default function ExportPreview({ isOpen, onClose }: ExportPreviewProps) {
     setError(null);
 
     try {
-      const composedCanvas = await composeSheet(sheet);
+      const composedCanvas = await composeSheet(sheet, { pixelRatio: 2, quality: 1 });
       setCanvas(composedCanvas);
 
       // Reset zoom controls when new preview is generated

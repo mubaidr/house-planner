@@ -45,9 +45,9 @@ export function formatLength(
       // Convert to fractional format (e.g., 5' 6 1/2")
       const feet = Math.floor(value);
       const inches = (value - feet) * 12;
-      const wholeInches = Math.floor(inches);
+      let wholeInches = Math.floor(inches); // changed to let
       const fraction = inches - wholeInches;
-      
+
       let fractionString = '';
       if (fraction > 0) {
         // Convert to nearest 1/16th
@@ -59,7 +59,7 @@ export function formatLength(
           fractionString = ` ${numerator}/${denominator}"`;
         }
       }
-      
+
       return `${feet}'${wholeInches > 0 ? ` ${wholeInches}` : ''}${fractionString}`;
     }
   }
@@ -85,7 +85,7 @@ export function parseLength(
   unitSystem: UnitSystem
 ): number | null {
   if (!input) return null;
-  
+
   // For metric, simple parsing
   if (unitSystem === 'metric') {
     // Handle comma as decimal separator (European format)
@@ -96,27 +96,27 @@ export function parseLength(
     const value = parseFloat(cleanInput);
     return isNaN(value) ? null : value;
   }
-  
+
   // For imperial, handle feet and inches notation
   if (input.includes("'")) {
     // Format like 5' 6" or 5'6"
     const parts = input.split("'");
     const feet = parseFloat(parts[0].replace(/[^\d.-]/g, ''));
-    
+
     if (isNaN(feet)) return null;
-    
+
     if (parts.length > 1 && parts[1].trim()) {
       const inchPart = parts[1].replace('"', '').trim();
-      
+
       // Handle fractions like 6 1/2"
       if (inchPart.includes('/')) {
         const inchParts = inchPart.split(' ');
         let inches = 0;
-        
+
         if (inchParts[0] && !isNaN(parseFloat(inchParts[0]))) {
           inches += parseFloat(inchParts[0]);
         }
-        
+
         if (inchParts.length > 1 && inchParts[1].includes('/')) {
           const fractionParts = inchParts[1].split('/');
           if (fractionParts.length === 2) {
@@ -127,7 +127,7 @@ export function parseLength(
             }
           }
         }
-        
+
         return feet + (inches / 12);
       } else {
         // Simple inches
@@ -135,10 +135,10 @@ export function parseLength(
         return isNaN(inches) ? feet : feet + (inches / 12);
       }
     }
-    
+
     return feet;
   }
-  
+
   // Just a simple number
   const value = parseFloat(input.replace(/[^\d.-]/g, ''));
   return isNaN(value) ? null : value;

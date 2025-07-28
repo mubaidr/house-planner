@@ -57,7 +57,7 @@ export interface AccessibilityActions {
 
 export const useAccessibilityStore = create<AccessibilityState & AccessibilityActions>()(
   persist(
-    (set, get) => ({
+  (set) => ({
       // Default state
       highContrastMode: false,
       reducedMotion: false,
@@ -90,7 +90,7 @@ export const useAccessibilityStore = create<AccessibilityState & AccessibilityAc
       setTabNavigationOrder: (order) => set({ tabNavigationOrder: order }),
 
       toggleScreenReaderSupport: () => set((state) => ({ enableScreenReaderSupport: !state.enableScreenReaderSupport })),
-      addAnnouncement: (message) => set((state) => ({ 
+      addAnnouncement: (message) => set((state) => ({
         announcements: [...state.announcements, message].slice(-10) // Keep only last 10 announcements
       })),
       clearAnnouncements: () => set({ announcements: [] }),

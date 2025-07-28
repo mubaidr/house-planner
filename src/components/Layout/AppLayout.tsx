@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 import { useMaterialStore } from '@/stores/materialStore';
 import { useTemplateStore } from '@/stores/templateStore';
@@ -12,7 +12,7 @@ import AccessibilitySettingsPanel from '@/components/Accessibility/Accessibility
 import AlternativeElementList from '@/components/Accessibility/AlternativeElementList';
 import ErrorNotification from '@/components/ErrorHandling/ErrorNotification';
 import { Button } from '@/components/ui/button';
-import { Settings, List, Accessibility } from 'lucide-react';
+import { List, Accessibility } from 'lucide-react';
 import { Toolbar } from '@/components/Toolbar/Toolbar';
 import ElementsSidebar from '@/components/Sidebar/ElementsSidebar';
 import PropertiesPanel from '@/components/Properties/PropertiesPanel';
@@ -28,7 +28,7 @@ import TemplateLibrary from '@/components/Templates/TemplateLibrary';
 import ExportDialog from '@/components/Export/ExportDialog';
 import ImportDialog from '@/components/Export/ImportDialog';
 import { Alert } from '@/components/ui/alert';
-import { Stage } from 'konva/lib/Stage';
+
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -39,12 +39,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const { isLibraryOpen } = useMaterialStore();
   const { isTemplateLibraryOpen } = useTemplateStore();
   const { error, setError } = useErrorStore();
-  const {
-    preferences,
-    isAccessibilityMode,
-    showElementList,
-    toggleElementList
-  } = useAccessibilityStore();
+    const { highContrastMode, largerFocusIndicators, enableAlternativeElementList, showElementList, toggleElementList } = useAccessibilityStore();
 
   // Local state for accessibility panels
   const [isAccessibilitySettingsOpen, setIsAccessibilitySettingsOpen] = useState(false);
@@ -64,7 +59,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     try {
       const { floors } = useFloorStore.getState();
 
-      // Collect all annotations from all floors
+      // Collect all annotations from all floors (walls, rooms)
       const annotations = {
         version: "1.0",
         timestamp: new Date().toISOString(),
@@ -72,9 +67,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
           id: floor.id,
           name: floor.name,
           annotations: {
-            dimensions: floor.elements.dimensions || [],
-            notes: floor.elements.notes || [],
-            labels: floor.elements.labels || []
+            walls: floor.elements.walls || [],
+            rooms: floor.elements.rooms || []
           }
         }))
       };
@@ -117,41 +111,29 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   const generateAnnotationsCSV = (floors: any[]) => {
-    const headers = ['Floor', 'Type', 'Text', 'X', 'Y', 'Width', 'Height'];
+    const headers = ['Floor', 'Type', 'ID/Name', 'X1', 'Y1', 'X2', 'Y2'];
     const rows = floors.flatMap(floor => [
-      ...(floor.elements.dimensions || []).map(dim => [
+      ...(floor.elements.walls || []).map((wall: any) => [
         floor.name,
-        'Dimension',
-        dim.text || '',
-        dim.x || 0,
-        dim.y || 0,
-        dim.width || 0,
-        dim.height || 0
+        'Wall',
+        wall.id || '',
+        wall.startX || 0,
+        wall.startY || 0,
+        wall.endX || 0,
+        wall.endY || 0
       ]),
-      ...(floor.elements.notes || []).map(note => [
+      ...(floor.elements.rooms || []).map((room: any) => [
         floor.name,
-        'Note',
-        note.text || '',
-        note.x || 0,
-        note.y || 0,
-        note.width || 0,
-        note.height || 0
-      ]),
-      ...(floor.elements.labels || []).map(label => [
-        floor.name,
-        'Label',
-        label.text || '',
-        label.x || 0,
-        label.y || 0,
-        label.width || 0,
-        label.height || 0
+        'Room',
+        room.name || '',
+        '', '', '', ''
       ])
     ]);
     return [headers, ...rows].map(row => row.map(escapeCSV).join(',')).join('\n');
   };
 
   return (
-    <div className={`h-screen w-screen flex flex-col bg-gray-100 ${preferences.highContrastMode ? 'high-contrast' : ''}`}>
+  <div className={`h-screen w-screen flex flex-col bg-gray-100 ${highContrastMode ? 'high-contrast' : ''}`}>
       {/* Skip Links for Accessibility */}
       <a
         href="#main-content"
@@ -224,25 +206,24 @@ export default function AppLayout({ children }: AppLayoutProps) {
             id="accessibility-controls"
             className="fixed bottom-4 left-4 z-40 flex flex-col space-y-2"
           >
-            {isAccessibilityMode && (
-              <>
+            {(highContrastMode || largerFocusIndicators) && <>
                 <Button
                   onClick={() => setIsAccessibilitySettingsOpen(true)}
                   variant="outline"
                   size="sm"
-                  className={`bg-white shadow-lg ${preferences.largerFocusIndicators ? 'large-focus' : 'focus-enhanced'}`}
+                  className={`bg-white shadow-lg ${largerFocusIndicators ? 'large-focus' : 'focus-enhanced'}`}
                   aria-label="Open accessibility settings"
                   title="Accessibility Settings"
                 >
                   <Accessibility className="w-4 h-4" />
                 </Button>
 
-                {preferences.enableAlternativeElementList && (
+                {enableAlternativeElementList && (
                   <Button
                     onClick={toggleElementList}
                     variant="outline"
                     size="sm"
-                    className={`bg-white shadow-lg ${preferences.largerFocusIndicators ? 'large-focus' : 'focus-enhanced'}`}
+                    className={`bg-white shadow-lg ${largerFocusIndicators ? 'large-focus' : 'focus-enhanced'}`}
                     aria-label="Toggle element list view"
                     title="Alternative Element List"
                     aria-pressed={showElementList}
@@ -250,8 +231,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     <List className="w-4 h-4" />
                   </Button>
                 )}
-              </>
-            )}
+              </>}
           </div>
 
           {children}
@@ -279,8 +259,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
       {isTemplateLibraryOpen && <TemplateLibrary />}
 
       {/* Export and Import Dialogs */}
-      {isExportDialogOpen && <ExportDialog />}
-      {isImportDialogOpen && <ImportDialog />}
+      {isExportDialogOpen && (
+        <ExportDialog isOpen={isExportDialogOpen} onClose={() => setExportDialogOpen(false)} stage={null} />
+      )}
+      {isImportDialogOpen && (
+        <ImportDialog />
+      )}
 
       {/* Accessibility Dialogs */}
       <AccessibilitySettingsPanel
@@ -293,5 +277,3 @@ export default function AppLayout({ children }: AppLayoutProps) {
         onClose={toggleElementList}
       />
     </div>
-  );
-}
