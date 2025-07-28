@@ -4,7 +4,7 @@ import React from 'react';
 import { Group, Line, Rect, Text } from 'react-konva';
 import { Window2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
-import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
+import { PLAN_VIEW_CONFIG } from '../PlanViewConfig';
 import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 
 interface PlanWindowRenderer2DProps {

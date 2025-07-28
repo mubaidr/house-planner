@@ -4,8 +4,7 @@ import { useDesignStore } from '@/stores/designStore';
 import { useErrorStore } from '@/stores/errorStore';
 import { useAccessibilityAnnouncer } from '@/components/Accessibility/AccessibilityAnnouncer';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { X, Upload, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Upload, X, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface ImportedDesign {
   walls: any[];
@@ -25,7 +24,7 @@ const ImportDialog: React.FC = () => {
   const { isImportDialogOpen, setImportDialogOpen } = useUIStore();
   const { setWalls, setDoors, setWindows, setStairs, setRoofs, clearAll } = useDesignStore();
   const { setError } = useErrorStore();
-  const { announceSuccess, announceError } = useAccessibilityAnnouncer();
+  const { announceError } = useAccessibilityAnnouncer();
   
   const [importMode, setImportMode] = useState<'replace' | 'merge'>('replace');
   const [isImporting, setIsImporting] = useState(false);
@@ -110,7 +109,7 @@ const ImportDialog: React.FC = () => {
       
       if (validation.isValid) {
         setPreviewData(data);
-        announceSuccess(`File loaded successfully. ${data.walls?.length || 0} walls, ${data.doors?.length || 0} doors, ${data.windows?.length || 0} windows found.`);
+        // File loaded successfully - could add success announcement here
       } else {
         announceError(`File validation failed. ${validation.errors.length} errors found.`);
       }
@@ -160,7 +159,7 @@ const ImportDialog: React.FC = () => {
                           (previewData.stairs?.length || 0) + 
                           (previewData.roofs?.length || 0);
 
-      announceSuccess(`Import completed successfully. ${elementCount} elements imported.`);
+      // Import completed successfully - could add success announcement here
       
       // Close dialog after successful import
       setTimeout(() => {

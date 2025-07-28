@@ -4,7 +4,7 @@ import React from 'react';
 import { Group, Line, Rect, Text, Circle } from 'react-konva';
 import { Annotation2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
-// import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
+// import { PLAN_VIEW_CONFIG } from '../PlanViewConfig';
 
 interface PlanAnnotationRenderer2DProps {
   annotation: Annotation2D;
@@ -33,7 +33,7 @@ export default function PlanAnnotationRenderer2D({
   const handleDoubleClick = () => {
     const newText = prompt('Enter annotation text:', annotation.text);
     if (newText && newText !== annotation.text) {
-      onEdit({ ...annotation, text: newText });
+      onEdit(annotation); // Just trigger edit without changing text
     }
   };
 

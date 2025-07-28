@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useFloorStore } from '@/stores/floorStore';
 import { Button } from '@/components/ui/button';
-import { List, X, ChevronRight, Home } from 'lucide-react';
+import { List, X, ChevronRight } from 'lucide-react';
 
 interface AlternativeElementListProps {
   isOpen: boolean;
@@ -149,8 +149,6 @@ export default function AlternativeElementList({ isOpen, onClose }: AlternativeE
   };
 
   const elements = generateElementList();
-  const currentFloor = floors.find(f => f.id === currentFloorId);
-
   // Handle keyboard navigation
   useEffect(() => {
     if (!isOpen) return;

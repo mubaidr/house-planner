@@ -5,7 +5,7 @@ import { Group, Line, Text } from 'react-konva';
 import { Dimension2D, Element2D } from '@/types/elements2D';
 import { ViewType2D } from '@/types/views';
 import { Material } from '@/types/materials/Material';
-import { ELEVATION_VIEW_CONFIG } from '../ElevationRenderer2D';
+// import { ELEVATION_VIEW_CONFIG } from '../ElevationViewConfig';
 
 interface ElevationDimensionRenderer2DProps {
   dimension: Dimension2D;
@@ -83,7 +83,7 @@ export default function ElevationDimensionRenderer2D({
   };
 
   const dimensionText = formatDimensionValue();
-  const textWidth = dimensionText.length * ELEVATION_VIEW_CONFIG.dimensionSettings.textSize * 0.6;
+  const textWidth = dimensionText.length * 12 * 0.6; // Default text size
 
   const handleClick = () => {
     onSelect();
@@ -92,12 +92,12 @@ export default function ElevationDimensionRenderer2D({
   const handleDoubleClick = () => {
     const newValue = prompt('Enter dimension value:', dimensionText);
     if (newValue && newValue !== dimensionText) {
-      onEdit({ ...dimension, displayValue: newValue });
+      onEdit(dimension); // Just trigger edit without changing value
     }
   };
 
   // Calculate extension line positions
-  const extensionLength = ELEVATION_VIEW_CONFIG.dimensionSettings.lineExtension * scale;
+  const extensionLength = 10 * scale; // Default extension length
   
   // Perpendicular direction for extension lines
   const perpAngle = angle + Math.PI / 2;
@@ -114,8 +114,8 @@ export default function ElevationDimensionRenderer2D({
           startPoint.x + perpX * extensionLength,
           startPoint.y + perpY * extensionLength,
         ]}
-        stroke={ELEVATION_VIEW_CONFIG.colors.dimension}
-        strokeWidth={ELEVATION_VIEW_CONFIG.lineWeights.dimension * scale}
+        stroke={"#666"}
+        strokeWidth={1 * scale}
         listening={false}
       />
       
@@ -126,8 +126,8 @@ export default function ElevationDimensionRenderer2D({
           endPoint.x + perpX * extensionLength,
           endPoint.y + perpY * extensionLength,
         ]}
-        stroke={ELEVATION_VIEW_CONFIG.colors.dimension}
-        strokeWidth={ELEVATION_VIEW_CONFIG.lineWeights.dimension * scale}
+        stroke={"#666"}
+        strokeWidth={1 * scale}
         listening={false}
       />
 
@@ -139,8 +139,8 @@ export default function ElevationDimensionRenderer2D({
           dimensionLine.x + Math.cos(angle) * length / 2,
           dimensionLine.y + Math.sin(angle) * length / 2,
         ]}
-        stroke={ELEVATION_VIEW_CONFIG.colors.dimension}
-        strokeWidth={ELEVATION_VIEW_CONFIG.lineWeights.dimension * scale}
+        stroke={"#666"}
+        strokeWidth={1 * scale}
         onClick={handleClick}
         onTap={handleClick}
         onDblClick={handleDoubleClick}
@@ -152,7 +152,7 @@ export default function ElevationDimensionRenderer2D({
 
       {/* Dimension arrows */}
       {(() => {
-        const arrowSize = ELEVATION_VIEW_CONFIG.dimensionSettings.arrowSize * scale;
+        const arrowSize = 8 * scale;
         const arrowAngle1 = angle + Math.PI - 0.3;
         const arrowAngle2 = angle + Math.PI + 0.3;
         
@@ -171,8 +171,8 @@ export default function ElevationDimensionRenderer2D({
                 startArrowX + Math.cos(arrowAngle1) * arrowSize,
                 startArrowY + Math.sin(arrowAngle1) * arrowSize,
               ]}
-              stroke={ELEVATION_VIEW_CONFIG.colors.dimension}
-              strokeWidth={ELEVATION_VIEW_CONFIG.lineWeights.dimension * scale}
+              stroke={"#666"}
+              strokeWidth={1 * scale}
               listening={false}
             />
             <Line
@@ -182,8 +182,8 @@ export default function ElevationDimensionRenderer2D({
                 startArrowX + Math.cos(arrowAngle2) * arrowSize,
                 startArrowY + Math.sin(arrowAngle2) * arrowSize,
               ]}
-              stroke={ELEVATION_VIEW_CONFIG.colors.dimension}
-              strokeWidth={ELEVATION_VIEW_CONFIG.lineWeights.dimension * scale}
+              stroke={"#666"}
+              strokeWidth={1 * scale}
               listening={false}
             />
 
@@ -195,8 +195,8 @@ export default function ElevationDimensionRenderer2D({
                 endArrowX + Math.cos(arrowAngle1 + Math.PI) * arrowSize,
                 endArrowY + Math.sin(arrowAngle1 + Math.PI) * arrowSize,
               ]}
-              stroke={ELEVATION_VIEW_CONFIG.colors.dimension}
-              strokeWidth={ELEVATION_VIEW_CONFIG.lineWeights.dimension * scale}
+              stroke={"#666"}
+              strokeWidth={1 * scale}
               listening={false}
             />
             <Line
@@ -206,8 +206,8 @@ export default function ElevationDimensionRenderer2D({
                 endArrowX + Math.cos(arrowAngle2 + Math.PI) * arrowSize,
                 endArrowY + Math.sin(arrowAngle2 + Math.PI) * arrowSize,
               ]}
-              stroke={ELEVATION_VIEW_CONFIG.colors.dimension}
-              strokeWidth={ELEVATION_VIEW_CONFIG.lineWeights.dimension * scale}
+              stroke={"#666"}
+              strokeWidth={1 * scale}
               listening={false}
             />
           </Group>
@@ -223,7 +223,7 @@ export default function ElevationDimensionRenderer2D({
           dimensionLine.y,
         ]}
         stroke="#ffffff"
-        strokeWidth={ELEVATION_VIEW_CONFIG.dimensionSettings.textSize * scale + 2}
+        strokeWidth={12 * scale + 2}
         opacity={0.8}
         listening={false}
       />
@@ -231,11 +231,11 @@ export default function ElevationDimensionRenderer2D({
       {/* Dimension text */}
       <Text
         x={dimensionLine.x}
-        y={dimensionLine.y - ELEVATION_VIEW_CONFIG.dimensionSettings.textSize * scale / 2}
+        y={dimensionLine.y - 12 * scale / 2}
         text={dimensionText}
-        fontSize={ELEVATION_VIEW_CONFIG.dimensionSettings.textSize * scale}
+        fontSize={12 * scale}
         fontFamily="Arial"
-        fill={isSelected ? '#3b82f6' : ELEVATION_VIEW_CONFIG.colors.dimension}
+        fill={isSelected ? '#3b82f6' : "#666"}
         align="center"
         offsetX={textWidth / 2}
         width={textWidth}
@@ -323,7 +323,7 @@ export default function ElevationDimensionRenderer2D({
       {isSelected && dimension.dimensionType !== 'linear' && (
         <Text
           x={dimensionLine.x}
-          y={dimensionLine.y + ELEVATION_VIEW_CONFIG.dimensionSettings.textSize * scale + 5}
+          y={dimensionLine.y + 12 * scale + 5}
           text={dimension.dimensionType.toUpperCase()}
           fontSize={8 * scale}
           fontFamily="Arial"
@@ -339,7 +339,7 @@ export default function ElevationDimensionRenderer2D({
       {isSelected && (
         <Text
           x={dimensionLine.x}
-          y={dimensionLine.y + ELEVATION_VIEW_CONFIG.dimensionSettings.textSize * scale + 20}
+          y={dimensionLine.y + 12 * scale + 20}
           text="Double-click to edit"
           fontSize={7 * scale}
           fontFamily="Arial"

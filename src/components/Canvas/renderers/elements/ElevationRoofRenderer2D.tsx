@@ -5,7 +5,7 @@ import { Group, Line, Rect, Text } from 'react-konva';
 import { Roof2D, Element2D } from '@/types/elements2D';
 import { ViewType2D } from '@/types/views';
 import { Material } from '@/types/materials/Material';
-import { ELEVATION_VIEW_CONFIG } from '../ElevationRenderer2D';
+import { ELEVATION_VIEW_CONFIG } from '../ElevationViewConfig';
 // import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 
 interface ElevationRoofRenderer2DProps {
@@ -819,7 +819,7 @@ export default function ElevationRoofRenderer2D({
       )}
 
       {/* Roof material pattern (if texture available) */}
-      {showMaterials && material && material.texture && (
+      {showMaterials && material && material.textureImage && (
         <Rect
           x={roofX}
           y={roofBaseY - ridgeHeight}
@@ -827,7 +827,7 @@ export default function ElevationRoofRenderer2D({
           height={ridgeHeight}
           fillPatternImage={(() => {
             const img = new Image();
-            img.src = material.texture;
+            img.src = material.textureImage;
             return img;
           })()}
           fillPatternScale={{

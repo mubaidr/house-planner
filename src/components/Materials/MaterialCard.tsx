@@ -196,7 +196,7 @@ export default function MaterialCard({ material, isSelected, onSelect, onEdit, o
             {material.properties.reflectivity > 0.5 && (
               <div className="w-4 h-4 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full" title="Reflective" />
             )}
-            {material.texture && (
+            {material.textureImage && (
               <div className="w-4 h-4 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full" title="Textured" />
             )}
             {material.properties.fireResistance === 'A' && (

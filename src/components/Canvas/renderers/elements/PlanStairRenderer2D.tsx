@@ -4,7 +4,7 @@ import React from 'react';
 import { Group, Line, Rect, Text, Arrow } from 'react-konva';
 import { Stair2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
-import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
+import { PLAN_VIEW_CONFIG } from '../PlanViewConfig';
 
 interface PlanStairRenderer2DProps {
   stair: Stair2D;

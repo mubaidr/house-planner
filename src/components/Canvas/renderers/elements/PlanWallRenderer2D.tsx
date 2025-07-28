@@ -46,6 +46,7 @@ export default function PlanWallRenderer2D({
     endY: wall.endPoint.y,
     // Include calculated angle for proper orientation
     angle: angleDegrees,
+    color: '#333333', // Default wall color
   };
 
   return (

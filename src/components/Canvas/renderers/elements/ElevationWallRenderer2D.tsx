@@ -5,7 +5,7 @@ import { Group, Line, Rect } from 'react-konva';
 import { Wall2D, Element2D } from '@/types/elements2D';
 import { ViewType2D } from '@/types/views';
 import { Material } from '@/types/materials/Material';
-import { ELEVATION_VIEW_CONFIG } from '../ElevationRenderer2D';
+import { ELEVATION_VIEW_CONFIG } from '../ElevationViewConfig';
 import { MaterialRenderer2D, MaterialPatternUtils } from '@/utils/materialRenderer2D';
 
 interface ElevationWallRenderer2DProps {

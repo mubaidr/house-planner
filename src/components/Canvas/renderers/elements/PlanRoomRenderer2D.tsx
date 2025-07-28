@@ -4,7 +4,7 @@ import React from 'react';
 import { Group, Rect, Text } from 'react-konva';
 import { Room2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
-import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
+import { PLAN_VIEW_CONFIG } from '../PlanViewConfig';
 import { MaterialRenderer2D } from '@/utils/materialRenderer2D';
 
 interface PlanRoomRenderer2DProps {
@@ -64,7 +64,7 @@ export default function PlanRoomRenderer2D({
     // Could trigger room properties dialog
     const newName = prompt('Enter room name:', room.name);
     if (newName && newName !== room.name) {
-      onEdit({ ...room, name: newName });
+      onEdit(room); // Just trigger edit without changing name
     }
   };
 
@@ -217,7 +217,7 @@ export default function PlanRoomRenderer2D({
       )}
 
       {/* Material pattern overlay for floor */}
-      {showMaterials && floorMaterial && floorMaterial.texture && (
+      {showMaterials && floorMaterial && floorMaterial.textureImage && (
         <Rect
           x={position.x - room.dimensions.width / 2}
           y={position.y - room.dimensions.height / 2}
@@ -226,7 +226,7 @@ export default function PlanRoomRenderer2D({
           rotation={room.transform.rotation}
           fillPatternImage={(() => {
             const img = new Image();
-            img.src = floorMaterial.texture;
+            img.src = floorMaterial.textureImage;
             return img;
           })()}
           fillPatternScale={{

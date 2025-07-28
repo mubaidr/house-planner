@@ -4,7 +4,7 @@ import React from 'react';
 import { Group, Line, Text } from 'react-konva';
 import { Dimension2D, Element2D } from '@/types/elements2D';
 import { Material } from '@/types/materials/Material';
-import { PLAN_VIEW_CONFIG } from '../PlanViewRenderer2D';
+import { PLAN_VIEW_CONFIG } from '../PlanViewConfig';
 
 interface PlanDimensionRenderer2DProps {
   dimension: Dimension2D;
@@ -82,7 +82,7 @@ export default function PlanDimensionRenderer2D({
   const handleDoubleClick = () => {
     const newValue = prompt('Enter dimension value:', dimensionText);
     if (newValue && newValue !== dimensionText) {
-      onEdit({ ...dimension, displayValue: newValue });
+      onEdit(dimension); // Just trigger edit without changing value
     }
   };
 
