@@ -9,7 +9,7 @@ import { snapPoint } from '@/utils/snapping';
 
 export const useRoofTool = () => {
   const [isDrawing, setIsDrawing] = useState(false);
-  const [roofPoints, setRoofPoints] = useState<Array<{ x: number; y: number }>>([]);
+  const [roofPoints, setRoofPoints] = useState<Array<{ x: number; y: number; snapped?: boolean; snapType?: string }>>([]);
   const [previewRoof, setPreviewRoof] = useState<Roof | null>(null);
 
   const { walls, addRoof, selectElement } = useDesignStore();
@@ -31,14 +31,15 @@ export const useRoofTool = () => {
     ]);
 
     const snappedPos = snapPoint(pos, gridSize, snapPoints, snapToGrid);
+    const pointWithSnap = { ...snappedPos, snapped: snapToGrid, snapType: 'grid' };
 
     if (!isDrawing) {
       // Start new roof
-      setRoofPoints([snappedPos]);
+      setRoofPoints([pointWithSnap]);
       setIsDrawing(true);
     } else {
       // Add point to current roof
-      const newPoints = [...roofPoints, snappedPos];
+      const newPoints = [...roofPoints, pointWithSnap];
       setRoofPoints(newPoints);
 
       // Update preview
@@ -46,11 +47,11 @@ export const useRoofTool = () => {
         const newRoof: Roof = {
           id: `roof-${Date.now()}`,
           points: newPoints,
-          height: 300, // Default roof height
-          pitch: 30, // Default pitch in degrees
-          overhang: 50, // Default overhang
+          height: 300,
+          pitch: 30,
+          overhang: 50,
           type: 'gable',
-          color: '#8B4513', // Brown color for roof
+          color: '#8B4513',
           ridgeHeight: 400,
           gutterHeight: 250,
           material: 'default',
@@ -60,7 +61,7 @@ export const useRoofTool = () => {
         setPreviewRoof(newRoof);
       }
     }
-  }, [walls, gridSize, snapToGrid, isDrawing, roofPoints]);
+  }, [walls, snapToGrid, gridSize, isDrawing, roofPoints]);
 
   const updateDrawing = useCallback((e: KonvaEventObject<MouseEvent>) => {
     if (!isDrawing || roofPoints.length === 0) return;
@@ -72,11 +73,10 @@ export const useRoofTool = () => {
     if (!pos) return;
 
     // Update preview with current mouse position
-    const previewPoints = [...roofPoints, pos];
-
-    if (previewPoints.length >= 3) {
+    if (roofPoints.length >= 2) {
+      const previewPoints = [...roofPoints, pos];
       const newRoof: Roof = {
-        id: `roof-preview`,
+        id: 'roof-preview',
         points: previewPoints,
         height: 300,
         pitch: 30,
@@ -85,6 +85,9 @@ export const useRoofTool = () => {
         color: '#8B4513',
         ridgeHeight: 400,
         gutterHeight: 250,
+        material: 'default',
+        materialId: undefined,
+        floorId: undefined,
       };
       setPreviewRoof(newRoof);
     }
@@ -110,11 +113,10 @@ export const useRoofTool = () => {
 
     executeCommand({
       execute: () => {
-        // Add to current floor first
+        addRoof(finalRoof);
         if (currentFloorId) {
           addElementToFloor(currentFloorId, 'roofs', finalRoof);
         }
-        addRoof(finalRoof);
       },
       undo: () => {
         // Remove roof logic would go here
@@ -122,14 +124,13 @@ export const useRoofTool = () => {
       description: 'Add roof',
     });
 
-    // Switch to select tool and select the new roof
-    setActiveTool('select');
-    selectElement(finalRoof.id, 'roof');
-
+    // Reset state
     setIsDrawing(false);
     setRoofPoints([]);
     setPreviewRoof(null);
-  }, [isDrawing, roofPoints, addRoof, executeCommand, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
+    setActiveTool('select');
+    selectElement(finalRoof.id, 'roof');
+  }, [isDrawing, roofPoints, executeCommand, addRoof, currentFloorId, addElementToFloor, setActiveTool, selectElement]);
 
   const cancelDrawing = useCallback(() => {
     setIsDrawing(false);
@@ -137,17 +138,16 @@ export const useRoofTool = () => {
     setPreviewRoof(null);
   }, []);
 
-  // Auto-generate roof from walls
-  const generateFromWalls = useCallback(() => {
+  const generateRoofFromWalls = useCallback(() => {
     if (walls.length === 0) return;
 
-    // Find the outer boundary of walls
+    // Get all wall endpoints
     const allPoints = walls.flatMap(wall => [
       { x: wall.startX, y: wall.startY },
-      { x: wall.endX, y: wall.endY }
+      { x: wall.endX, y: wall.endY },
     ]);
 
-    // Simple convex hull algorithm to get outer boundary
+    // Use convex hull to create roof outline
     const hull = convexHull(allPoints);
 
     if (hull.length >= 3) {
@@ -186,7 +186,8 @@ export const useRoofTool = () => {
     updateDrawing,
     finishDrawing,
     cancelDrawing,
-    generateFromWalls,
+    generateRoofFromWalls,
+    generateFromWalls: generateRoofFromWalls, // Alias for tests
   };
 };
 

@@ -199,7 +199,7 @@ export default function MeasurementDisplay({
             id: 'current',
             startPoint: currentMeasurement.startPoint,
             endPoint: currentMeasurement.currentPoint,
-            distance: currentMeasurement.distance,
+            distance: parseFloat(currentMeasurement.distance) || 0,
             angle: 0, // Not used for display
             label: currentMeasurement.distance,
             timestamp: Date.now(),

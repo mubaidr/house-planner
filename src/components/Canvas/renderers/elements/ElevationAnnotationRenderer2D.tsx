@@ -42,7 +42,7 @@ export default function ElevationAnnotationRenderer2D({
   const handleDoubleClick = () => {
     const newText = prompt('Enter annotation text:', annotation.text);
     if (newText && newText !== annotation.text) {
-      onEdit({ ...annotation, text: newText });
+      onEdit({ ...annotation, content: newText } as any);
     }
   };
 

@@ -191,7 +191,7 @@ const AnnotationIntegrationHelper: React.FC<AnnotationIntegrationHelperProps> = 
                 <ArrowRight className="h-3 w-3 text-blue-600" />
                 <span className="text-blue-800">{currentTip.action}</span>
                 {currentTip.shortcut && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="secondary" className="text-xs">
                     {currentTip.shortcut}
                   </Badge>
                 )}
@@ -271,7 +271,7 @@ const AnnotationIntegrationHelper: React.FC<AnnotationIntegrationHelperProps> = 
                 {keyboardShortcuts.map((shortcut, index) => (
                   <div key={index} className="flex items-center justify-between text-xs">
                     <span className="text-gray-600">{shortcut.action}</span>
-                    <Badge variant="outline" className="text-xs font-mono">
+                    <Badge variant="secondary" className="text-xs font-mono">
                       {shortcut.key}
                     </Badge>
                   </div>

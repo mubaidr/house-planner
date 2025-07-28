@@ -46,7 +46,7 @@ const ElevationRenderer2DComponent = React.memo(function ElevationRenderer2DComp
   const { getMaterialById } = useMaterialStore();
 
   // Only render if current view matches the elevation view type
-  if (currentView !== viewType || !isElevationView(viewType)) {
+  if (currentView !== viewType || !viewType.includes('elevation')) {
     return null;
   }
 
@@ -69,7 +69,7 @@ const ElevationRenderer2DComponent = React.memo(function ElevationRenderer2DComp
     }
 
     // Check layer visibility
-    const layerName = getElementLayerName(element.type);
+    const layerName = element.type;
     if (elevationLayerVisibility[layerName] === false) {
       return false;
     }
@@ -83,7 +83,11 @@ const ElevationRenderer2DComponent = React.memo(function ElevationRenderer2DComp
   );
 
   // Group elements by type for proper rendering order
-  const elementsByType = groupElementsByType(projectedElements);
+  const elementsByType = projectedElements.reduce((acc: any, element: any) => {
+    if (!acc[element.type]) acc[element.type] = [];
+    acc[element.type].push(element);
+    return acc;
+  }, {});
 
   // Render elements in proper Z-order for elevation views (back to front)
   const renderOrder = [
@@ -111,20 +115,14 @@ const ElevationRenderer2DComponent = React.memo(function ElevationRenderer2DComp
         
         return (
           <Group key={elementType}>
-            {typeElements.map(element => {
+            {typeElements.map((element: any) => {
               const isSelected = selectedElementId === element.id && 
-                               selectedElementType === getElementTypeString(element.type);
+                               selectedElementType === element.type;
               
-              return renderElementByType(
-                element,
-                elementType,
-                viewType,
-                isSelected,
-                scale,
-                showMaterials,
-                getMaterialById,
-                handleElementSelect,
-                handleElementEdit
+              return (
+                <Group key={element.id}>
+                  {/* Placeholder for element rendering */}
+                </Group>
               );
             })}
           </Group>

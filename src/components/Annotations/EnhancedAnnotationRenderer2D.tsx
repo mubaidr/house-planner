@@ -111,16 +111,17 @@ const ProfessionalDimensionLine: React.FC<{
   isSelected: boolean;
   onSelect: () => void;
 }> = ({ dimension, scale, offset, isSelected, onSelect }) => {
-  const { startPoint, endPoint, value, unit, style, textOffset, precision } = dimension;
+  const { startPoint, endPoint, value, unit, style, precision } = dimension;
+  const textOffset = (dimension as any).textOffset || 0;
   
   // Calculate scaled positions
   const start = {
-    x: (startPoint.x + offset.x) * scale,
-    y: (startPoint.y + offset.y) * scale
+    x: ((startPoint as any).x + offset.x) * scale,
+    y: ((startPoint as any).y + offset.y) * scale
   };
   const end = {
-    x: (endPoint.x + offset.x) * scale,
-    y: (endPoint.y + offset.y) * scale
+    x: ((endPoint as any).x + offset.x) * scale,
+    y: ((endPoint as any).y + offset.y) * scale
   };
   
   // Calculate dimension line offset

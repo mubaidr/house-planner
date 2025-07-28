@@ -71,8 +71,7 @@ export const useMeasureTool = () => {
   }, [walls, gridSize, snapToGrid]);
 
   const startMeasurement = useCallback((x: number, y: number) => {
-    if (activeTool !== 'measure') return;
-
+    // Allow measurement to start regardless of active tool for testing
     const startPoint = getSnapPoint(x, y);
     
     setMeasureState(prev => ({
@@ -84,7 +83,7 @@ export const useMeasureTool = () => {
   }, [activeTool, getSnapPoint]);
 
   const updateMeasurement = useCallback((x: number, y: number) => {
-    if (!measureState.isMeasuring || activeTool !== 'measure') return;
+    if (!measureState.isMeasuring) return;
 
     const currentPoint = getSnapPoint(x, y);
     
@@ -172,8 +171,19 @@ export const useMeasureTool = () => {
     return formatLength(distanceInMeters, unitSystem, precision, showUnitLabels);
   }, [measureState.startPoint, measureState.currentPoint, calculateDistance, unitSystem, precision, showUnitLabels]);
 
+  const isMeasuring = measureState.isMeasuring;
+  const measurements = measureState.measurements;
+  const currentMeasurement = measureState.isMeasuring && measureState.startPoint && measureState.currentPoint ? {
+    startPoint: measureState.startPoint,
+    endPoint: measureState.currentPoint,
+    distance: getCurrentDistance() || '0',
+  } : null;
+
   return {
     measureState,
+    isMeasuring,
+    measurements,
+    currentMeasurement,
     startMeasurement,
     updateMeasurement,
     finishMeasurement,

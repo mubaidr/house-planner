@@ -81,16 +81,16 @@ export default function MaterializedDoorComponent({
         fill: material.color,
         stroke: material.color,
         opacity: material.properties.opacity,
-        fillPatternImage: material.texture ? (() => {
+        fillPatternImage: material.textureImage ? (() => {
           const img = new Image();
-          img.src = material.texture;
+          img.src = material.textureImage;
           return img;
         })() : undefined,
-        fillPatternScale: material.texture ? {
+        fillPatternScale: material.textureImage ? {
           x: material.properties.patternScale || 1,
           y: material.properties.patternScale || 1,
         } : undefined,
-        fillPatternRotation: material.texture ? (material.properties.patternRotation || 0) : undefined,
+        fillPatternRotation: material.textureImage ? (material.properties.patternRotation || 0) : undefined,
       };
     }
 
@@ -195,7 +195,7 @@ export default function MaterializedDoorComponent({
               onDblClick={handleDoubleClick}
               onDblTap={handleDoubleClick}
             />
-            {material && material.texture && (
+            {material && material.textureImage && (
               <Rect
                 x={hingeX}
                 y={hingeY - 3}
@@ -268,9 +268,9 @@ export default function MaterializedDoorComponent({
       <DoorHandles
         door={door}
         isSelected={isSelected}
-        onStartDrag={onStartDrag}
-        onDrag={onDrag}
-        onEndDrag={onEndDrag}
+        onStartDrag={() => {}}
+        onDrag={() => {}}
+        onEndDrag={() => {}}
       />
     </Group>
   );

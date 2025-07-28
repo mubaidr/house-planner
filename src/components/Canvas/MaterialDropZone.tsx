@@ -35,7 +35,7 @@ export default function MaterialDropZone({
   const isSelected = selectedElementId === elementId && selectedElementType === elementType;
 
   const handleDragOver = useCallback((e: KonvaDragEvent) => {
-    e.preventDefault();
+    e.evt?.preventDefault();
     e.currentTarget.opacity(0.5);
   }, []);
 
@@ -44,7 +44,7 @@ export default function MaterialDropZone({
   }, []);
 
   const handleDrop = useCallback((e: KonvaDragEvent) => {
-    e.preventDefault();
+    e.evt?.preventDefault();
     e.currentTarget.opacity(0);
 
     try {

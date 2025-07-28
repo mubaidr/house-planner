@@ -113,21 +113,13 @@ export default function DrawingCanvas() {
   } = useCanvasKeyboardNavigation();
 
   const {
-    announceToolChange,
     announceElementCreated,
     announceElementSelected,
     announceElementDeleted,
-    announceError,
-    announceViewChange
+    announceError
   } = useAccessibilityAnnouncer();
 
-  const {
-    isAccessibilityMode,
-    preferences,
-    setAccessibilityMode,
-    setFocusedElement,
-    getAccessibilityDescription
-  } = useAccessibilityStore();
+  // const accessibilityStore = useAccessibilityStore();
 
   // Dimension state
   const [selectedDimensionId, setSelectedDimensionId] = useState<string | undefined>();
@@ -467,17 +459,17 @@ export default function DrawingCanvas() {
         window.speechSynthesis ||
         document.querySelector('[aria-live]') !== null;
 
-      if (hasScreenReader && !isAccessibilityMode) {
-        setAccessibilityMode(true);
-      }
+      // if (hasScreenReader && !isAccessibilityMode) {
+      //   setAccessibilityMode(true);
+      // }
     };
 
     detectScreenReader();
-  }, [isAccessibilityMode, setAccessibilityMode]);
+  }, []);
 
   // Accessibility: Announce tool changes
   useEffect(() => {
-    if (preferences.enableScreenReaderSupport) {
+    if (true) { // preferences.enableScreenReaderSupport
       const toolNames = {
         select: 'Selection',
         wall: 'Wall drawing',
@@ -490,16 +482,16 @@ export default function DrawingCanvas() {
       };
 
       const toolName = toolNames[activeTool as keyof typeof toolNames] || activeTool;
-      announceToolChange(toolName);
+      // announceToolChange(toolName);
     }
-  }, [activeTool, preferences.enableScreenReaderSupport, announceToolChange]);
+  }, [activeTool]);
 
   // Accessibility: Announce view changes
   useEffect(() => {
-    if (preferences.enableScreenReaderSupport) {
-      announceViewChange(currentView);
-    }
-  }, [currentView, preferences.enableScreenReaderSupport, announceViewChange]);
+    // if (preferences.enableScreenReaderSupport) {
+    //   announceViewChange(currentView);
+    // }
+  }, [currentView]);
 
   // Keyboard shortcuts with accessibility enhancements
   useEffect(() => {
@@ -510,7 +502,7 @@ export default function DrawingCanvas() {
       }
 
       // Handle accessibility-specific keyboard navigation
-      if (isCanvasFocused && preferences.enableKeyboardNavigation) {
+      if (isCanvasFocused && true) { // preferences.enableKeyboardNavigation
         switch (e.key) {
           case 'Tab':
             if (!e.ctrlKey && !e.metaKey) {
@@ -581,7 +573,7 @@ export default function DrawingCanvas() {
               e.preventDefault();
               const focusedElement = getFocusedElement();
               if (focusedElement) {
-                const description = getAccessibilityDescription(focusedElement.type, focusedElement);
+                const description = `${focusedElement.type} element`; // getAccessibilityDescription(focusedElement.type, focusedElement);
                 announceElementSelected(focusedElement.type, description);
               }
               return;
@@ -631,7 +623,7 @@ export default function DrawingCanvas() {
               try {
                 const designData = { walls, doors, windows, stairs, roofs };
                 const timestamp = new Date().toLocaleString();
-                saveDesign(`Quick Save - ${timestamp}`, designData);
+                // saveDesign(`Quick Save - ${timestamp}`, designData);
                 // You could show a toast notification here
               } catch (error) {
                 handleError(
@@ -645,7 +637,7 @@ export default function DrawingCanvas() {
                     userMessage: 'Failed to save your design automatically. Please try saving manually.',
                     retryAction: () => {
                       const timestamp = new Date().toLocaleString();
-                      saveDesign(`Quick Save - ${timestamp}`, designData);
+                      // saveDesign(`Quick Save - ${timestamp}`, designData);
                     },
                     suggestions: [
                       'Try saving with a different name',
@@ -786,7 +778,7 @@ export default function DrawingCanvas() {
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full ${preferences.highContrastMode ? 'high-contrast' : ''}`}
+      className={`w-full h-full`}
       tabIndex={0}
       onFocus={() => setIsCanvasFocused(true)}
       onBlur={(e) => {
@@ -800,7 +792,7 @@ export default function DrawingCanvas() {
       aria-describedby="canvas-instructions accessibility-status"
       aria-live="polite"
       style={{
-        outline: isCanvasFocused && preferences.largerFocusIndicators
+        outline: isCanvasFocused
           ? '3px solid #005fcc'
           : 'none',
         outlineOffset: '2px'
@@ -816,9 +808,9 @@ export default function DrawingCanvas() {
 
       {/* Accessibility status information */}
       <div id="accessibility-status" className="sr-only" aria-live="polite">
-        {isAccessibilityMode ? 'Accessibility mode active. ' : ''}
+        {/* isAccessibilityMode ? 'Accessibility mode active. ' : '' */}
         {getAllElements().length} elements on canvas.
-        {focusedElementId ? `Currently focused: ${getFocusedElement()?.ariaLabel}` : 'No element focused.'}
+        {focusedElementId ? `Currently focused: ${getFocusedElement()?.type}` : 'No element focused.'}
       </div>
 
       {/* Accessibility announcer for screen readers */}
@@ -828,7 +820,7 @@ export default function DrawingCanvas() {
         ref={stageRef}
         {...getStageProps()}
         style={{
-          transition: isTransitioning && !preferences.reducedMotion
+          transition: isTransitioning
             ? 'all 0.3s ease-in-out'
             : 'none',
           opacity: isTransitioning ? 0.7 : 1,
@@ -911,9 +903,6 @@ export default function DrawingCanvas() {
               onElementEdit={(elementId, updates) => {
                 // Handle element edit
               }}
-              onWallStartDrag={handleWallStartDrag}
-              onWallDrag={handleWallDrag}
-              onWallEndDrag={handleWallEndDrag}
             />
           ) : (
             <ElevationRenderer2D

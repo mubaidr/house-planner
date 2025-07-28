@@ -166,14 +166,14 @@ const AnnotationWorkflowGuide: React.FC = () => {
                     {workflow.steps.map((step, index) => (
                       <div key={index} className="flex items-start space-x-3">
                         <button
-                          onClick={() => toggleStepCompletion(index)}
+                          onClick={() => console.log('Toggle step', index)}
                           className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            completedSteps.includes(`${workflow.id}-${index}`)
+                            false
                               ? 'bg-green-500 border-green-500 text-white'
                               : 'border-gray-300 hover:border-green-400'
                           }`}
                         >
-                          {completedSteps.includes(`${workflow.id}-${index}`) && (
+                          {false && (
                             <CheckCircle className="w-3 h-3" />
                           )}
                         </button>

@@ -28,6 +28,11 @@ export const useClipboard = () => {
     addWindow,
     addStair,
     addRoof,
+    removeWall,
+    removeDoor,
+    removeWindow,
+    removeStair,
+    removeRoof,
     selectElement
   } = useDesignStore();
   const { executeCommand } = useHistoryStore();
@@ -218,10 +223,122 @@ export const useClipboard = () => {
     }
   }, []);
 
+  const clearClipboard = useCallback(() => {
+    try {
+      localStorage.removeItem('house-planner-clipboard');
+    } catch (error) {
+      handleError(error, 'Failed to clear clipboard');
+    }
+  }, []);
+
+  const copySelectedElements = useCallback(async (selectedIds: string[]) => {
+    if (selectedIds.length === 0) {
+      await navigator.clipboard.writeText(JSON.stringify({ elements: [], type: 'house-planner-elements' }));
+      return;
+    }
+
+    const elements = selectedIds.map(id => {
+      return walls.find(w => w.id === id) || 
+             doors.find(d => d.id === id) || 
+             windows.find(w => w.id === id) ||
+             roofs.find(r => r.id === id) ||
+             stairs.find(s => s.id === id);
+    }).filter(Boolean);
+
+    const clipboardData = {
+      elements,
+      type: 'clipboard_data'
+    };
+
+    await navigator.clipboard.writeText(JSON.stringify(clipboardData));
+  }, [walls, doors, windows, roofs, stairs]);
+
+  const pasteElements = useCallback(async (offsetX: number = 0, offsetY: number = 0) => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const data = JSON.parse(clipboardText);
+      
+      if (data.type !== 'clipboard_data' || !data.elements) {
+        return;
+      }
+
+      const commands = data.elements.map((element: any) => {
+        const newElement = {
+          ...element,
+          id: `${element.type || 'element'}-${Date.now()}-${Math.random()}`,
+        };
+
+        // Apply offset if element has position properties
+        if (element.startX !== undefined) {
+          newElement.startX += offsetX;
+          newElement.endX += offsetX;
+        }
+        if (element.startY !== undefined) {
+          newElement.startY += offsetY;
+          newElement.endY += offsetY;
+        }
+        if (element.x !== undefined) {
+          newElement.x += offsetX;
+        }
+        if (element.y !== undefined) {
+          newElement.y += offsetY;
+        }
+
+        return {
+          execute: () => {
+            if (element.type === 'wall') addWall(newElement);
+            else if (element.type === 'door') addDoor(newElement);
+            else if (element.type === 'window') addWindow(newElement);
+            else if (element.type === 'roof') addRoof(newElement);
+            else if (element.type === 'stair') addStair(newElement);
+          },
+          undo: () => {
+            if (element.type === 'wall') removeWall(newElement.id);
+            else if (element.type === 'door') removeDoor(newElement.id);
+            else if (element.type === 'window') removeWindow(newElement.id);
+            else if (element.type === 'roof') removeRoof(newElement.id);
+            else if (element.type === 'stair') removeStair(newElement.id);
+          },
+          description: `Paste ${element.type}`,
+        };
+      });
+
+      if (commands.length > 0) {
+        executeCommand({
+          execute: () => commands.forEach(cmd => cmd.execute()),
+          undo: () => commands.forEach(cmd => cmd.undo()),
+          description: 'Paste elements',
+        });
+      }
+    } catch (error) {
+      // Handle clipboard errors silently
+    }
+  }, [addWall, addDoor, addWindow, addRoof, addStair, removeWall, removeDoor, removeWindow, removeRoof, removeStair, executeCommand]);
+
+  const duplicateElements = useCallback(async (selectedIds: string[], offsetX: number = 20, offsetY: number = 20) => {
+    await copySelectedElements(selectedIds);
+    await pasteElements(offsetX, offsetY);
+  }, [copySelectedElements, pasteElements]);
+
+  const canPaste = useCallback(async (): Promise<boolean> => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const data = JSON.parse(clipboardText);
+      return data.type === 'clipboard_data' && Array.isArray(data.elements);
+    } catch {
+      return false;
+    }
+  }, []);
+
   return {
     copyElement,
     pasteElement,
     hasClipboardData,
     getClipboardType,
+    clearClipboard,
+    copySelectedElements,
+    pasteElements,
+    duplicateElements,
+    canPaste,
   };
 };

@@ -294,18 +294,18 @@ const generateRoomColor = (index: number): string => {
  */
 export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
   // Debug log: wall count
-  // eslint-disable-next-line no-console
+   
   console.log('[detectRooms] wall count:', walls.length);
 
   if (walls.length < 3) {
-    // eslint-disable-next-line no-console
+     
     console.log('[detectRooms] Not enough walls to form a room.');
     return { rooms: [], closedShapes: [] };
   }
 
   const graph = buildWallGraph(walls);
   const cycles = findCycles(graph);
-  // eslint-disable-next-line no-console
+   
   console.log('[detectRooms] cycles found:', cycles.length, cycles);
 
   const rooms: Room[] = [];
@@ -324,12 +324,12 @@ export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
       const perimeter = calculatePolygonPerimeter(vertices);
       const center = calculatePolygonCenter(vertices);
 
-      // eslint-disable-next-line no-console
+       
       console.log(`[detectRooms] cycle #${index} area:`, area, 'vertices:', vertices);
 
       // Only create rooms for shapes with reasonable area
       if (area > 1) { // Lowered minimum area threshold for minimal geometry
-        // eslint-disable-next-line no-console
+         
         console.log(`[detectRooms] Room created for cycle #${index} (area > 1)`);
         // Remove duplicate wall from the end if it exists
         const uniqueWalls = wallIds.length > 0 && wallIds[0] === wallIds[wallIds.length - 1] 
@@ -349,7 +349,7 @@ export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
 
         candidateRooms.push(room);
       } else {
-        // eslint-disable-next-line no-console
+         
         console.log(`[detectRooms] Skipped cycle #${index} (area <= 1)`);
       }
     }
@@ -367,7 +367,7 @@ export const detectRooms = (walls: Wall[]): RoomDetectionResult => {
 
   rooms.push(...uniqueRooms);
 
-  // eslint-disable-next-line no-console
+   
   console.log('[detectRooms] rooms:', rooms.length, rooms);
 
   return { rooms, closedShapes };

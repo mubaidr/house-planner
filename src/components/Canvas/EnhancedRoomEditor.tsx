@@ -147,7 +147,7 @@ export default function EnhancedRoomEditor({
   //   setShowEditDialog(false);
   // }, [room.id, onEdit]); // Removed unused function
 
-  const suggestions = getRoomTypeSuggestions(room, doors, windows);
+  const suggestions = getRoomTypeSuggestions(room, doors, windows, []);
   // const insights = analyzeRoomInsights(room, doors, windows); // Removed unused variable
 
   return (
@@ -293,8 +293,8 @@ export const RoomTypeSelector: React.FC<{
   onUpdate: (updates: Partial<EnhancedRoom>) => void;
 }> = ({ room, onUpdate }) => {
   const { doors, windows } = useDesignStore();
-  const suggestions = getRoomTypeSuggestions(room, doors, windows);
-  const insights = analyzeRoomInsights(room, doors, windows);
+  const suggestions = getRoomTypeSuggestions(room, doors, windows, []);
+  const insights = analyzeRoomInsights(room, doors, windows, []);
 
   const roomTypes = [
     { value: 'living', label: 'Living Room', icon: '🛋️' },

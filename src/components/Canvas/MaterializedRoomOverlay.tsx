@@ -18,9 +18,9 @@ export default function MaterializedRoomOverlay() {
   // Update rooms when walls change, preserving custom properties
   useEffect(() => {
     const updatedRooms = detectedRooms.map(detectedRoom => {
-      const existingRoom = rooms.find(r =>
+      const existingRoom = rooms.find((r: any) =>
         r.walls.length === detectedRoom.walls.length &&
-        r.walls.every(wallId => detectedRoom.walls.includes(wallId))
+        r.walls.every((wallId: any) => detectedRoom.walls.includes(wallId))
       );
 
       if (existingRoom) {
@@ -48,7 +48,7 @@ export default function MaterializedRoomOverlay() {
         const existingRoom = rooms[index];
         return !existingRoom ||
           room.walls.length !== existingRoom.walls.length ||
-          room.walls.some(wallId => !existingRoom.walls.includes(wallId));
+          room.walls.some((wallId: any) => !existingRoom.walls.includes(wallId));
       });
 
     if (roomsChanged) {
@@ -60,7 +60,7 @@ export default function MaterializedRoomOverlay() {
 
   return (
     <Group>
-      {rooms.map((room) => {
+      {rooms.map((room: any) => {
         const material = room.materialId ? getMaterialById(room.materialId) : null;
 
         // Get room appearance based on material or fallback
@@ -70,16 +70,16 @@ export default function MaterializedRoomOverlay() {
               fill: material.color,
               opacity: material.properties.opacity * 0.3, // Rooms should be more transparent
               stroke: material.color.replace('F2FD', '90A4'),
-              fillPatternImage: material.texture ? (() => {
+              fillPatternImage: material.textureImage ? (() => {
                 const img = new Image();
-                img.src = material.texture;
+                img.src = material.textureImage;
                 return img;
               })() : undefined,
-              fillPatternScale: material.texture ? {
+              fillPatternScale: material.textureImage ? {
                 x: (material.properties.patternScale || 1) * 0.5, // Smaller pattern for rooms
                 y: (material.properties.patternScale || 1) * 0.5,
               } : undefined,
-              fillPatternRotation: material.texture ? (material.properties.patternRotation || 0) : undefined,
+              fillPatternRotation: material.textureImage ? (material.properties.patternRotation || 0) : undefined,
             };
           }
 
@@ -96,7 +96,7 @@ export default function MaterializedRoomOverlay() {
           <Group key={room.id}>
             {/* Room fill with material */}
             <Line
-              points={room.vertices.flatMap(v => [v.x, v.y])}
+              points={room.vertices.flatMap((v: any) => [v.x, v.y])}
               closed={true}
               {...appearance}
               listening={false}
@@ -104,7 +104,7 @@ export default function MaterializedRoomOverlay() {
 
             {/* Room border */}
             <Line
-              points={room.vertices.flatMap(v => [v.x, v.y])}
+              points={room.vertices.flatMap((v: any) => [v.x, v.y])}
               closed={true}
               stroke={appearance.stroke}
               strokeWidth={selectedElementId === room.id && selectedElementType === 'room' ? 3 : 2}
@@ -116,7 +116,7 @@ export default function MaterializedRoomOverlay() {
             {/* Material effects for rooms */}
             {material && material.properties.metallic > 0.3 && (
               <Line
-                points={room.vertices.flatMap(v => [v.x, v.y])}
+                points={room.vertices.flatMap((v: any) => [v.x, v.y])}
                 closed={true}
                 stroke="rgba(255,255,255,0.4)"
                 strokeWidth={1}

@@ -16,9 +16,9 @@ export default function RoomOverlay() {
   // Update rooms when walls change, preserving custom properties
   useEffect(() => {
     const updatedRooms = detectedRooms.map(detectedRoom => {
-      const existingRoom = rooms.find(r => 
+      const existingRoom = rooms.find((r: any) => 
         r.walls.length === detectedRoom.walls.length &&
-        r.walls.every(wallId => detectedRoom.walls.includes(wallId))
+        r.walls.every((wallId: any) => detectedRoom.walls.includes(wallId))
       );
       
       if (existingRoom) {
@@ -47,11 +47,11 @@ export default function RoomOverlay() {
 
   return (
     <Group>
-      {rooms.map((room) => (
+      {rooms.map((room: any) => (
         <Group key={room.id}>
           {/* Room fill */}
           <Line
-            points={room.vertices.flatMap(v => [v.x, v.y])}
+            points={room.vertices.flatMap((v: any) => [v.x, v.y])}
             closed={true}
             fill={room.color}
             opacity={0.2}
@@ -60,7 +60,7 @@ export default function RoomOverlay() {
           
           {/* Room border */}
           <Line
-            points={room.vertices.flatMap(v => [v.x, v.y])}
+            points={room.vertices.flatMap((v: any) => [v.x, v.y])}
             closed={true}
             stroke={room.color.replace('F2FD', '90A4')} // Darker version
             strokeWidth={selectedElementId === room.id && selectedElementType === 'room' ? 3 : 2}

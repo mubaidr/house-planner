@@ -144,7 +144,7 @@ const DimensionControls: React.FC<DimensionControlsProps> = ({
                     <Label htmlFor="dim-type">Type</Label>
                     <Select
                       value={selectedDimension.type}
-                      onValueChange={(value: DimensionType) => handleDimensionChange('type', value)}
+                      onValueChange={(value: string) => handleDimensionChange('type', value as any)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -228,7 +228,7 @@ const DimensionControls: React.FC<DimensionControlsProps> = ({
                     <Label htmlFor="default-style">Default Style</Label>
                     <Select
                       value={config.defaultStyle}
-                      onValueChange={(value: DimensionStyle) => handleConfigChange('defaultStyle', value)}
+                      onValueChange={(value: string) => handleConfigChange('defaultStyle', value as any)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -290,7 +290,7 @@ const DimensionControls: React.FC<DimensionControlsProps> = ({
                     <Checkbox
                       id="auto-generate"
                       checked={config.autoGenerate}
-                      onCheckedChange={(checked) => handleConfigChange('autoGenerate', checked)}
+                      onChange={(e) => handleConfigChange('autoGenerate', e.target.checked)}
                     />
                     <Label htmlFor="auto-generate">Auto-generate dimensions</Label>
                   </div>
@@ -299,7 +299,7 @@ const DimensionControls: React.FC<DimensionControlsProps> = ({
                     <Checkbox
                       id="show-tolerances"
                       checked={config.showTolerances}
-                      onCheckedChange={(checked) => handleConfigChange('showTolerances', checked)}
+                      onChange={(e) => handleConfigChange('showTolerances', e.target.checked)}
                     />
                     <Label htmlFor="show-tolerances">Show tolerances</Label>
                   </div>

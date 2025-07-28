@@ -43,11 +43,11 @@ export default function MaterializedWallComponent({
   const angleDegrees = (angle * 180) / Math.PI;
 
   const handleDragOver = (e: KonvaEventObject<DragEvent>) => {
-    e.preventDefault();
+    e.evt?.preventDefault();
   };
 
   const handleDrop = (e: KonvaEventObject<DragEvent>) => {
-    e.preventDefault();
+    e.evt?.preventDefault();
     // Material drop handling will be implemented here
   };
 
@@ -60,16 +60,16 @@ export default function MaterializedWallComponent({
         stroke: material.color,
         strokeWidth: 1,
         // Add texture pattern if available
-        fillPatternImage: material.texture ? (() => {
+        fillPatternImage: material.textureImage ? (() => {
           const img = new Image();
-          img.src = material.texture;
+          img.src = material.textureImage;
           return img;
         })() : undefined,
-        fillPatternScale: material.texture ? {
+        fillPatternScale: material.textureImage ? {
           x: material.properties.patternScale || 1,
           y: material.properties.patternScale || 1,
         } : undefined,
-        fillPatternRotation: material.texture ? (material.properties.patternRotation || 0) : undefined,
+        fillPatternRotation: material.textureImage ? (material.properties.patternRotation || 0) : undefined,
       };
     }
     

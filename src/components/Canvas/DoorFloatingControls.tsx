@@ -11,7 +11,7 @@ export default function DoorFloatingControls() {
 
   // Only show if there are doors and a door is selected
   const selectedDoor = selectedElementType === 'door' && selectedElementId 
-    ? doors.find(door => door.id === selectedElementId)
+    ? doors.find((door: any) => door.id === selectedElementId)
     : null;
 
   if (!selectedDoor) return null;

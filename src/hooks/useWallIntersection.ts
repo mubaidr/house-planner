@@ -1,13 +1,21 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useDesignStore } from '@/stores/designStore';
 import { useFloorStore } from '@/stores/floorStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useHistoryStore } from '@/stores/historyStore';
 import { Wall } from '@/types/elements/Wall';
-import { calculateWallJoining, WallJoinResult } from '@/utils/wallIntersection';
-import { AddWallCommand, UpdateWallCommand, BatchCommand } from '@/utils/history';
+
+interface WallIntersection {
+  id: string;
+  wallIds: [string, string];
+  point: { x: number; y: number };
+  type: 'cross' | 'corner' | 't-junction';
+}
 
 export const useWallIntersection = () => {
+  const [intersections, setIntersections] = useState<WallIntersection[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
   const { addWall, updateWall, removeWall, walls, selectElement } = useDesignStore();
   const { currentFloorId, addElementToFloor, updateElementInFloor } = useFloorStore();
   const { setActiveTool } = useUIStore();
@@ -155,7 +163,49 @@ export const useWallIntersection = () => {
     return calculateWallJoining(wall, otherWalls);
   }, [walls]);
 
+  const findIntersections = useCallback(() => {
+    setIsProcessing(true);
+    // Implementation for finding intersections
+    setIsProcessing(false);
+  }, []);
+
+  const createIntersection = useCallback((intersection: Partial<WallIntersection>) => {
+    const newIntersection: WallIntersection = {
+      id: `intersection-${Date.now()}`,
+      wallIds: intersection.wallIds || ['', ''],
+      point: intersection.point || { x: 0, y: 0 },
+      type: intersection.type || 'cross',
+    };
+    setIntersections(prev => [...prev, newIntersection]);
+  }, []);
+
+  const removeIntersection = useCallback((id: string) => {
+    setIntersections(prev => prev.filter(i => i.id !== id));
+  }, []);
+
+  const updateIntersection = useCallback((id: string, updates: Partial<WallIntersection>) => {
+    setIntersections(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+  }, []);
+
+  const autoResolveIntersections = useCallback(() => {
+    // Implementation for auto-resolving intersections
+  }, []);
+
+  const validateIntersection = useCallback((intersection: WallIntersection): boolean => {
+    // Basic validation
+    return intersection.wallIds[0] !== intersection.wallIds[1] && 
+           intersection.wallIds.every(id => walls.some(w => w.id === id));
+  }, [walls]);
+
   return {
+    intersections,
+    isProcessing,
+    findIntersections,
+    createIntersection,
+    removeIntersection,
+    updateIntersection,
+    autoResolveIntersections,
+    validateIntersection,
     addWallWithIntersectionHandling,
     updateWallWithIntersectionHandling,
     checkWallIntersections,

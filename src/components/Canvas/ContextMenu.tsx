@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { ElementType } from '@/types/elements2D';
+import { Element2DType } from '@/types/elements2D';
 
 interface ContextMenuProps {
   x: number;
   y: number;
   isVisible: boolean;
   onClose: () => void;
-  selectedElementType: ElementType | null;
+  selectedElementType: Element2DType | null;
   selectedElementId: string | null;
   onCopy: () => void;
   onPaste: () => void;

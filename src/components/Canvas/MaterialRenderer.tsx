@@ -34,15 +34,15 @@ export default function MaterialRenderer({
   onTap,
 }: MaterialRendererProps) {
   const getPatternImage = () => {
-    if (!material.texture) return null;
+    if (!material.textureImage) return null;
 
     const image = new Image();
-    image.src = material.texture;
+    image.src = material.textureImage;
     return image;
   };
 
   const getFillPatternProps = () => {
-    if (!material.texture) {
+    if (!material.textureImage) {
       return {
         fill: material.color,
         opacity: material.properties.opacity,

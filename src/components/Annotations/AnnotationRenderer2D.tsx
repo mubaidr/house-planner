@@ -271,7 +271,6 @@ const DimensionChainRenderer: React.FC<{
           isSelected={false}
           isEditing={false}
           onSelect={() => onDimensionSelect(dimension.id)}
-          onEdit={() => {}}
         />
       ))}
       
@@ -341,7 +340,6 @@ const AnnotationRenderer2D: React.FC<AnnotationRenderer2DProps> = ({
               isSelected={isSelected}
               isEditing={isEditing}
               onSelect={() => handleDimensionSelect(dimension.id)}
-              onEdit={(updates) => handleDimensionEdit(dimension.id, updates)}
             />
           );
         }
@@ -355,7 +353,6 @@ const AnnotationRenderer2D: React.FC<AnnotationRenderer2DProps> = ({
             isSelected={isSelected}
             isEditing={isEditing}
             onSelect={() => handleDimensionSelect(dimension.id)}
-            onEdit={(updates) => handleDimensionEdit(dimension.id, updates)}
           />
         );
       })}

@@ -277,3 +277,5 @@ export default function AppLayout({ children }: AppLayoutProps) {
         onClose={toggleElementList}
       />
     </div>
+  );
+};
