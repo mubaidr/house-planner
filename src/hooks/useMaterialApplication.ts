@@ -6,7 +6,7 @@ import { MaterialApplication } from '@/types/materials/Material';
 import { Wall } from '@/types/elements/Wall';
 import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
-import { Room } from '@/utils/roomDetection';
+import { Room } from '@/types/elements/Room';
 import { handleError } from '@/utils/errorHandler';
 
 // Hit detection helper functions
@@ -60,7 +60,9 @@ const isPointOnWindow = (x: number, y: number, window: Window): boolean => {
 
 const isPointInRoom = (x: number, y: number, room: Room): boolean => {
   // Point-in-polygon test using ray casting algorithm
-  const vertices = room.vertices;
+  const vertices = room.vertices || room.points;
+  if (!vertices || vertices.length < 3) return false;
+
   let inside = false;
 
   for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
@@ -87,6 +89,7 @@ export const useMaterialApplication = () => {
     coverage: number = 100
   ) => {
     const application: MaterialApplication = {
+      id: `app-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       elementId,
       elementType,
       materialId,

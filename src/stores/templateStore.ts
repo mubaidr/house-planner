@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { MaterialTemplate, TemplateApplication, TemplateCategory, DesignStyle } from '@/types/materials/MaterialTemplate';
 import { BUILT_IN_TEMPLATES } from '@/data/materialTemplates';
+import { useDesignStore } from './designStore';
+import { useHistoryStore } from './historyStore';
 
 export interface TemplateState {
   templates: MaterialTemplate[];
@@ -19,12 +21,12 @@ export interface TemplateActions {
   updateTemplate: (id: string, updates: Partial<MaterialTemplate>) => void;
   removeTemplate: (id: string) => void;
   duplicateTemplate: (id: string) => void;
-  
+
   // Template application
   applyTemplate: (templateId: string, targetElements?: string[]) => Promise<TemplateApplication>;
   undoTemplateApplication: (applicationId: string) => void;
   getTemplateApplications: () => TemplateApplication[];
-  
+
   // UI state
   setSelectedTemplate: (id: string | null) => void;
   setSelectedCategory: (category: TemplateCategory | 'all') => void;
@@ -33,13 +35,13 @@ export interface TemplateActions {
   toggleTemplateLibrary: () => void;
   setTemplateLibraryOpen: (open: boolean) => void;
   setCreatingTemplate: (creating: boolean) => void;
-  
+
   // Utility functions
   getFilteredTemplates: () => MaterialTemplate[];
   getTemplateById: (id: string) => MaterialTemplate | null;
   createTemplateFromCurrentDesign: (name: string, description: string) => MaterialTemplate;
   calculateTemplateCost: (templateId: string) => { min: number; max: number; currency: string } | null;
-  
+
   // Import/Export
   importTemplates: (templates: MaterialTemplate[]) => void;
   exportTemplates: () => MaterialTemplate[];
@@ -66,7 +68,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   updateTemplate: (id, updates) =>
     set((state) => ({
       templates: state.templates.map((template) =>
-        template.id === id 
+        template.id === id
           ? { ...template, ...updates, metadata: { ...template.metadata, updatedAt: new Date() } }
           : template
       ),
@@ -105,7 +107,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   applyTemplate: async (templateId) => {
     const state = get();
     const template = state.templates.find(t => t.id === templateId);
-    
+
     if (!template) {
       throw new Error('Template not found');
     }
@@ -119,7 +121,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
 
     executeCommand({
       execute: () => {
-            useDesignStore.setState(template.designData);
+            useDesignStore.setState(template.designData!);
       },
       undo: () => {
         useDesignStore.setState(currentDesignState);
@@ -136,8 +138,8 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
 
     // Update usage count
     set((state) => ({
-      templates: state.templates.map(t => 
-        t.id === templateId 
+      templates: state.templates.map(t =>
+        t.id === templateId
           ? { ...t, metadata: { ...t.metadata, usageCount: t.metadata.usageCount + 1 } }
           : t
       ),
@@ -267,7 +269,7 @@ export const useTemplateStore = create<TemplateState & TemplateActions>((set, ge
   calculateTemplateCost: (templateId) => {
     const state = get();
     const template = state.templates.find(t => t.id === templateId);
-    
+
     if (!template || !template.metadata.estimatedCost) {
       return null;
     }

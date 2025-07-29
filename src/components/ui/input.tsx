@@ -3,7 +3,7 @@
 import React from 'react';
 import { forwardRef } from 'react';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   variant?: 'default' | 'error';
   size?: 'sm' | 'md' | 'lg';
   error?: string;

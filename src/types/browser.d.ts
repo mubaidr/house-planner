@@ -21,7 +21,7 @@ interface FileSystemFileHandle {
 }
 
 interface FileSystemWritableFileStream extends WritableStream {
-  write(data: any): Promise<void>;
+  write(data: string | ArrayBuffer | ArrayBufferView | Blob): Promise<void>;
   close(): Promise<void>;
 }
 

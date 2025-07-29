@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { forwardRef } from 'react';
 
 // Simple Select component (backward compatibility)
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   variant?: 'default' | 'error';
   size?: 'sm' | 'md' | 'lg';
   error?: string;
@@ -15,7 +15,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 const SimpleSelect = forwardRef<HTMLSelectElement, SelectProps>(
   ({ variant = 'default', size = 'md', error, placeholder, className = '', children, ...props }, ref) => {
     const baseStyles = 'block w-full border bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed appearance-none';
-    
+
     const variants = {
       default: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
       error: 'border-red-500 focus:border-red-500 focus:ring-red-500',
@@ -118,7 +118,7 @@ const SelectContext = React.createContext<{
 
 const Select = ({ value, onValueChange, children, className = '' }: CompoundSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   return (
     <SelectContext.Provider value={{ value, onValueChange, isOpen, setIsOpen }}>
       <div className={`relative ${className}`}>
@@ -131,9 +131,9 @@ const Select = ({ value, onValueChange, children, className = '' }: CompoundSele
 const SelectTrigger = ({ children, className = '' }: SelectTriggerProps) => {
   const context = React.useContext(SelectContext);
   if (!context) throw new Error('SelectTrigger must be used within Select');
-  
+
   const { isOpen, setIsOpen } = context;
-  
+
   return (
     <button
       type="button"
@@ -164,28 +164,28 @@ const SelectTrigger = ({ children, className = '' }: SelectTriggerProps) => {
 const SelectContent = ({ children, className = '' }: SelectContentProps) => {
   const context = React.useContext(SelectContext);
   if (!context) throw new Error('SelectContent must be used within Select');
-  
+
   const { isOpen, setIsOpen } = context;
   const contentRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-    
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, setIsOpen]);
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div
       ref={contentRef}
@@ -200,10 +200,10 @@ const SelectContent = ({ children, className = '' }: SelectContentProps) => {
 const SelectItem = ({ value, children, className = '' }: SelectItemProps) => {
   const context = React.useContext(SelectContext);
   if (!context) throw new Error('SelectItem must be used within Select');
-  
+
   const { value: selectedValue, onValueChange, setIsOpen } = context;
   const isSelected = selectedValue === value;
-  
+
   return (
     <button
       type="button"
@@ -225,9 +225,9 @@ const SelectItem = ({ value, children, className = '' }: SelectItemProps) => {
 const SelectValue = ({ placeholder, className = '' }: SelectValueProps) => {
   const context = React.useContext(SelectContext);
   if (!context) throw new Error('SelectValue must be used within Select');
-  
+
   const { value } = context;
-  
+
   return (
     <span className={`block truncate ${className}`}>
       {value || placeholder}

@@ -26,12 +26,12 @@ interface PopoverContentProps {
 const PopoverContext = React.createContext<{
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  triggerRef: React.RefObject<HTMLElement>;
+  triggerRef: React.RefObject<HTMLElement | null>;
 } | null>(null);
 
 const Popover = ({ open, onOpenChange, children, className = '' }: PopoverProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
-  const triggerRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = (newOpen: boolean) => {
@@ -65,14 +65,14 @@ const PopoverTrigger = forwardRef<HTMLElement, PopoverTriggerProps>(
 
     if (asChild) {
       // Clone the child element and add our props
-      return React.cloneElement(children as React.ReactElement, {
-        ref: (node: HTMLElement) => {
+      return React.cloneElement(children as React.ReactElement<any>, {
+        ref: (node: HTMLElement | null) => {
           triggerRef.current = node;
           if (ref) {
             if (typeof ref === 'function') {
               ref(node);
             } else {
-              ref.current = node;
+              (ref as React.MutableRefObject<HTMLElement | null>).current = node;
             }
           }
         },

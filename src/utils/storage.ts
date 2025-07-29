@@ -221,7 +221,12 @@ export const saveDesign = async () => {
     const designData = JSON.stringify(design, null, 2);
     const blob = new Blob([designData], { type: 'application/json' });
 
-    const handle = await window.showSaveFilePicker({
+    // Check if File System Access API is supported
+    if (!('showSaveFilePicker' in window)) {
+      throw new Error('File System Access API is not supported in this browser');
+    }
+
+    const handle = await (window as any).showSaveFilePicker({
       suggestedName: 'house-plan.json',
       types: [
         {
@@ -255,7 +260,12 @@ export const saveDesign = async () => {
 
 export const loadDesign = async () => {
   try {
-    const [handle] = await window.showOpenFilePicker({
+    // Check if File System Access API is supported
+    if (!('showOpenFilePicker' in window)) {
+      throw new Error('File System Access API is not supported in this browser');
+    }
+
+    const [handle] = await (window as any).showOpenFilePicker({
       types: [
         {
           description: 'JSON Files',

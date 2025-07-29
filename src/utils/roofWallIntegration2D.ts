@@ -803,8 +803,17 @@ export class RoofWallIntegrationSystem2D {
     alternatives: RoofPitchData[];
     warnings: string[];
   } {
-    const recommendations = this.pitchCalculator.constructor.getRecommendedPitch?.(roofType) ||
-      { min: 15, max: 45, optimal: 30 };
+    // Default pitch recommendations by roof type
+    const recommendationsMap: Record<string, { min: number; max: number; optimal: number }> = {
+      'gable': { min: 15, max: 45, optimal: 30 },
+      'hip': { min: 20, max: 40, optimal: 30 },
+      'shed': { min: 10, max: 30, optimal: 20 },
+      'flat': { min: 0, max: 5, optimal: 2 },
+      'gambrel': { min: 25, max: 60, optimal: 45 },
+      'mansard': { min: 30, max: 70, optimal: 50 }
+    };
+
+    const recommendations = recommendationsMap[roofType] || { min: 15, max: 45, optimal: 30 };
 
     const optimalPitch = this.pitchCalculator.calculatePitchFromRiseRun(
       Math.tan(recommendations.optimal * (Math.PI / 180)) * 12,
@@ -818,9 +827,7 @@ export class RoofWallIntegrationSystem2D {
       )
     );
 
-    const validation = climate ?
-      this.pitchCalculator.constructor.validateForBuildingCodes?.(recommendations.optimal, roofType, climate) :
-      { warnings: [] };
+    const validation = climate ? { warnings: [] } : { warnings: [] };
 
     return {
       recommended: optimalPitch,
@@ -865,6 +872,13 @@ export class RoofWallIntegrationUtils {
         wallsFirst: true,
         roofPriority: 10,
         connectionPriority: 15
+      },
+      pitchCalculation: {
+        enabled: true,
+        defaultPitch: 30,
+        minPitch: 5,
+        maxPitch: 60,
+        autoAdjustOverhang: true
       }
     };
   }

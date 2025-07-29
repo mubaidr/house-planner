@@ -4,7 +4,7 @@ import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
 import { Stair } from '@/types/elements/Stair';
 import { Roof } from '@/types/elements/Roof';
-import { Room } from '@/utils/roomDetection';
+import { Room } from '@/types/elements/Room';
 
 export interface Floor {
   id: string;
@@ -184,6 +184,14 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
           ...window,
           id: `${window.id}-copy-${Date.now()}`,
         })),
+        stairs: floorToDuplicate.elements.stairs.map(stair => ({
+          ...stair,
+          id: `${stair.id}-copy-${Date.now()}`,
+        })),
+        roofs: floorToDuplicate.elements.roofs.map(roof => ({
+          ...roof,
+          id: `${roof.id}-copy-${Date.now()}`,
+        })),
         rooms: floorToDuplicate.elements.rooms.map(room => ({
           ...room,
           id: `${room.id}-copy-${Date.now()}`,
@@ -255,7 +263,7 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
           : floor
       ),
     }));
-    
+
     // Auto-sync design store if this is the current floor
     const state = get();
     if (floorId === state.currentFloorId) {
@@ -276,7 +284,7 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
               ...floor,
               elements: {
                 ...floor.elements,
-                [elementType]: floor.elements[elementType].filter((el: Wall | Door | Window | Room) => el.id !== elementId),
+                [elementType]: floor.elements[elementType].filter((el: Wall | Door | Window | Stair | Roof | Room) => el.id !== elementId),
               },
               metadata: { ...floor.metadata, updatedAt: new Date() },
             }
@@ -293,7 +301,7 @@ export const useFloorStore = create<FloorState & FloorActions>((set, get) => ({
               ...floor,
               elements: {
                 ...floor.elements,
-                [elementType]: floor.elements[elementType].map((el: Wall | Door | Window | Room) =>
+                [elementType]: floor.elements[elementType].map((el: Wall | Door | Window | Stair | Roof | Room) =>
                   el.id === elementId ? { ...el, ...updates } : el
                 ),
               },

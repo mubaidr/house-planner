@@ -61,7 +61,7 @@ export const useDoorEditor = () => {
           doors.filter(d => d.id !== doorId),
           windows
         );
-        
+
         if (constraintResult.isValid && constraintResult.wallId) {
           updates = {
             x: constraintResult.position.x,
@@ -89,7 +89,7 @@ export const useDoorEditor = () => {
     if (!currentDoor) return;
 
     // Check if door actually changed
-    const hasChanged = 
+    const hasChanged =
       currentDoor.x !== editState.originalDoor.x ||
       currentDoor.y !== editState.originalDoor.y ||
       currentDoor.width !== editState.originalDoor.width ||
@@ -118,7 +118,7 @@ export const useDoorEditor = () => {
             wallId: currentDoor.wallId,
           }
         );
-        
+
         // Reset to original state first, then execute command
         updateDoor(doorId, editState.originalDoor);
         executeCommand(command);
@@ -144,11 +144,11 @@ export const useDoorEditor = () => {
 
     const command = new RemoveDoorCommand(
       selectedElementId,
-      addDoor,
       removeDoor,
+      addDoor,
       door
     );
-    
+
     executeCommand(command);
   }, [selectedElementType, selectedElementId, doors, addDoor, removeDoor, executeCommand]);
 

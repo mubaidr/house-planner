@@ -1,23 +1,20 @@
 // Konva event types for better type safety
-import { KonvaEventObject } from 'konva/lib/Node';
+import { Node } from 'konva/lib/Node';
+import { Stage } from 'konva/lib/Stage';
+import { Shape } from 'konva/lib/Shape';
 
-export interface KonvaPointerEvent extends KonvaEventObject<PointerEvent> {
-  target: {
-    getStage: () => {
-      getPointerPosition: () => { x: number; y: number };
-    };
-    opacity: (value?: number) => void;
-  };
+// Custom event interfaces that don't conflict with Konva's inheritance
+export interface KonvaPointerEvent {
+  target: Shape | Stage;
+  currentTarget: Shape | Stage;
+  evt: PointerEvent;
 }
 
-export interface KonvaDragEvent extends KonvaEventObject<DragEvent> {
-  target: {
-    getStage: () => {
-      getPointerPosition: () => { x: number; y: number };
-    };
-    opacity: (value?: number) => void;
-  };
-  currentTarget: {
-    opacity: (value?: number) => void;
-  };
+export interface KonvaDragEvent {
+  target: Shape | Stage;
+  currentTarget: Shape | Stage;
+  evt: DragEvent;
 }
+
+// Re-export for convenience
+export type KonvaNode = Node;

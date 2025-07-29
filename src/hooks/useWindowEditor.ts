@@ -154,8 +154,8 @@ export const useWindowEditor = () => {
 
     const command = new RemoveWindowCommand(
       selectedElementId,
-      addWindow,
       removeWindow,
+      addWindow,
       window
     );
 

@@ -1,6 +1,6 @@
 /**
  * Advanced Material Pattern System for 2D Rendering
- * 
+ *
  * This utility provides comprehensive material rendering patterns and effects
  * for both plan view and elevation view rendering in the 2D canvas system.
  */
@@ -9,7 +9,7 @@ import { Material, MaterialProperties } from '@/types/materials/Material';
 import { ViewType2D } from '@/types/views';
 
 // Pattern types for different material rendering styles
-export type MaterialPatternType = 
+export type MaterialPatternType =
   | 'solid'           // Solid color fill
   | 'hatch'           // Line hatching patterns
   | 'crosshatch'      // Cross-hatched patterns
@@ -250,8 +250,8 @@ export class MaterialRenderer2D {
   private patternCache: Map<string, HTMLCanvasElement> = new Map();
 
   constructor(viewType: ViewType2D | 'plan') {
-    this.viewConfig = viewType === 'plan' 
-      ? PLAN_VIEW_MATERIAL_CONFIG 
+    this.viewConfig = viewType === 'plan'
+      ? PLAN_VIEW_MATERIAL_CONFIG
       : ELEVATION_VIEW_MATERIAL_CONFIG;
   }
 
@@ -262,7 +262,7 @@ export class MaterialRenderer2D {
     // Try to find predefined pattern based on material category and properties
     const patternKey = this.getPatternKey(material);
     const predefinedPattern = MATERIAL_PATTERNS[patternKey];
-    
+
     if (predefinedPattern) {
       return this.applyMaterialProperties(predefinedPattern, material);
     }
@@ -287,9 +287,9 @@ export class MaterialRenderer2D {
         };
 
       case 'texture':
-        if (material.texture) {
+        if (material.textureImage) {
           return {
-            fillPatternImage: this.loadTextureImage(material.texture),
+            fillPatternImage: this.loadTextureImage(material.textureImage),
             fillPatternScale: { x: effectiveScale, y: effectiveScale },
             fillPatternRotation: pattern.rotation,
             fillPatternOffset: pattern.offset || { x: 0, y: 0 },
@@ -344,14 +344,14 @@ export class MaterialRenderer2D {
    */
   private generatePatternCanvas(pattern: MaterialPatternConfig, scale: number): HTMLCanvasElement {
     const cacheKey = `${pattern.type}-${pattern.color}-${pattern.rotation}-${scale}`;
-    
+
     if (this.patternCache.has(cacheKey)) {
       return this.patternCache.get(cacheKey)!;
     }
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
-    
+
     // Set canvas size based on pattern type and scale
     const size = this.getPatternSize(pattern.type, scale);
     canvas.width = size;
@@ -424,7 +424,7 @@ export class MaterialRenderer2D {
   private drawCrosshatchPattern(ctx: CanvasRenderingContext2D, pattern: MaterialPatternConfig, size: number): void {
     // Draw first set of lines
     this.drawHatchPattern(ctx, pattern, size);
-    
+
     // Draw second set of lines perpendicular to first
     const crossPattern = { ...pattern, rotation: pattern.rotation + 90 };
     this.drawHatchPattern(ctx, crossPattern, size);
@@ -445,7 +445,7 @@ export class MaterialRenderer2D {
         // Add some randomness to dot positions
         const offsetX = (Math.random() - 0.5) * spacing * 0.5;
         const offsetY = (Math.random() - 0.5) * spacing * 0.5;
-        
+
         ctx.beginPath();
         ctx.arc(x + offsetX, y + offsetY, dotSize, 0, Math.PI * 2);
         ctx.fill();
@@ -469,7 +469,7 @@ export class MaterialRenderer2D {
 
     for (let y = 0; y < size; y += brickHeight + mortarWidth) {
       const offset = (Math.floor(y / (brickHeight + mortarWidth)) % 2) * (brickWidth / 2);
-      
+
       for (let x = -brickWidth; x < size + brickWidth; x += brickWidth + mortarWidth) {
         // Draw mortar lines
         ctx.fillRect(x + offset, y, mortarWidth, brickHeight);
@@ -554,14 +554,14 @@ export class MaterialRenderer2D {
       const x = Math.random() * size;
       const y = Math.random() * size;
       const radius = 5 + Math.random() * 10;
-      
+
       ctx.beginPath();
       // Create irregular stone shape
       for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
         const r = radius + (Math.random() - 0.5) * radius * 0.5;
         const px = x + Math.cos(angle) * r;
         const py = y + Math.sin(angle) * r;
-        
+
         if (angle === 0) {
           ctx.moveTo(px, py);
         } else {
@@ -639,15 +639,20 @@ export class MaterialRenderer2D {
    */
   private getPatternSize(type: MaterialPatternType, scale: number): number {
     const baseSize = {
+      solid: 16,
       hatch: 16,
       crosshatch: 16,
       stipple: 12,
+      texture: 16,
+      gradient: 16,
       brick: 32,
       tile: 24,
       wood: 20,
       stone: 40,
       fabric: 8,
       metal: 16,
+      glass: 16,
+      custom: 16,
     }[type] || 16;
 
     return Math.max(8, Math.floor(baseSize * scale));
@@ -664,14 +669,14 @@ export class MaterialRenderer2D {
     if (name.includes('brick')) return 'wall-brick';
     if (name.includes('stone')) return 'wall-stone';
     if (name.includes('concrete')) return 'wall-concrete';
-    if (name.includes('hardwood') || name.includes('wood')) return category === 'floor' ? 'floor-hardwood' : 'door-wood';
+    if (name.includes('hardwood') || name.includes('wood')) return category === 'flooring' ? 'floor-hardwood' : 'door-wood';
     if (name.includes('tile')) return 'floor-tile';
     if (name.includes('carpet')) return 'floor-carpet';
     if (name.includes('metal')) return 'door-metal';
     if (name.includes('glass')) return 'door-glass';
 
     // Fallback to category-based patterns
-    return `${category}-${category === 'wall' ? 'drywall' : category === 'floor' ? 'tile' : 'wood'}`;
+    return `${category}-${category === 'wall' ? 'drywall' : category === 'flooring' ? 'tile' : 'wood'}`;
   }
 
   /**
@@ -692,11 +697,11 @@ export class MaterialRenderer2D {
    */
   private generatePatternFromMaterial(material: Material): MaterialPatternConfig {
     const props = material.properties;
-    
+
     // Determine pattern type based on material properties
     let patternType: MaterialPatternType = 'solid';
-    
-    if (material.texture) {
+
+    if (material.textureImage) {
       patternType = 'texture';
     } else if (props.roughness > 0.8) {
       patternType = 'stipple';
@@ -722,8 +727,8 @@ export class MaterialRenderer2D {
   private loadTextureImage(textureUrl: string): HTMLImageElement {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = new Image() as any;
-    img.src = textureUrl;
-    return img;
+    image.src = textureUrl;
+    return image;
   }
 
   /**
@@ -779,13 +784,13 @@ export const MaterialPatternUtils = {
   generatePatternPreview(material: Material, size: number = 64): HTMLCanvasElement {
     const renderer = new MaterialRenderer2D('plan');
     const pattern = renderer.getMaterialPattern(material);
-    
+
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
-    
+
     const ctx = canvas.getContext('2d')!;
-    
+
     if (pattern.type === 'solid') {
       ctx.fillStyle = pattern.color;
       ctx.fillRect(0, 0, size, size);
@@ -797,7 +802,7 @@ export const MaterialPatternUtils = {
         ctx.fillRect(0, 0, size, size);
       }
     }
-    
+
     return canvas;
   },
 };

@@ -1,11 +1,17 @@
 /**
  * DXF Export Utilities
- * 
+ *
  * Provides DXF export functionality for CAD compatibility
  * DXF (Drawing Exchange Format) is widely supported by CAD software
  */
 
 import { Stage } from 'konva/lib/Stage';
+import { Node as KonvaNode } from 'konva/lib/Node';
+import { Container } from 'konva/lib/Container';
+import { Line } from 'konva/lib/shapes/Line';
+import { Rect } from 'konva/lib/shapes/Rect';
+import { Circle } from 'konva/lib/shapes/Circle';
+import { Text } from 'konva/lib/shapes/Text';
 import { ViewType2D } from '@/types/views';
 
 export interface DXFExportOptions {
@@ -73,23 +79,23 @@ export async function exportStageToDXF(
 ): Promise<{ success: boolean; dxf?: string; blob?: Blob; error?: string }> {
   try {
     const opts = { ...DEFAULT_DXF_OPTIONS, ...options };
-    
+
     // Create DXF document
     let dxf = createDXFHeader(opts);
-    
+
     // Add layers
     dxf += createDXFLayers(opts);
-    
+
     // Convert stage elements to DXF entities
     const entities = await convertStageToDXF(stage, opts);
     dxf += entities;
-    
+
     // Add DXF footer
     dxf += createDXFFooter();
-    
+
     // Create blob
     const blob = new Blob([dxf], { type: 'application/dxf' });
-    
+
     return {
       success: true,
       dxf,
@@ -112,29 +118,29 @@ export async function exportMultiViewToDXF(
   options: Partial<DXFExportOptions> = {}
 ): Promise<Blob> {
   const opts = { ...DEFAULT_DXF_OPTIONS, ...options };
-  
+
   // Create DXF document
   let dxf = createDXFHeader(opts);
-  
+
   // Add layers for all views
   dxf += createDXFLayersMultiView(views, opts);
-  
+
   // Process each view
   let viewOffset = 0;
   const viewSpacing = 1000; // Units between views
-  
+
   for (const view of views) {
     const stage = stages[view];
     if (!stage) continue;
-    
+
     // Add view-specific entities with offset
     const entities = await convertStageToDXF(stage, {
       ...opts,
       layerPrefix: `${opts.layerPrefix}${view.toUpperCase()}_`,
     }, viewOffset);
-    
+
     dxf += entities;
-    
+
     // Add view title as text
     dxf += createDXFText(
       viewOffset + 100,
@@ -143,13 +149,13 @@ export async function exportMultiViewToDXF(
       5, // Text height
       `${opts.layerPrefix}TITLES`
     );
-    
+
     viewOffset += viewSpacing;
   }
-  
+
   // Add DXF footer
   dxf += createDXFFooter();
-  
+
   return new Blob([dxf], { type: 'application/dxf' });
 }
 
@@ -208,7 +214,7 @@ ${Object.keys(DXF_LAYERS).length}
   Object.entries(DXF_LAYERS).forEach(([key, layerName], index) => {
     const fullLayerName = `${options.layerPrefix}${layerName}`;
     const color = getLayerColor(layerName);
-    
+
     layers += `0
 LAYER
 5
@@ -290,7 +296,7 @@ CONTINUOUS
     Object.entries(DXF_LAYERS).forEach(([key, layerName]) => {
       const fullLayerName = `${options.layerPrefix}${view.toUpperCase()}_${layerName}`;
       const color = getLayerColor(layerName);
-      
+
       layers += `0
 LAYER
 5
@@ -355,7 +361,7 @@ ENDSEC
  * Convert Konva layer to DXF entities
  */
 async function convertLayerToDXF(
-  layer: KonvaNode,
+  layer: Container,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -380,18 +386,18 @@ function convertNodeToDXF(
   offsetY: number
 ): string {
   const className = node.className || '';
-  
+
   switch (className) {
     case 'Line':
-      return convertLineToDXF(node, options, offsetX, offsetY);
+      return convertLineToDXF(node as Line, options, offsetX, offsetY);
     case 'Rect':
-      return convertRectToDXF(node, options, offsetX, offsetY);
+      return convertRectToDXF(node as Rect, options, offsetX, offsetY);
     case 'Circle':
-      return convertCircleToDXF(node, options, offsetX, offsetY);
+      return convertCircleToDXF(node as Circle, options, offsetX, offsetY);
     case 'Text':
-      return convertTextToDXF(node, options, offsetX, offsetY);
+      return convertTextToDXF(node as Text, options, offsetX, offsetY);
     case 'Group':
-      return convertGroupToDXF(node, options, offsetX, offsetY);
+      return convertGroupToDXF(node as Container, options, offsetX, offsetY);
     default:
       return '';
   }
@@ -401,16 +407,16 @@ function convertNodeToDXF(
  * Convert Konva Line to DXF LINE or POLYLINE
  */
 function convertLineToDXF(
-  line: KonvaNode,
+  line: Line,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
 ): string {
   const points = line.points() || [];
   const layerName = getNodeLayer(line, options);
-  
+
   if (points.length < 4) return '';
-  
+
   if (points.length === 4) {
     // Simple line
     return createDXFLine(
@@ -430,7 +436,7 @@ function convertLineToDXF(
  * Convert Konva Rect to DXF POLYLINE (rectangle)
  */
 function convertRectToDXF(
-  rect: KonvaNode,
+  rect: Rect,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -440,7 +446,7 @@ function convertRectToDXF(
   const width = rect.width() || 0;
   const height = rect.height() || 0;
   const layerName = getNodeLayer(rect, options);
-  
+
   // Create rectangle as polyline
   const points = [
     x, y,
@@ -448,7 +454,7 @@ function convertRectToDXF(
     x + width, y + height,
     x, y + height
   ];
-  
+
   return createDXFPolyline(points, 0, 0, layerName, true);
 }
 
@@ -456,7 +462,7 @@ function convertRectToDXF(
  * Convert Konva Circle to DXF CIRCLE
  */
 function convertCircleToDXF(
-  circle: KonvaNode,
+  circle: Circle,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -465,7 +471,7 @@ function convertCircleToDXF(
   const y = (circle.y() || 0) + offsetY;
   const radius = circle.radius() || 0;
   const layerName = getNodeLayer(circle, options);
-  
+
   return createDXFCircle(x, y, radius, layerName);
 }
 
@@ -473,7 +479,7 @@ function convertCircleToDXF(
  * Convert Konva Text to DXF TEXT
  */
 function convertTextToDXF(
-  text: KonvaNode,
+  text: Text,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
@@ -483,7 +489,7 @@ function convertTextToDXF(
   const content = text.text() || '';
   const height = text.fontSize() || 10;
   const layerName = getNodeLayer(text, options);
-  
+
   return createDXFText(x, y, content, height, layerName);
 }
 
@@ -491,21 +497,21 @@ function convertTextToDXF(
  * Convert Konva Group to DXF entities
  */
 function convertGroupToDXF(
-  group: KonvaNode,
+  group: Container,
   options: DXFExportOptions,
   offsetX: number,
   offsetY: number
 ): string {
   let entities = '';
   const children = group.getChildren();
-  
+
   const groupX = group.x() || 0;
   const groupY = group.y() || 0;
-  
+
   for (const child of children) {
     entities += convertNodeToDXF(child, options, offsetX + groupX, offsetY + groupY);
   }
-  
+
   return entities;
 }
 
@@ -664,7 +670,7 @@ function getNodeLayer(node: KonvaNode, options: DXFExportOptions): string {
   // Try to determine layer based on node properties or name
   const nodeName = node.name() || '';
   const className = node.className || '';
-  
+
   if (nodeName.includes('wall') || className.includes('wall')) {
     return `${options.layerPrefix}${DXF_LAYERS.WALLS}`;
   } else if (nodeName.includes('door') || className.includes('door')) {
@@ -684,7 +690,7 @@ function getNodeLayer(node: KonvaNode, options: DXFExportOptions): string {
   } else if (nodeName.includes('grid') || className.includes('grid')) {
     return `${options.layerPrefix}${DXF_LAYERS.GRID}`;
   }
-  
+
   // Default layer
   return `${options.layerPrefix}${DXF_LAYERS.WALLS}`;
 }

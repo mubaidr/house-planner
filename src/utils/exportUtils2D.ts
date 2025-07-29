@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { SheetViewPlacement, ViewType2D } from '@/types/views';
+import { ViewType2D } from '@/types/views';
 import { DrawingSheet, STANDARD_PAPER_SIZES } from '@/types/drawingSheet2D';
+import { Stage } from 'konva/lib/Stage';
 import JSZip from 'jszip';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
@@ -28,7 +29,18 @@ export async function composeSheet(
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Helper function to check if view type is supported
+  const isSupportedViewType = (viewType: string): viewType is ViewType2D => {
+    return ['plan', 'front', 'back', 'left', 'right'].includes(viewType);
+  };
+
   for (const viewPlacement of sheet.views) {
+    // Only process supported view types
+    if (!isSupportedViewType(viewPlacement.viewType)) {
+      console.warn(`Unsupported view type: ${viewPlacement.viewType}. Skipping.`);
+      continue;
+    }
+
     const viewCanvas = await captureView(viewPlacement.viewType, {
       pixelRatio: options.pixelRatio,
       quality: options.quality,
@@ -366,7 +378,12 @@ export async function batchExport(
     }
 
     try {
-      const blob = await exportMultiViewToPDF(item.stages, item.options);
+      // Filter out null stages
+      const validStages = Object.fromEntries(
+        Object.entries(item.stages).filter(([, stage]) => stage !== null)
+      ) as Record<ViewType2D, Stage>;
+
+      const blob = await exportMultiViewToPDF(validStages, item.options);
       results.push({
         id: item.id,
         name: item.name,
@@ -481,7 +498,7 @@ export async function exportPNG(
       mockCanvas.width = options.width || 800;
       mockCanvas.height = options.height || 600;
       const dataURL = mockCanvas.toDataURL('image/png');
-      
+
       // Create blob and use file-saver for testing
       const blob = new Blob([dataURL], { type: 'image/png' });
       saveAs(blob, `${options.filename || 'house-plan'}-${view}.png`);
@@ -517,6 +534,8 @@ export interface PDFExportOptions {
   paperSize?: 'A4' | 'A3' | 'A2' | 'A1' | 'Letter' | 'Legal' | 'Tabloid';
   orientation?: 'portrait' | 'landscape';
   scale?: number;
+  quality?: number;
+  pixelRatio?: number;
   addTitleBlock?: boolean;
   centerImage?: boolean;
   margins?: {
@@ -534,6 +553,8 @@ export const DEFAULT_PDF_OPTIONS: PDFExportOptions = {
   paperSize: 'A4',
   orientation: 'landscape',
   scale: 1,
+  quality: 1.0,
+  pixelRatio: 2,
   addTitleBlock: true,
   centerImage: false,
   margins: {
@@ -700,11 +721,11 @@ export async function generateExportPreview(
   try {
     // Calculate bounds from elements
     const bounds = calculateElementBounds(elements);
-    
+
     // Create canvas for preview
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     if (!ctx) {
       throw new Error('Failed to get canvas context for preview');
     }
@@ -723,7 +744,7 @@ export async function generateExportPreview(
       const scaleX = (width * 0.8) / bounds.width;
       const scaleY = (height * 0.8) / bounds.height;
       const autoScale = Math.min(scaleX, scaleY);
-      
+
       // Use the smaller of auto-calculated scale or requested scale
       calculatedScale = Math.min(autoScale, scale);
     }
@@ -836,7 +857,7 @@ export async function exportToSVG(
   try {
     // Calculate bounds
     const bounds = calculateElementBounds(elements);
-    
+
     // Create SVG content
     let svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
@@ -846,8 +867,8 @@ export async function exportToSVG(
     elements.forEach(element => {
       if (element.type === 'wall' && element.startX !== undefined) {
         svgContent += `
-  <line x1="${element.startX * scale}" y1="${element.startY * scale}" 
-        x2="${element.endX * scale}" y2="${element.endY * scale}" 
+  <line x1="${element.startX * scale}" y1="${element.startY * scale}"
+        x2="${element.endX * scale}" y2="${element.endY * scale}"
         stroke="black" stroke-width="${element.thickness || 2}"/>`;
       }
     });

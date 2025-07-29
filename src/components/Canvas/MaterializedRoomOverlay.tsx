@@ -47,12 +47,29 @@ export default function MaterializedRoomOverlay() {
       updatedRooms.some((room, index) => {
         const existingRoom = rooms[index];
         return !existingRoom ||
-          room.walls.length !== existingRoom.walls.length ||
-          room.walls.some((wallId: any) => !existingRoom.walls.includes(wallId));
+          (room.walls && existingRoom.walls && room.walls.length !== existingRoom.walls.length) ||
+          (room.walls && existingRoom.walls && room.walls.some((wallId: any) => !existingRoom.walls!.includes(wallId)));
       });
 
     if (roomsChanged) {
-      updateRooms(updatedRooms);
+      // Convert detected rooms to proper Room type
+      const convertedRooms = updatedRooms.map((room: any) => ({
+        id: room.id,
+        name: room.name,
+        points: room.vertices || room.points || [],
+        vertices: room.vertices,
+        area: room.area,
+        perimeter: room.perimeter,
+        center: room.center,
+        walls: room.walls,
+        material: room.material,
+        materialId: room.materialId,
+        color: room.color,
+        floorId: room.floorId,
+        roomType: room.roomType,
+        isCustomNamed: room.isCustomNamed
+      }));
+      updateRooms(convertedRooms);
     }
   }, [walls, updateRooms, detectedRooms, rooms]);
 

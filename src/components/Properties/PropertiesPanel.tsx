@@ -24,12 +24,12 @@ export default function PropertiesPanel() {
   const { deleteSelectedWall } = useWallEditor();
   const { deleteSelectedDoor } = useDoorEditor();
   const { deleteSelectedWindow } = useWindowEditor();
-  
+
   const [editValues, setEditValues] = useState<Record<string, string | number>>({});
 
   const getSelectedElement = () => {
     if (!selectedElementId || !selectedElementType) return null;
-    
+
     switch (selectedElementType) {
       case 'wall':
         return walls.find(w => w.id === selectedElementId);
@@ -109,7 +109,7 @@ export default function PropertiesPanel() {
         );
         executeCommand(wallCommand);
         break;
-        
+
       case 'door':
         const originalDoor = selectedElement as Door;
         let doorValue: string | number = value;
@@ -124,7 +124,7 @@ export default function PropertiesPanel() {
         );
         executeCommand(doorCommand);
         break;
-        
+
       case 'window':
         const originalWindow = selectedElement as Window;
         let windowValue: string | number = value;
@@ -156,7 +156,7 @@ export default function PropertiesPanel() {
       <div className="flex-1 overflow-y-auto p-4">
         {selectedElement ? (
           selectedElementType === 'room' ? (
-            <RoomPropertiesPanel 
+            <RoomPropertiesPanel
               room={selectedElement as import('@/utils/roomDetection').Room}
               onUpdate={updateRoom}
             />
@@ -164,40 +164,44 @@ export default function PropertiesPanel() {
             <StairPropertiesPanel
               stair={selectedElement as Stair}
               onUpdate={(updates) => {
-                executeCommand({
-                  type: 'UPDATE_STAIR',
-                  execute: () => updateStair(selectedElementId, updates),
-                  undo: () => updateStair(selectedElementId, selectedElement as Stair),
-                  description: 'Update stair properties',
-                });
+                if (selectedElementId) {
+                  executeCommand({
+                    execute: () => updateStair(selectedElementId, updates),
+                    undo: () => updateStair(selectedElementId, selectedElement as Stair),
+                    description: 'Update stair properties',
+                  });
+                }
               }}
               onDelete={() => {
-                executeCommand({
-                  type: 'DELETE_STAIR',
-                  execute: () => removeStair(selectedElementId),
-                  undo: () => updateStair(selectedElementId, selectedElement as Stair),
-                  description: 'Delete stair',
-                });
+                if (selectedElementId) {
+                  executeCommand({
+                    execute: () => removeStair(selectedElementId),
+                    undo: () => updateStair(selectedElementId, selectedElement as Stair),
+                    description: 'Delete stair',
+                  });
+                }
               }}
             />
           ) : selectedElementType === 'roof' ? (
             <RoofPropertiesPanel
               roof={selectedElement as Roof}
               onUpdate={(updates) => {
-                executeCommand({
-                  type: 'UPDATE_ROOF',
-                  execute: () => updateRoof(selectedElementId, updates),
-                  undo: () => updateRoof(selectedElementId, selectedElement as Roof),
-                  description: 'Update roof properties',
-                });
+                if (selectedElementId) {
+                  executeCommand({
+                    execute: () => updateRoof(selectedElementId, updates),
+                    undo: () => updateRoof(selectedElementId, selectedElement as Roof),
+                    description: 'Update roof properties',
+                  });
+                }
               }}
               onDelete={() => {
-                executeCommand({
-                  type: 'DELETE_ROOF',
-                  execute: () => removeRoof(selectedElementId),
-                  undo: () => updateRoof(selectedElementId, selectedElement as Roof),
-                  description: 'Delete roof',
-                });
+                if (selectedElementId) {
+                  executeCommand({
+                    execute: () => removeRoof(selectedElementId),
+                    undo: () => updateRoof(selectedElementId, selectedElement as Roof),
+                    description: 'Delete roof',
+                  });
+                }
               }}
             />
           ) : (
@@ -207,7 +211,7 @@ export default function PropertiesPanel() {
                   {selectedElementType} Properties
                 </h3>
               </div>
-              
+
               {/* Common properties */}
               <div className="space-y-3">
                 <div>
@@ -246,7 +250,7 @@ export default function PropertiesPanel() {
                         type="number"
                         min="50"
                         max="1000"
-                        value={editValues.height ?? selectedElement.height}
+                        value={Number(editValues.height) || (selectedElement as Wall).height}
                         onChange={(e) => handlePropertyChange('height', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -255,7 +259,7 @@ export default function PropertiesPanel() {
                 )}
 
                 {/* Door-specific properties */}
-                {selectedElementType === 'door' && 'width' in selectedElement && (
+                {selectedElementType === 'door' && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -266,7 +270,7 @@ export default function PropertiesPanel() {
                         min="0.4"
                         max="2"
                         step="0.1"
-                        value={(editValues.width ?? selectedElement.width) / 100}
+                        value={(Number(editValues.width) || (selectedElement as Door).width) / 100}
                         onChange={(e) => handlePropertyChange('width', parseFloat(e.target.value) * 100)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -280,7 +284,7 @@ export default function PropertiesPanel() {
                         min="1.5"
                         max="2.5"
                         step="0.1"
-                        value={(editValues.height ?? selectedElement.height) / 100}
+                        value={(Number(editValues.height) || (selectedElement as Door).height) / 100}
                         onChange={(e) => handlePropertyChange('height', parseFloat(e.target.value) * 100)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -341,7 +345,7 @@ export default function PropertiesPanel() {
                         type="number"
                         min="40"
                         max="150"
-                        value={editValues.height ?? selectedElement.height}
+                        value={Number(editValues.height) || (selectedElement as Window).height}
                         onChange={(e) => handlePropertyChange('height', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -384,37 +388,37 @@ export default function PropertiesPanel() {
                 {selectedElementType === 'wall' && 'startX' in selectedElement && (() => {
                   const { unitSystem, precision, showUnitLabels } = useUnitStore();
                   const { formatLength } = require('@/utils/unitUtils');
-                  
+
                   // Calculate length in pixels
                   const lengthPx = Math.sqrt(
-                    Math.pow(selectedElement.endX - selectedElement.startX, 2) + 
+                    Math.pow(selectedElement.endX - selectedElement.startX, 2) +
                     Math.pow(selectedElement.endY - selectedElement.startY, 2)
                   );
-                  
+
                   // Convert to meters (assuming 100px = 1m)
                   const lengthInMeters = lengthPx / 100;
-                  
+
                   return (
                     <div className="pt-3 border-t border-gray-200">
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Position</h4>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <span className="text-gray-500">Start:</span> 
+                          <span className="text-gray-500">Start:</span>
                           <span className="ml-1">
-                            ({formatLength(selectedElement.startX / 100, unitSystem, precision, showUnitLabels)}, 
+                            ({formatLength(selectedElement.startX / 100, unitSystem, precision, showUnitLabels)},
                              {formatLength(selectedElement.startY / 100, unitSystem, precision, showUnitLabels)})
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-500">End:</span> 
+                          <span className="text-gray-500">End:</span>
                           <span className="ml-1">
-                            ({formatLength(selectedElement.endX / 100, unitSystem, precision, showUnitLabels)}, 
+                            ({formatLength(selectedElement.endX / 100, unitSystem, precision, showUnitLabels)},
                              {formatLength(selectedElement.endY / 100, unitSystem, precision, showUnitLabels)})
                           </span>
                         </div>
                       </div>
                       <div className="mt-1">
-                        <span className="text-gray-500">Length:</span> 
+                        <span className="text-gray-500">Length:</span>
                         <span className="ml-1">
                           {formatLength(lengthInMeters, unitSystem, precision, showUnitLabels)}
                         </span>
@@ -464,7 +468,7 @@ export default function PropertiesPanel() {
                       </label>
                       <input
                         type="number"
-                        value={selectedElement.height}
+                        value={(selectedElement as Door | Window).height}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                         readOnly
                       />
@@ -480,7 +484,7 @@ export default function PropertiesPanel() {
               <div className="text-4xl mb-4">📐</div>
               <p>Select an element to edit its properties</p>
             </div>
-            
+
             {/* Show unit settings when no element is selected */}
             <UnitSettings />
           </div>

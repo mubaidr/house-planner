@@ -1,6 +1,6 @@
 /**
  * View Projection Utilities for 2D Multi-View System
- * 
+ *
  * This file contains utilities for projecting 3D architectural elements
  * into 2D views (Plan, Front, Back, Left, Right) with proper scaling,
  * positioning, and visibility calculations.
@@ -154,14 +154,14 @@ export class ViewProjectionUtils {
 
     const wallStart3D: Point3D = { x: parentWall.startPoint.x, y: parentWall.startPoint.y, z: 0 };
     const wallEnd3D: Point3D = { x: parentWall.endPoint.x, y: parentWall.endPoint.y, z: 0 };
-    
+
     // Calculate door position along wall
     const wallVector = {
       x: wallEnd3D.x - wallStart3D.x,
       y: wallEnd3D.y - wallStart3D.y,
       z: 0
     };
-    
+
     const doorPosition3D: Point3D = {
       x: wallStart3D.x + wallVector.x * door.positionOnWall,
       y: wallStart3D.y + wallVector.y * door.positionOnWall,
@@ -206,13 +206,13 @@ export class ViewProjectionUtils {
 
     const wallStart3D: Point3D = { x: parentWall.startPoint.x, y: parentWall.startPoint.y, z: 0 };
     const wallEnd3D: Point3D = { x: parentWall.endPoint.x, y: parentWall.endPoint.y, z: 0 };
-    
+
     const wallVector = {
       x: wallEnd3D.x - wallStart3D.x,
       y: wallEnd3D.y - wallStart3D.y,
       z: 0
     };
-    
+
     const windowPosition3D: Point3D = {
       x: wallStart3D.x + wallVector.x * window.positionOnWall,
       y: wallStart3D.y + wallVector.y * window.positionOnWall,
@@ -332,26 +332,26 @@ export class ViewProjectionUtils {
     switch (element.type) {
       case 'wall2d':
         return true; // Walls are visible in all views
-      
+
       case 'door2d':
       case 'window2d':
         return true; // Openings are visible in all views
-      
+
       case 'stair2d':
         return true; // Stairs are visible in all views
-      
+
       case 'roof2d':
         // Roofs are primarily visible in elevation views and plan view
         return true;
-      
+
       case 'room2d':
         // Rooms are primarily visible in plan view
         return viewType === 'plan';
-      
+
       case 'annotation2d':
       case 'dimension2d':
         return true; // Annotations visible in all views
-      
+
       default:
         return true;
     }
@@ -388,19 +388,19 @@ export class ViewProjectionUtils {
     switch (element.type) {
       case 'wall2d':
         return this.projectWall(element as Wall2D, viewType);
-      
+
       case 'door2d':
         return this.projectDoor(element as Door2D, viewType);
-      
+
       case 'window2d':
         return this.projectWindow(element as Window2D, viewType);
-      
+
       case 'stair2d':
         return this.projectStair(element as Stair2D, viewType);
-      
+
       case 'roof2d':
         return this.projectRoof(element as Roof2D, viewType);
-      
+
       default:
         // For other elements, just project the position
         const position3D: Point3D = {
@@ -408,7 +408,7 @@ export class ViewProjectionUtils {
           y: element.transform.position.y,
           z: 0
         };
-        
+
         return {
           ...element,
           transform: {
@@ -434,7 +434,7 @@ export class ViewProjectionUtils {
 
     elements.forEach(element => {
       if (this.isElementVisibleInView(element, viewType)) {
-        const bounds = this.getElementBoundsInView(element, viewType);
+        const bounds = this.getElementBoundsInView(element);
         minX = Math.min(minX, bounds.min.x);
         minY = Math.min(minY, bounds.min.y);
         maxX = Math.max(maxX, bounds.max.x);
@@ -487,7 +487,7 @@ export class ViewProjectionUtils {
   ): Point2D {
     // First unproject from source view to 3D
     const point3D = this.unprojectPoint(point, fromView, defaultZ);
-    
+
     // Then project to target view
     return this.projectPoint(point3D, toView);
   }

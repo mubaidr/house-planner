@@ -88,12 +88,12 @@ const TabsList = forwardRef<HTMLDivElement, TabsListProps>(
 
     // Clone children to inject refs
     const childrenWithRefs = React.Children.map(children, (child, idx) => {
-      if (React.isValidElement(child) && child.type && (child.props.role === 'tab' || child.type.displayName === 'TabsTrigger')) {
-        return React.cloneElement(child, {
+      if (React.isValidElement(child) && child.type && ((child.props as any).role === 'tab' || (child.type as any).displayName === 'TabsTrigger')) {
+        return React.cloneElement(child as React.ReactElement<any>, {
           ref: (node: HTMLButtonElement) => {
             tabRefs.current[idx] = node;
-            if (typeof child.ref === 'function') child.ref(node);
-            else if (child.ref) (child.ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+            if (typeof (child as any).ref === 'function') (child as any).ref(node);
+            else if ((child as any).ref) ((child as any).ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
           },
         });
       }

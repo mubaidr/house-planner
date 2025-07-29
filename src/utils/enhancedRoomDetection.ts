@@ -372,9 +372,9 @@ const hasFeature = (
       // This logic might need to be more sophisticated based on door properties
       return accessibility.doorCount > 1;
     case 'rectangular': {
-      if (!room || !room.points || room.points.length < 4) return false;
-      const xs = room.points.map(p => p.x);
-      const ys = room.points.map(p => p.y);
+      if (!room || !room.vertices || room.vertices.length < 4) return false;
+      const xs = room.vertices.map(p => p.x);
+      const ys = room.vertices.map(p => p.y);
       const minX = Math.min(...xs);
       const maxX = Math.max(...xs);
       const minY = Math.min(...ys);
@@ -386,9 +386,9 @@ const hasFeature = (
       return aspectRatio > 0.7 && aspectRatio < 1.3;
     }
     case 'narrow': {
-      if (!room || !room.points || room.points.length < 4) return false;
-      const xs = room.points.map(p => p.x);
-      const ys = room.points.map(p => p.y);
+      if (!room || !room.vertices || room.vertices.length < 4) return false;
+      const xs = room.vertices.map(p => p.x);
+      const ys = room.vertices.map(p => p.y);
       const minX = Math.min(...xs);
       const maxX = Math.max(...xs);
       const minY = Math.min(...ys);

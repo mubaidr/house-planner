@@ -1,6 +1,6 @@
 /**
  * 2D Element Types for Multi-View Architectural Drawing System
- * 
+ *
  * This file defines the core 2D element types that can be rendered
  * in different views (Plan, Front, Back, Left, Right) with proper
  * dimensional accuracy and material visualization.
@@ -38,15 +38,21 @@ export interface Element2D {
   metadata?: Record<string, unknown>;
 }
 
-export type Element2DType = 
-  | 'wall2d' 
-  | 'door2d' 
-  | 'window2d' 
-  | 'stair2d' 
-  | 'roof2d' 
+export type Element2DType =
+  | 'wall2d'
+  | 'door2d'
+  | 'window2d'
+  | 'stair2d'
+  | 'roof2d'
   | 'room2d'
   | 'annotation2d'
-  | 'dimension2d';
+  | 'dimension2d'
+  | 'wall'     // For compatibility
+  | 'door'     // For compatibility
+  | 'window'   // For compatibility
+  | 'stair'    // For compatibility
+  | 'roof'     // For compatibility
+  | 'room';    // For compatibility
 
 /**
  * 2D Wall Element
@@ -141,6 +147,7 @@ export interface Room2D extends Element2D {
   area: number; // Square feet/meters
   perimeter: number;
   boundaryWalls: string[]; // Wall IDs that form room boundary
+  points: Point2D[]; // Room boundary points for area calculations
   floorMaterialId?: string;
   ceilingMaterialId?: string;
   ceilingHeight: number;

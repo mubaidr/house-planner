@@ -22,22 +22,51 @@ export const useAlignmentTool = () => {
 
   // Get all selected elements (this would need to be implemented in the design store)
   const getSelectedElements = useCallback((): AlignableElement[] => {
-    // For now, return all elements - in a real implementation,
-    // you'd track selected elements in the store
-    const allElements: AlignableElement[] = [
-      ...walls,
-      ...doors,
-      ...windows,
-      ...stairs,
+    // Convert different element types to AlignableElement format
+    const alignableElements: AlignableElement[] = [
+      // Convert walls: use startX/Y for x/y
+      ...walls.map(wall => ({
+        id: wall.id,
+        x: wall.startX,
+        y: wall.startY,
+        startX: wall.startX,
+        startY: wall.startY,
+        endX: wall.endX,
+        endY: wall.endY,
+      })),
+      // Doors and windows already have x, y, width, height
+      ...doors.map(door => ({
+        id: door.id,
+        x: door.x,
+        y: door.y,
+        width: door.width,
+        height: door.height,
+      })),
+      ...windows.map(window => ({
+        id: window.id,
+        x: window.x,
+        y: window.y,
+        width: window.width,
+        height: window.height,
+      })),
+      // Stairs have x, y, width, length (use as height)
+      ...stairs.map(stair => ({
+        id: stair.id,
+        x: stair.x,
+        y: stair.y,
+        width: stair.width,
+        height: stair.length, // Use length as height for alignment purposes
+      })),
+      // Convert roofs: use bounding box from points
       ...roofs.map(roof => ({
-        ...roof,
+        id: roof.id,
         x: roof.points[0]?.x || 0,
         y: roof.points[0]?.y || 0,
         width: Math.max(...roof.points.map(p => p.x)) - Math.min(...roof.points.map(p => p.x)),
         height: Math.max(...roof.points.map(p => p.y)) - Math.min(...roof.points.map(p => p.y)),
       }))
     ];
-    return allElements;
+    return alignableElements;
   }, [walls, doors, windows, stairs, roofs]);
 
   const applyAlignment = useCallback((
@@ -51,7 +80,6 @@ export const useAlignmentTool = () => {
     const alignedElements = alignmentFunction(selectedElements);
 
     executeCommand({
-      type: 'ALIGN_ELEMENTS',
       execute: () => {
         alignedElements.forEach(element => {
           if ('startX' in element && element.startX !== undefined) {

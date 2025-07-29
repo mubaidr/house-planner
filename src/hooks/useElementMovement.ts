@@ -22,19 +22,19 @@ export interface ElementMovementHooks {
 }
 
 export const useElementMovement = (): ElementMovementHooks => {
-  const { 
-    walls, 
-    doors, 
-    windows, 
-    stairs, 
+  const {
+    walls,
+    doors,
+    windows,
+    stairs,
     roofs,
-    updateWall, 
-    updateDoor, 
-    updateWindow, 
+    updateWall,
+    updateDoor,
+    updateWindow,
     updateStair,
-    updateRoof 
+    updateRoof
   } = useDesignStore();
-  
+
   const { snapToGrid, gridSize } = useUIStore();
   const { executeCommand } = useHistoryStore();
 
@@ -51,7 +51,7 @@ export const useElementMovement = (): ElementMovementHooks => {
 
     // Get snap points including intersections
     const snapPoints = getWallSnapPointsWithIntersections(walls.filter(w => w.id !== wallId));
-    
+
     // Apply snapping to the pointer position
     const snapResult = snapPoint(
       pointerPosition,
@@ -117,7 +117,7 @@ export const useElementMovement = (): ElementMovementHooks => {
 
     // Calculate position along wall (0-1)
     const wallLength = Math.sqrt(
-      Math.pow(wall.endX - wall.startX, 2) + 
+      Math.pow(wall.endX - wall.startX, 2) +
       Math.pow(wall.endY - wall.startY, 2)
     );
 
@@ -137,17 +137,22 @@ export const useElementMovement = (): ElementMovementHooks => {
     // Calculate dot product to find projection
     const dotProduct = (pointerVector.x * wallVector.x + pointerVector.y * wallVector.y);
     const projectionLength = dotProduct / wallLength;
-    
+
     // Clamp position to wall bounds (leave space for door width)
     const doorHalfWidth = door.width / 2;
     const minPosition = doorHalfWidth / wallLength;
     const maxPosition = 1 - (doorHalfWidth / wallLength);
-    
+
     const newPosition = Math.max(minPosition, Math.min(maxPosition, projectionLength / wallLength));
+
+    // Calculate new absolute position from relative position on wall
+    const newX = wall.startX + newPosition * wallVector.x;
+    const newY = wall.startY + newPosition * wallVector.y;
 
     // Update door position
     updateDoor(doorId, {
-      positionOnWall: newPosition
+      x: newX,
+      y: newY
     });
 
   }, [doors, walls, updateDoor]);
@@ -168,7 +173,7 @@ export const useElementMovement = (): ElementMovementHooks => {
 
     // Calculate position along wall (similar to door logic)
     const wallLength = Math.sqrt(
-      Math.pow(wall.endX - wall.startX, 2) + 
+      Math.pow(wall.endX - wall.startX, 2) +
       Math.pow(wall.endY - wall.startY, 2)
     );
 
@@ -186,16 +191,21 @@ export const useElementMovement = (): ElementMovementHooks => {
 
     const dotProduct = (pointerVector.x * wallVector.x + pointerVector.y * wallVector.y);
     const projectionLength = dotProduct / wallLength;
-    
+
     // Clamp position to wall bounds
     const windowHalfWidth = window.width / 2;
     const minPosition = windowHalfWidth / wallLength;
     const maxPosition = 1 - (windowHalfWidth / wallLength);
-    
+
     const newPosition = Math.max(minPosition, Math.min(maxPosition, projectionLength / wallLength));
 
+    // Calculate new absolute position from relative position on wall
+    const newX = wall.startX + newPosition * wallVector.x;
+    const newY = wall.startY + newPosition * wallVector.y;
+
     updateWindow(windowId, {
-      positionOnWall: newPosition
+      x: newX,
+      y: newY
     });
 
   }, [windows, walls, updateWindow]);
@@ -248,10 +258,22 @@ export const useElementMovement = (): ElementMovementHooks => {
       snapToGrid
     );
 
-    // Update roof position
+    // Calculate roof centroid (current position)
+    const centroid = {
+      x: roof.points.reduce((sum, p) => sum + p.x, 0) / roof.points.length,
+      y: roof.points.reduce((sum, p) => sum + p.y, 0) / roof.points.length
+    };
+
+    // Calculate offset from current centroid to new position
+    const deltaX = snapResult.x - centroid.x;
+    const deltaY = snapResult.y - centroid.y;
+
+    // Update roof by moving all points
     updateRoof(roofId, {
-      x: snapResult.x,
-      y: snapResult.y
+      points: roof.points.map(point => ({
+        x: point.x + deltaX,
+        y: point.y + deltaY
+      }))
     });
 
   }, [roofs, walls, updateRoof, gridSize, snapToGrid]);

@@ -9,7 +9,7 @@ import { useFloorStore } from '@/stores/floorStore';
 import ExportDialog from '../Export/ExportDialog';
 
 interface ExportButtonProps {
-  stage: Stage | null; // Konva Stage reference
+  stage?: Stage | null; // Konva Stage reference - optional for now
 }
 
 export default function ExportButton({ stage }: ExportButtonProps) {
@@ -21,24 +21,24 @@ export default function ExportButton({ stage }: ExportButtonProps) {
     left: null,
     right: null,
   });
-  
+
   const { currentView } = useViewStore();
   const { walls, doors, windows, stairs, roofs } = useDesignStore();
   const { currentFloorId, getCurrentFloor } = useFloorStore();
-  
+
 
   const generateMultiViewStages = useCallback(async () => {
     try {
       // Import the stage generator
       const { generateAllViewStages, cleanupStages } = await import('@/utils/stageGenerator');
-      
+
       // Clean up any existing stages
       cleanupStages(multiViewStages);
-      
+
       // Get current floor elements
       const currentFloor = getCurrentFloor();
       const currentFloorElements = currentFloor ? currentFloor.elements : { walls, doors, windows, stairs, roofs, rooms: [] };
-      
+
       // Prepare elements for stage generation
       const elements = {
         walls: currentFloorElements.walls,
@@ -48,7 +48,7 @@ export default function ExportButton({ stage }: ExportButtonProps) {
         roofs: currentFloorElements.roofs,
         rooms: currentFloorElements.rooms || [],
       };
-      
+
       // Generate stages for all views
       const generatedStages = await generateAllViewStages(
         elements,
@@ -63,16 +63,16 @@ export default function ExportButton({ stage }: ExportButtonProps) {
           showAnnotations: true,
         }
       );
-      
+
       // Use the current stage for the current view if available
       if (stage) {
         generatedStages[currentView] = stage;
       }
-      
+
       setMultiViewStages(generatedStages);
     } catch (error) {
       console.error('Failed to generate multi-view stages:', error);
-      
+
       // Fallback: just use current stage
       const fallbackStages: Record<ViewType2D, Stage | null> = {
         plan: null,
@@ -81,11 +81,11 @@ export default function ExportButton({ stage }: ExportButtonProps) {
         left: null,
         right: null,
       };
-      
+
       if (stage) {
         fallbackStages[currentView] = stage;
       }
-      
+
       setMultiViewStages(fallbackStages);
     }
   }, [multiViewStages, getCurrentFloor, walls, doors, windows, stairs, roofs, currentFloorId, stage, currentView]);
@@ -124,7 +124,7 @@ export default function ExportButton({ stage }: ExportButtonProps) {
       <ExportDialog
         isOpen={showExportDialog}
         onClose={() => setShowExportDialog(false)}
-        stage={stage}
+        stage={stage || null}
         stages={multiViewStages}
       />
     </>

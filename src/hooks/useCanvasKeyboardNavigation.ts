@@ -1,6 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useDesignStore } from '@/stores/designStore';
-import { useAccessibilityStore } from '@/stores/accessibilityStore';
 import { useAccessibilityAnnouncer } from '@/components/Accessibility/AccessibilityAnnouncer';
 
 interface KeyboardNavigationState {
@@ -24,31 +23,29 @@ export function useCanvasKeyboardNavigation() {
     navigationMode: 'browse',
   });
 
-  const { 
-    walls, 
-    doors, 
-    windows, 
-    stairs, 
-    roofs, 
+  const {
+    walls,
+    doors,
+    windows,
+    stairs,
+    roofs,
     rooms,
-    selectElement, 
-    removeWall, 
-    removeDoor, 
+    selectElement,
+    removeWall,
+    removeDoor,
     removeWindow,
     removeStair,
     removeRoof,
     updateWall,
-    updateDoor,
-    updateWindow,
     updateStair,
     updateRoof
   } = useDesignStore();
 
-  const { preferences } = useAccessibilityStore();
-  const { 
-    announceElementSelected, 
-    announceElementDeleted, 
-    announceElementMoved 
+  // Remove unused accessibility store for now
+  const {
+    announceElementSelected,
+    announceElementDeleted,
+    announceElementMoved
   } = useAccessibilityAnnouncer();
 
   // Get all elements in a flat array for navigation
@@ -91,7 +88,7 @@ export function useCanvasKeyboardNavigation() {
         focusedElementId: nextElement.id,
         focusedElementType: nextElement.type,
       }));
-      
+
       announceElementSelected(nextElement.type, nextElement.id);
     }
   }, [navigationState.focusedElementId, getAllElements, announceElementSelected]);
@@ -132,7 +129,7 @@ export function useCanvasKeyboardNavigation() {
     }
 
     announceElementDeleted(elementType, elementId);
-    
+
     // Clear focus after deletion
     setNavigationState(prev => ({
       ...prev,
@@ -192,8 +189,10 @@ export function useCanvasKeyboardNavigation() {
         const roof = roofs.find(r => r.id === elementId);
         if (roof) {
           updateRoof(elementId, {
-            x: roof.x + deltaX,
-            y: roof.y + deltaY,
+            points: roof.points.map(point => ({
+              x: point.x + deltaX,
+              y: point.y + deltaY,
+            })),
           });
         }
         break;

@@ -10,13 +10,13 @@ import { Stair } from '@/types/elements/Stair';
 import { Roof } from '@/types/elements/Roof';
 import { Room } from '@/types/elements/Room';
 import { Room as DetectedRoom } from '@/utils/roomDetection';
-import { 
-  Element2D, 
-  Wall2D, 
-  Door2D, 
-  Window2D, 
-  Stair2D, 
-  Roof2D, 
+import {
+  Element2D,
+  Wall2D,
+  Door2D,
+  Window2D,
+  Stair2D,
+  Roof2D,
   Room2D,
   Point2D,
   Transform2D,
@@ -30,13 +30,13 @@ import {
 export function convertWallToWall2D(wall: Wall): Wall2D {
   const startPoint: Point2D = { x: wall.startX, y: wall.startY };
   const endPoint: Point2D = { x: wall.endX, y: wall.endY };
-  
+
   // Calculate dimensions
   const length = Math.sqrt(
-    Math.pow(wall.endX - wall.startX, 2) + 
+    Math.pow(wall.endX - wall.startX, 2) +
     Math.pow(wall.endY - wall.startY, 2)
   );
-  
+
   const dimensions: Dimensions2D = {
     width: length,
     height: wall.height,
@@ -56,7 +56,10 @@ export function convertWallToWall2D(wall: Wall): Wall2D {
     endPoint,
     thickness: wall.thickness,
     height: wall.height,
-    materialId: wall.materialId || undefined,
+    materialId: wall.materialId || '',
+    openings: [], // Initialize empty openings array
+    connectedWalls: [], // Initialize empty connected walls array
+    constraints: [], // Initialize empty constraints array
     transform,
     dimensions,
     floorId: '', // Will be set by caller
@@ -70,7 +73,7 @@ export function convertWallToWall2D(wall: Wall): Wall2D {
  */
 export function convertDoorToDoor2D(door: Door): Door2D {
   const position: Point2D = { x: door.x, y: door.y };
-  
+
   const dimensions: Dimensions2D = {
     width: door.width,
     height: door.height,
@@ -109,7 +112,7 @@ export function convertDoorToDoor2D(door: Door): Door2D {
  */
 export function convertWindowToWindow2D(window: Window): Window2D {
   const position: Point2D = { x: window.x, y: window.y };
-  
+
   const dimensions: Dimensions2D = {
     width: window.width,
     height: window.height,
@@ -148,7 +151,7 @@ export function convertWindowToWindow2D(window: Window): Window2D {
  */
 export function convertStairToStair2D(stair: Stair): Stair2D {
   const position: Point2D = { x: stair.x, y: stair.y };
-  
+
   const dimensions: Dimensions2D = {
     width: stair.width,
     height: stair.length, // Use length as height for stairs
@@ -157,7 +160,7 @@ export function convertStairToStair2D(stair: Stair): Stair2D {
 
   const transform: Transform2D = {
     position,
-    rotation: stair.rotation || 0,
+    rotation: stair.orientation === 'vertical' ? 90 : 0,
     scale: { x: 1, y: 1 }
   };
 
@@ -174,21 +177,15 @@ export function convertStairToStair2D(stair: Stair): Stair2D {
     direction: stair.direction,
     totalRise: stair.steps * stair.stepHeight,
     totalRun: stair.steps * stair.stepDepth,
-    handrailSide: stair.handrailLeft && stair.handrailRight ? 'both' : 
-                  stair.handrailLeft ? 'left' : 
+    handrailSide: stair.handrailLeft && stair.handrailRight ? 'both' :
+                  stair.handrailLeft ? 'left' :
                   stair.handrailRight ? 'right' : 'none',
     materialId: stair.materialId,
     transform,
     dimensions,
     floorId: '', // Will be set by caller
-    isVisible: true,
-    layerIndex: 0,
-    style: {
-      strokeColor: stair.color || '#8B4513',
-      fillColor: stair.color || '#8B4513',
-      strokeWidth: 1,
-      opacity: 1
-    }
+    visible: true,
+    locked: false
   };
 }
 
@@ -200,13 +197,13 @@ export function convertRoofToRoof2D(roof: Roof): Roof2D {
   const centerX = roof.points.reduce((sum, p) => sum + p.x, 0) / roof.points.length;
   const centerY = roof.points.reduce((sum, p) => sum + p.y, 0) / roof.points.length;
   const position: Point2D = { x: centerX, y: centerY };
-  
+
   // Calculate approximate dimensions
   const minX = Math.min(...roof.points.map(p => p.x));
   const maxX = Math.max(...roof.points.map(p => p.x));
   const minY = Math.min(...roof.points.map(p => p.y));
   const maxY = Math.max(...roof.points.map(p => p.y));
-  
+
   const dimensions: Dimensions2D = {
     width: maxX - minX,
     height: maxY - minY,
@@ -222,24 +219,17 @@ export function convertRoofToRoof2D(roof: Roof): Roof2D {
   return {
     id: roof.id,
     type: 'roof2d',
-    position,
-    points: roof.points,
     roofType: roof.type,
     pitch: roof.pitch,
-    height: roof.height || 3,
     overhang: roof.overhang,
+    ridgeHeight: roof.height || 3,
+    coveringWalls: [], // Initialize empty covering walls array
     materialId: roof.materialId,
     transform,
     dimensions,
     floorId: '', // Will be set by caller
-    isVisible: true,
-    layerIndex: 2,
-    style: {
-      strokeColor: roof.color || '#8B4513',
-      fillColor: roof.color || '#8B4513',
-      strokeWidth: 1,
-      opacity: 1
-    }
+    visible: true,
+    locked: false
   };
 }
 
@@ -251,13 +241,13 @@ export function convertRoomToRoom2D(room: Room): Room2D {
   const centerX = room.points.reduce((sum, p) => sum + p.x, 0) / room.points.length;
   const centerY = room.points.reduce((sum, p) => sum + p.y, 0) / room.points.length;
   const position: Point2D = { x: centerX, y: centerY };
-  
+
   // Calculate approximate dimensions
   const minX = Math.min(...room.points.map(p => p.x));
   const maxX = Math.max(...room.points.map(p => p.x));
   const minY = Math.min(...room.points.map(p => p.y));
   const maxY = Math.max(...room.points.map(p => p.y));
-  
+
   const dimensions: Dimensions2D = {
     width: maxX - minX,
     height: maxY - minY,
@@ -273,22 +263,20 @@ export function convertRoomToRoom2D(room: Room): Room2D {
   return {
     id: room.id,
     type: 'room2d',
-    position,
     points: room.points,
     name: room.name || 'Room',
+    roomType: (room.roomType as Room2D['roomType']) || 'other',
     area: room.area || 0,
+    perimeter: room.perimeter || 0,
+    boundaryWalls: room.walls || [],
+    floorMaterialId: room.materialId,
+    ceilingHeight: 8, // Default ceiling height in feet
     materialId: room.materialId,
     transform,
     dimensions,
     floorId: '', // Will be set by caller
-    isVisible: true,
-    layerIndex: -1, // Render behind other elements
-    style: {
-      strokeColor: room.color || '#E5E5E5',
-      fillColor: room.color || '#F5F5F5',
-      strokeWidth: 1,
-      opacity: 0.3
-    }
+    visible: true,
+    locked: false
   };
 }
 
@@ -299,7 +287,7 @@ function convertDetectedRoomToRoom(detectedRoom: DetectedRoom): Room {
   return {
     id: detectedRoom.id,
     name: detectedRoom.name || 'Room',
-    points: detectedRoom.points,
+    points: detectedRoom.vertices, // Convert vertices to points
     area: detectedRoom.area,
     materialId: detectedRoom.materialId,
     color: detectedRoom.color || '#F5F5F5'

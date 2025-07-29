@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MaterialTemplate, TemplateCategory, DesignStyle } from '@/types/materials/MaterialTemplate';
+import { MaterialTemplate, TemplateCategory, DesignStyle, TemplateMaterial } from '@/types/materials/MaterialTemplate';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useDesignStore } from '@/stores/designStore';
 import { useMaterialStore } from '@/stores/materialStore';
@@ -56,7 +56,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
   };
 
   const analyzeCurrentDesign = () => {
-    const materials: { id: string; name: string; category: string }[] = [];
+    const materials: TemplateMaterial[] = [];
     let materialCount = 0;
 
     // Analyze walls
@@ -193,7 +193,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
           {/* Template Information */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Template Information</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -260,7 +260,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
           {/* Element Selection */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Include Elements</h3>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <label className="flex items-center space-x-2">
                 <input
@@ -271,7 +271,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
                 />
                 <span className="text-sm">Walls ({walls.filter(w => w.materialId).length})</span>
               </label>
-              
+
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -281,7 +281,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
                 />
                 <span className="text-sm">Doors ({doors.filter(d => d.materialId).length})</span>
               </label>
-              
+
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -291,7 +291,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
                 />
                 <span className="text-sm">Windows ({windows.filter(w => w.materialId).length})</span>
               </label>
-              
+
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -307,7 +307,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
           {/* Tags */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Tags</h3>
-            
+
             <div className="flex space-x-2">
               <input
                 type="text"
@@ -324,7 +324,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
                 Add
               </button>
             </div>
-            
+
             {formData.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.tags.map((tag, index) => (
@@ -350,12 +350,12 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
           {/* Preview */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Template Preview</h3>
-            
+
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600 mb-2">
                 This template will include {materialCount} material applications:
               </div>
-              
+
               <div className="space-y-2 max-h-32 overflow-y-auto">
                 {analyzedMaterials.map((material, index) => {
                   const materialData = getMaterialById(material.materialId);
@@ -373,7 +373,7 @@ export default function TemplateCreator({ onClose }: TemplateCreatorProps) {
                   );
                 })}
               </div>
-              
+
               {materialCount === 0 && (
                 <div className="text-sm text-gray-500 italic">
                   No materials found in current design. Make sure to apply materials to elements before creating a template.

@@ -125,8 +125,8 @@ export const useWallEditor = () => {
 
     const command = new RemoveWallCommand(
       selectedElementId,
-      addWall,
       removeWall,
+      addWall,
       wall
     );
 

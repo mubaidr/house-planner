@@ -10,17 +10,17 @@ import RoomEditor from './RoomEditor';
 export default function RoomOverlay() {
   const { walls, rooms, updateRooms, updateRoom, selectElement, selectedElementId, selectedElementType } = useDesignStore();
   const { showRooms } = useUIStore();
-  
+
   const { rooms: detectedRooms } = detectRooms(walls);
 
   // Update rooms when walls change, preserving custom properties
   useEffect(() => {
     const updatedRooms = detectedRooms.map(detectedRoom => {
-      const existingRoom = rooms.find((r: any) => 
+      const existingRoom = rooms.find((r: any) =>
         r.walls.length === detectedRoom.walls.length &&
         r.walls.every((wallId: any) => detectedRoom.walls.includes(wallId))
       );
-      
+
       if (existingRoom) {
         // Preserve custom properties but update calculated ones
         return {
@@ -32,15 +32,33 @@ export default function RoomOverlay() {
           walls: detectedRoom.walls,
         };
       }
-      
+
       return {
         ...detectedRoom,
         roomType: 'other',
         isCustomNamed: false,
       };
     });
-    
-    updateRooms(updatedRooms);
+
+    // Convert detected rooms to proper Room type
+    const convertedRooms = updatedRooms.map((room: any) => ({
+      id: room.id,
+      name: room.name,
+      points: room.vertices || room.points || [],
+      vertices: room.vertices,
+      area: room.area,
+      perimeter: room.perimeter,
+      center: room.center,
+      walls: room.walls,
+      material: room.material,
+      materialId: room.materialId,
+      color: room.color,
+      floorId: room.floorId,
+      roomType: room.roomType,
+      isCustomNamed: room.isCustomNamed
+    }));
+
+    updateRooms(convertedRooms);
   }, [walls, detectedRooms, updateRooms, rooms]);
 
   if (!showRooms || rooms.length === 0) return null;
@@ -57,7 +75,7 @@ export default function RoomOverlay() {
             opacity={0.2}
             listening={false}
           />
-          
+
           {/* Room border */}
           <Line
             points={room.vertices.flatMap((v: any) => [v.x, v.y])}
@@ -68,7 +86,7 @@ export default function RoomOverlay() {
             opacity={0.6}
             listening={false}
           />
-          
+
           {/* Room center point */}
           <Circle
             x={room.center.x}
@@ -78,7 +96,7 @@ export default function RoomOverlay() {
             opacity={0.8}
             listening={false}
           />
-          
+
           {/* Interactive Room Editor */}
           <RoomEditor
             room={room}

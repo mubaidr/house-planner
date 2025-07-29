@@ -201,7 +201,7 @@ export default function TemplatePreview({ template, onClose }: TemplatePreviewPr
                       className="w-12 h-12 rounded border border-gray-300 flex-shrink-0"
                       style={{
                         backgroundColor: material.color,
-                        backgroundImage: material.texture ? `url(${material.texture})` : undefined,
+                        backgroundImage: material.textureImage ? `url(${material.textureImage})` : undefined,
                         backgroundRepeat: 'repeat',
                         backgroundSize: `${(material.properties.patternScale || 1) * 16}px`,
                         opacity: material.properties.opacity,

@@ -88,7 +88,6 @@ export const useStairTool = () => {
     if (!isDrawing || !previewStair) return;
 
     executeCommand({
-      type: 'ADD_STAIR',
       execute: () => {
         // Add to current floor first
         if (currentFloorId) {

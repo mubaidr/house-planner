@@ -4,7 +4,7 @@ import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
 import { Stair } from '@/types/elements/Stair';
 import { Roof } from '@/types/elements/Roof';
-import { Room } from '@/utils/roomDetection';
+import { Room } from '@/types/elements/Room';
 import { updateElementsForWallMovement } from '@/utils/wallElementMovement';
 import { useFloorStore } from './floorStore';
 
@@ -23,30 +23,37 @@ export interface DesignActions {
   addWall: (wall: Wall) => void;
   updateWall: (id: string, updates: Partial<Wall>) => void;
   removeWall: (id: string) => void;
+  setWalls: (walls: Wall[]) => void;
   addDoor: (door: Door) => void;
   updateDoor: (id: string, updates: Partial<Door>) => void;
   removeDoor: (id: string) => void;
+  setDoors: (doors: Door[]) => void;
   addWindow: (window: Window) => void;
   updateWindow: (id: string, updates: Partial<Window>) => void;
   removeWindow: (id: string) => void;
+  setWindows: (windows: Window[]) => void;
   addStair: (stair: Stair) => void;
   updateStair: (id: string, updates: Partial<Stair>) => void;
   removeStair: (id: string) => void;
+  setStairs: (stairs: Stair[]) => void;
   addRoof: (roof: Roof) => void;
   updateRoof: (id: string, updates: Partial<Roof>) => void;
   removeRoof: (id: string) => void;
+  setRoofs: (roofs: Roof[]) => void;
   updateRoom: (id: string, updates: Partial<Room>) => void;
   updateRooms: (rooms: Room[]) => void;
   selectElement: (id: string | null, type: 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'room' | null) => void;
   clearSelection: () => void;
   clearAll: () => void;
-  
+
   // Floor-aware methods
   getCurrentFloorElements: () => { walls: Wall[]; doors: Door[]; windows: Window[]; stairs: Stair[]; roofs: Roof[]; rooms: Room[] };
   syncWithCurrentFloor: () => void;
 }
 
-export const useDesignStore = create<DesignState & DesignActions>((set) => ({
+type DesignStoreType = DesignState & DesignActions;
+
+const createDesignStore = (set: any, _get: any): DesignStoreType => ({
   // State
   walls: [],
   doors: [],
@@ -58,20 +65,20 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
   selectedElementType: null,
 
   // Actions
-  addWall: (wall) =>
-    set((state) => ({
+  addWall: (wall: Wall) =>
+    set((state: DesignState) => ({
       walls: [...state.walls, wall],
     })),
 
-  updateWall: (id, updates) =>
-    set((state) => {
+  updateWall: (id: string, updates: Partial<Wall>) =>
+    set((state: DesignState) => {
       const oldWall = state.walls.find(wall => wall.id === id);
       if (!oldWall) return state;
 
       const newWall = { ...oldWall, ...updates };
-      
+
       // Check if wall position actually changed
-      const positionChanged = 
+      const positionChanged =
         newWall.startX !== oldWall.startX ||
         newWall.startY !== oldWall.startY ||
         newWall.endX !== oldWall.endX ||
@@ -104,90 +111,115 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
       };
     }),
 
-  removeWall: (id) =>
-    set((state) => ({
+  removeWall: (id: string) =>
+    set((state: DesignState) => ({
       walls: state.walls.filter((wall) => wall.id !== id),
       // Remove associated doors and windows
       doors: state.doors.filter((door) => door.wallId !== id),
       windows: state.windows.filter((window) => window.wallId !== id),
     })),
 
-  addDoor: (door) =>
-    set((state) => ({
+  setWalls: (walls) =>
+    set(() => ({
+      walls,
+    })),
+
+  addDoor: (door: Door) =>
+    set((state: DesignState) => ({
       doors: [...state.doors, door],
     })),
 
-  updateDoor: (id, updates) =>
-    set((state) => ({
+  updateDoor: (id: string, updates: Partial<Door>) =>
+    set((state: DesignState) => ({
       doors: state.doors.map((door) =>
         door.id === id ? { ...door, ...updates } : door
       ),
     })),
 
-  removeDoor: (id) =>
-    set((state) => ({
+  removeDoor: (id: string) =>
+    set((state: DesignState) => ({
       doors: state.doors.filter((door) => door.id !== id),
     })),
 
-  addWindow: (window) =>
-    set((state) => ({
+  setDoors: (doors: Door[]) =>
+    set(() => ({
+      doors,
+    })),
+
+  addWindow: (window: Window) =>
+    set((state: DesignState) => ({
       windows: [...state.windows, window],
     })),
 
-  updateWindow: (id, updates) =>
-    set((state) => ({
+  updateWindow: (id: string, updates: Partial<Window>) =>
+    set((state: DesignState) => ({
       windows: state.windows.map((window) =>
         window.id === id ? { ...window, ...updates } : window
       ),
     })),
 
-  removeWindow: (id) =>
-    set((state) => ({
+  removeWindow: (id: string) =>
+    set((state: DesignState) => ({
       windows: state.windows.filter((window) => window.id !== id),
     })),
 
+  setWindows: (windows: Window[]) =>
+    set(() => ({
+      windows,
+    })),
+
   // Stair actions
-  addStair: (stair) =>
-    set((state) => ({
+  addStair: (stair: Stair) =>
+    set((state: DesignState) => ({
       stairs: [...state.stairs, stair],
     })),
 
-  updateStair: (id, updates) =>
-    set((state) => ({
+  updateStair: (id: string, updates: Partial<Stair>) =>
+    set((state: DesignState) => ({
       stairs: state.stairs.map((stair) =>
         stair.id === id ? { ...stair, ...updates } : stair
       ),
     })),
 
-  removeStair: (id) =>
-    set((state) => ({
+  removeStair: (id: string) =>
+    set((state: DesignState) => ({
       stairs: state.stairs.filter((stair) => stair.id !== id),
       selectedElementId: state.selectedElementId === id ? null : state.selectedElementId,
       selectedElementType: state.selectedElementId === id ? null : state.selectedElementType,
     })),
 
+  setStairs: (stairs: Stair[]) =>
+    set(() => ({
+      stairs,
+    })),
+
   // Roof actions
-  addRoof: (roof) =>
-    set((state) => ({
+  addRoof: (roof: Roof) =>
+    set((state: DesignState) => ({
       roofs: [...state.roofs, roof],
     })),
 
-  updateRoof: (id, updates) =>
-    set((state) => ({
+  updateRoof: (id: string, updates: Partial<Roof>) =>
+    set((state: DesignState) => ({
       roofs: state.roofs.map((roof) =>
         roof.id === id ? { ...roof, ...updates } : roof
       ),
     })),
 
-  removeRoof: (id) =>
-    set((state) => ({
+  removeRoof: (id: string) =>
+    set((state: DesignState) => ({
       roofs: state.roofs.filter((roof) => roof.id !== id),
       selectedElementId: state.selectedElementId === id ? null : state.selectedElementId,
       selectedElementType: state.selectedElementId === id ? null : state.selectedElementType,
     })),
 
-  updateRoom: (id, updates) =>
-    set((state) => ({
+  setRoofs: (roofs: Roof[]) =>
+    set(() => ({
+      roofs,
+    })),
+
+  updateRoom: (id: string, updates: Partial<Room>) =>
+    set((state: DesignState) => ({
       rooms: state.rooms.map((room) =>
         room.id === id ? { ...room, ...updates } : room
       ),
@@ -223,16 +255,16 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
     })),
 
   // Floor-aware methods
-  getCurrentFloorElements: () => {
+  getCurrentFloorElements: (): { walls: Wall[]; doors: Door[]; windows: Window[]; stairs: Stair[]; roofs: Roof[]; rooms: Room[] } => {
     const floorStore = useFloorStore.getState();
     const currentFloor = floorStore.getCurrentFloor();
-    
+
     if (currentFloor) {
       return currentFloor.elements;
     }
-    
+
     // Fallback to current state if no floor system
-    const state = useDesignStore.getState();
+    const state: DesignState = useDesignStore.getState();
     return {
       walls: state.walls,
       doors: state.doors,
@@ -246,7 +278,7 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
   syncWithCurrentFloor: () => {
     const floorStore = useFloorStore.getState();
     const currentFloor = floorStore.getCurrentFloor();
-    
+
     if (currentFloor) {
       set({
         walls: currentFloor.elements.walls,
@@ -258,4 +290,6 @@ export const useDesignStore = create<DesignState & DesignActions>((set) => ({
       });
     }
   },
-}));
+});
+
+export const useDesignStore = create<DesignStoreType>(createDesignStore);

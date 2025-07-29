@@ -1,6 +1,6 @@
 /**
  * Template-Based Export System
- * 
+ *
  * Provides predefined professional layouts and templates for
  * architectural drawing exports with industry-standard formatting
  */
@@ -490,6 +490,7 @@ export function applyTemplate(
   const baseOptions: MultiViewExportOptions = {
     format: 'pdf',
     quality: 0.9,
+    pixelRatio: 2,
     includeGrid: false,
     includeMeasurements: true,
     includeAnnotations: true,
@@ -521,7 +522,7 @@ export function createCustomTemplate(
   titleBlock: TemplateTitleBlock
 ): ExportTemplate {
   const id = `custom-${Date.now()}`;
-  
+
   return {
     id,
     name,
@@ -548,24 +549,24 @@ export function generateTemplatePreview(template: ExportTemplate): string {
   // Create a simple SVG preview of the template layout
   const width = 200;
   const height = 150;
-  
+
   let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
   svg += `<rect width="${width}" height="${height}" fill="white" stroke="#ccc" stroke-width="1"/>`;
-  
+
   // Draw viewports
   template.layout.viewports.forEach(viewport => {
     const x = (viewport.x / 100) * width;
     const y = (viewport.y / 100) * height;
     const w = (viewport.width / 100) * width;
     const h = (viewport.height / 100) * height;
-    
+
     svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#f0f0f0" stroke="#666" stroke-width="1"/>`;
-    
+
     if (viewport.showTitle) {
       svg += `<text x="${x + w/2}" y="${y - 5}" text-anchor="middle" font-size="8" fill="#333">${viewport.viewType.toUpperCase()}</text>`;
     }
   });
-  
+
   // Draw title block
   if (template.titleBlock.enabled) {
     const tbHeight = 20; // Scaled down
@@ -573,9 +574,9 @@ export function generateTemplatePreview(template: ExportTemplate): string {
     svg += `<rect x="0" y="${tbY}" width="${width}" height="${tbHeight}" fill="#e0e0e0" stroke="#666" stroke-width="1"/>`;
     svg += `<text x="10" y="${tbY + 12}" font-size="8" fill="#333">Title Block</text>`;
   }
-  
+
   svg += '</svg>';
-  
+
   return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
@@ -584,12 +585,12 @@ export function generateTemplatePreview(template: ExportTemplate): string {
  */
 export function validateTemplate(template: ExportTemplate): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  
+
   // Check required fields
   if (!template.name) errors.push('Template name is required');
   if (!template.description) errors.push('Template description is required');
   if (template.views.length === 0) errors.push('At least one view must be selected');
-  
+
   // Check viewport configuration
   template.layout.viewports.forEach((viewport, index) => {
     if (viewport.x < 0 || viewport.x > 100) {
@@ -611,19 +612,19 @@ export function validateTemplate(template: ExportTemplate): { valid: boolean; er
       errors.push(`Viewport ${index + 1}: Viewport extends beyond page height`);
     }
   });
-  
+
   // Check for viewport overlaps
   for (let i = 0; i < template.layout.viewports.length; i++) {
     for (let j = i + 1; j < template.layout.viewports.length; j++) {
       const vp1 = template.layout.viewports[i];
       const vp2 = template.layout.viewports[j];
-      
+
       if (viewportsOverlap(vp1, vp2)) {
         errors.push(`Viewports ${i + 1} and ${j + 1} overlap`);
       }
     }
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,

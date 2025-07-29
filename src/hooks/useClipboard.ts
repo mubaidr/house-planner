@@ -7,11 +7,13 @@ import { Door } from '@/types/elements/Door';
 import { Window } from '@/types/elements/Window';
 import { Stair } from '@/types/elements/Stair';
 import { Roof } from '@/types/elements/Roof';
+import { Room } from '@/types/elements/Room';
+import { Command } from '@/types/commands';
 import { handleError } from '@/utils/errorHandler';
 
 interface ClipboardData {
-  type: 'wall' | 'door' | 'window' | 'stair' | 'roof';
-  element: Wall | Door | Window | Stair | Roof;
+  type: 'wall' | 'door' | 'window' | 'stair' | 'roof' | 'room';
+  element: Wall | Door | Window | Stair | Roof | Room;
 }
 
 export const useClipboard = () => {
@@ -138,11 +140,10 @@ export const useClipboard = () => {
           newElement = {
             ...roofElement,
             id: newId,
-            position: {
-              ...roofElement.position,
-              x: roofElement.position.x + offsetX,
-              y: roofElement.position.y + offsetY,
-            },
+            points: roofElement.points.map(point => ({
+              x: point.x + offsetX,
+              y: point.y + offsetY,
+            })),
           };
           break;
 
@@ -152,7 +153,6 @@ export const useClipboard = () => {
 
       // Add element with history support
       executeCommand({
-        type: `PASTE_${type.toUpperCase()}`,
         execute: () => {
           // Add to current floor first
           if (currentFloorId) {
@@ -227,7 +227,11 @@ export const useClipboard = () => {
     try {
       localStorage.removeItem('house-planner-clipboard');
     } catch (error) {
-      handleError(error, 'Failed to clear clipboard');
+      handleError(error as Error, {
+        source: 'useClipboard.clearClipboard',
+        category: 'storage',
+        operation: 'clear clipboard'
+      });
     }
   }, []);
 
@@ -238,8 +242,8 @@ export const useClipboard = () => {
     }
 
     const elements = selectedIds.map(id => {
-      return walls.find(w => w.id === id) || 
-             doors.find(d => d.id === id) || 
+      return walls.find(w => w.id === id) ||
+             doors.find(d => d.id === id) ||
              windows.find(w => w.id === id) ||
              roofs.find(r => r.id === id) ||
              stairs.find(s => s.id === id);
@@ -257,12 +261,12 @@ export const useClipboard = () => {
     try {
       const clipboardText = await navigator.clipboard.readText();
       const data = JSON.parse(clipboardText);
-      
+
       if (data.type !== 'clipboard_data' || !data.elements) {
         return;
       }
 
-      const commands = data.elements.map((element: any) => {
+      const commands: Command[] = data.elements.map((element: any) => {
         const newElement = {
           ...element,
           id: `${element.type || 'element'}-${Date.now()}-${Math.random()}`,
@@ -310,8 +314,8 @@ export const useClipboard = () => {
           description: 'Paste elements',
         });
       }
-    } catch (error) {
-      // Handle clipboard errors silently
+    } catch {
+      // Handle clipboard errors silently - ignore parsing errors
     }
   }, [addWall, addDoor, addWindow, addRoof, addStair, removeWall, removeDoor, removeWindow, removeRoof, removeStair, executeCommand]);
 

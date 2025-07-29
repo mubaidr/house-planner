@@ -3,7 +3,7 @@
 import React from 'react';
 import { forwardRef } from 'react';
 
-interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   size?: 'sm' | 'md' | 'lg';
   label?: string;
   description?: string;

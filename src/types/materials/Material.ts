@@ -18,6 +18,23 @@ export type MaterialCategory =
   | 'siding'
   | 'other';export type MaterialProperties = Material['properties'];
 
+export interface MaterialApplication {
+  id: string;
+  elementId: string;
+  elementType: string;
+  materialId: string;
+  appliedAt: Date;
+  coverage?: number; // Percentage of element coverage (0-100)
+  layer?: string;
+  properties?: {
+    scale?: number;
+    rotation?: number;
+    offset?: { x: number; y: number };
+    blend?: 'normal' | 'multiply' | 'overlay';
+    opacity?: number;
+  };
+}
+
 export interface Material {
   id: string;
   name: string;

@@ -40,12 +40,14 @@ export const Toolbar: React.FC = () => {
           icon={<LuSave />}
           label="Save"
           aria-label="Save design"
+          isActive={false}
           onClick={saveDesign}
         />
         <ToolButton
           icon={<LuFolderOpen />}
           label="Load"
           aria-label="Load design"
+          isActive={false}
           onClick={loadDesign}
         />
       </div>

@@ -4,12 +4,13 @@ import React from 'react';
 import { Tool } from '@/stores/uiStore';
 
 interface ToolButtonProps {
-  tool: Tool;
+  tool?: Tool;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   shortcut?: string;
   isActive: boolean;
   onClick: () => void;
+  'aria-label'?: string;
 }
 
 export default function ToolButton({

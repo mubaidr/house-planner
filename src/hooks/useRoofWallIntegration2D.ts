@@ -14,8 +14,8 @@ import {
 } from '@/utils/roofWallIntegration2D';
 import { convertElementsToElement2D } from '@/utils/elementTypeConverter';
 import { Wall2D, Roof2D } from '@/types/elements2D';
+import { RoofPitchData } from '@/utils/roofPitchCalculations';
 import { handleError, handleWarning } from '@/utils/errorHandler';
-import { useHistoryStore } from '@/stores/historyStore';
 
 export interface UseRoofWallIntegration2DOptions {
   autoUpdate?: boolean;
@@ -37,7 +37,7 @@ export interface UseRoofWallIntegration2DReturn {
   getConnectionsForRoof: (roofId: string) => RoofWallConnection2D[];
   getConnectionsForWall: (wallId: string) => RoofWallConnection2D[];
   updateConnectionPitch: (connectionId: string, newPitch: number) => boolean;
-  calculateOptimalPitch: (roofId: string, wallId: string, constraints?: Record<string, unknown>) => Record<string, unknown> | null;
+  calculateOptimalPitch: (roofId: string, wallId: string, constraints?: Record<string, unknown>) => RoofPitchData | null;
 
   // Configuration
   configuration: RoofWallIntegrationConfig;
@@ -54,7 +54,6 @@ export function useRoofWallIntegration2D(options: UseRoofWallIntegration2DOption
   } = options;
 
   const { walls, roofs } = useDesignStore();
-  const { executeCommand } = useHistoryStore(); // Removed TODO
 
   // Initialize integration system
   const integrationSystem = useMemo(() => {

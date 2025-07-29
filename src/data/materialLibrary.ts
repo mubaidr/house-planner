@@ -105,12 +105,12 @@ export const DEFAULT_MATERIALS: Material[] = [
       isCustom: false,
     },
   },
-  
+
   // Floor Materials
   {
     id: 'floor-hardwood-oak',
     name: 'Oak Hardwood',
-    category: 'floor',
+    category: 'flooring',
     color: '#D2B48C',
     textureImage: '/textures/hardwood_diffuse.jpg',
     properties: {
@@ -144,7 +144,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'floor-tile-ceramic',
     name: 'Ceramic Tile',
-    category: 'floor',
+    category: 'flooring',
     color: '#E6E6E6',
     textureImage: '/textures/tile_diffuse.jpg',
     properties: {
@@ -178,7 +178,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'floor-carpet-grey',
     name: 'Grey Carpet',
-    category: 'floor',
+    category: 'flooring',
     color: '#A9A9A9',
     textureImage: '/textures/carpet_diffuse.jpg',
     properties: {
@@ -214,7 +214,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'countertop-granite-black',
     name: 'Black Granite',
-    category: 'countertop',
+    category: 'composite',
     color: '#2C2C2C',
     textureImage: '/textures/granite_diffuse.jpg',
     properties: {
@@ -248,7 +248,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'countertop-quartz-white',
     name: 'White Quartz',
-    category: 'countertop',
+    category: 'composite',
     color: '#F5F5F5',
     textureImage: '/textures/quartz_diffuse.jpg',
     properties: {
@@ -284,7 +284,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'door-wood-mahogany',
     name: 'Mahogany Wood',
-    category: 'door',
+    category: 'wood',
     color: '#C04000',
     textureImage: '/textures/wood_diffuse.jpg',
     properties: {
@@ -318,7 +318,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'door-metal-steel',
     name: 'Steel Door',
-    category: 'door',
+    category: 'wood',
     color: '#B0C4DE',
     textureImage: '/textures/metal_diffuse.jpg',
     properties: {
@@ -354,7 +354,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'window-frame-vinyl-white',
     name: 'White Vinyl Frame',
-    category: 'window',
+    category: 'glass',
     color: '#FFFFFF',
     properties: {
       opacity: 1,
@@ -422,7 +422,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'roof-shingle-asphalt-black',
     name: 'Black Asphalt Shingle',
-    category: 'roof',
+    category: 'roofing',
     color: '#36454F',
     textureImage: '/textures/shingle_diffuse.jpg',
     properties: {
@@ -456,7 +456,7 @@ export const DEFAULT_MATERIALS: Material[] = [
   {
     id: 'roof-tile-clay-red',
     name: 'Red Clay Tile',
-    category: 'roof',
+    category: 'roofing',
     color: '#CB6D51',
     textureImage: '/textures/clay_tile_diffuse.jpg',
     properties: {
@@ -576,7 +576,7 @@ export const MATERIAL_TEMPLATES: MaterialTemplate[] = [
   {
     id: 'template-hardwood',
     name: 'Hardwood Flooring',
-    category: 'floor',
+    category: 'flooring',
     baseProperties: {
       opacity: 1,
       roughness: 0.6,
@@ -600,7 +600,7 @@ export const MATERIAL_TEMPLATES: MaterialTemplate[] = [
   {
     id: 'template-tile',
     name: 'Tile Flooring',
-    category: 'floor',
+    category: 'flooring',
     baseProperties: {
       opacity: 1,
       roughness: 0.3,
