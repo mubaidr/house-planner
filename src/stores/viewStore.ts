@@ -112,7 +112,7 @@ const DEFAULT_LAYER_VISIBILITY: Record<ViewType2D, Record<string, boolean>> = {
 
 export const useViewStore = create<ViewState & ViewActions>((set, get) => ({
   // State
-  currentView: 'plan',
+  currentView: 'plan' as ViewType2D,
   viewStates: DEFAULT_VIEW_TRANSFORMS,
   isTransitioning: false,
   transitionDuration: 300,

@@ -46,7 +46,7 @@ const ElevationRenderer2DComponent = React.memo(function ElevationRenderer2DComp
   const { getMaterialById } = useMaterialStore();
 
   // Only render if current view matches the elevation view type
-  if (currentView !== viewType || !viewType.includes('elevation')) {
+  if (currentView !== viewType || currentView === 'plan') {
     return null;
   }
 
@@ -91,13 +91,13 @@ const ElevationRenderer2DComponent = React.memo(function ElevationRenderer2DComp
 
   // Render elements in proper Z-order for elevation views (back to front)
   const renderOrder = [
-    'roofs',     // Background
-    'walls',     // Structure
-    'doors',     // Openings
-    'windows',   // Openings
-    'stairs',    // Features
-    'dimensions', // Annotations
-    'annotations' // Foreground
+    'roof2d',      // Background
+    'wall2d',      // Structure
+    'door2d',      // Openings
+    'window2d',    // Openings
+    'stair2d',     // Features
+    'dimension2d', // Annotations
+    'annotation2d' // Foreground
   ];
 
   const handleElementSelect = (elementId: string, element: Element2D) => {
@@ -121,7 +121,87 @@ const ElevationRenderer2DComponent = React.memo(function ElevationRenderer2DComp
               
               return (
                 <Group key={element.id}>
-                  {/* Placeholder for element rendering */}
+                  {/* Render different element types for elevation view */}
+                  {element.type === 'wall2d' && (
+                    <ElevationWallRenderer2D
+                      wall={element as Wall2D}
+                      viewType={viewType}
+                      isSelected={isSelected}
+                      scale={scale}
+                      showMaterials={showMaterials}
+                      getMaterialById={getMaterialById}
+                      onSelect={() => handleElementSelect(element.id, element)}
+                      onEdit={(updates) => handleElementEdit(element.id, updates)}
+                    />
+                  )}
+                  {element.type === 'door2d' && (
+                    <ElevationDoorRenderer2D
+                      door={element as Door2D}
+                      viewType={viewType}
+                      isSelected={isSelected}
+                      scale={scale}
+                      showMaterials={showMaterials}
+                      getMaterialById={getMaterialById}
+                      onSelect={() => handleElementSelect(element.id, element)}
+                      onEdit={(updates) => handleElementEdit(element.id, updates)}
+                    />
+                  )}
+                  {element.type === 'window2d' && (
+                    <ElevationWindowRenderer2D
+                      window={element as Window2D}
+                      viewType={viewType}
+                      isSelected={isSelected}
+                      scale={scale}
+                      showMaterials={showMaterials}
+                      getMaterialById={getMaterialById}
+                      onSelect={() => handleElementSelect(element.id, element)}
+                      onEdit={(updates) => handleElementEdit(element.id, updates)}
+                    />
+                  )}
+                  {element.type === 'stair2d' && (
+                    <ElevationStairRenderer2D
+                      stair={element as Stair2D}
+                      viewType={viewType}
+                      isSelected={isSelected}
+                      scale={scale}
+                      showMaterials={showMaterials}
+                      getMaterialById={getMaterialById}
+                      onSelect={() => handleElementSelect(element.id, element)}
+                      onEdit={(updates) => handleElementEdit(element.id, updates)}
+                    />
+                  )}
+                  {element.type === 'roof2d' && (
+                    <ElevationRoofRenderer2D
+                      roof={element as Roof2D}
+                      viewType={viewType}
+                      isSelected={isSelected}
+                      scale={scale}
+                      showMaterials={showMaterials}
+                      getMaterialById={getMaterialById}
+                      onSelect={() => handleElementSelect(element.id, element)}
+                      onEdit={(updates) => handleElementEdit(element.id, updates)}
+                    />
+                  )}
+                  {element.type === 'annotation2d' && showAnnotations && (
+                    <ElevationAnnotationRenderer2D
+                      annotation={element as Annotation2D}
+                      viewType={viewType}
+                      isSelected={isSelected}
+                      scale={scale}
+                      onSelect={() => handleElementSelect(element.id, element)}
+                      onEdit={(updates) => handleElementEdit(element.id, updates)}
+                    />
+                  )}
+                  {element.type === 'dimension2d' && showDimensions && (
+                    <ElevationDimensionRenderer2D
+                      dimension={element as Dimension2D}
+                      viewType={viewType}
+                      isSelected={isSelected}
+                      scale={scale}
+                      onSelect={() => handleElementSelect(element.id, element)}
+                      onEdit={(updates) => handleElementEdit(element.id, updates)}
+                    />
+                  )}
                 </Group>
               );
             })}
