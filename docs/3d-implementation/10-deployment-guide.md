@@ -1,6 +1,20 @@
+
 # Deployment Guide
 
 > **Comprehensive deployment guide for 3D House Planner with production-ready configuration, monitoring, and maintenance procedures**
+
+---
+
+## 🚨 Deployment Foundation Update
+
+**As of August 2025, all deployment steps and procedures will be layered on and extend [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
+
+### Deployment Adaptation:
+- All deployment steps below are to be interpreted as customizations, extensions, or integrations with the base project.
+- Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
+- Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
+
+---
 
 ## 🚀 Deployment Overview
 

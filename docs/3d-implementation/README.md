@@ -1,6 +1,27 @@
+
 # 3D House Planner Implementation Plan
 
 > **Comprehensive guide for implementing 3D capabilities in the House Planner application**
+
+---
+
+## 🚨 Project Foundation Update
+
+**As of August 2025, the 3D House Planner implementation will be based on [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
+
+### Key Project Features of the New Base:
+- React-bundled Three.js architecture
+- 2D/3D floorplan editing, product placement/configuration
+- Model morph/material/style configuration
+- Extensible via React components/hooks
+- Built-in product configurator and room editing
+
+### Customization & Extension Strategy:
+- All custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
+- Existing Next.js/React/Zustand patterns will be adapted to integrate with the base.
+- All documentation, architecture, requirements, and implementation plans below are now interpreted as extensions or integrations with threejs-3d-room-designer.
+
+---
 
 ## 📋 Documentation Index
 

@@ -1,6 +1,28 @@
+
 # Architecture Design
 
 > **Technical architecture and system design for 3D House Planner implementation**
+
+---
+
+## 🚨 Architectural Foundation Update
+
+**As of August 2025, the 3D House Planner implementation will be based on [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), an open-source React-bundled Three.js room planner and product configurator.**
+
+### Key Features of the New Base:
+- React-bundled Three.js architecture
+- 2D/3D floorplan editing with interactive product placement/configuration
+- Model morph/material/style configuration
+- Extensible via React components and hooks
+- Built-in support for product configurator, room editing, and model customization
+
+### Integration & Adaptation Strategy:
+- The existing Next.js/React/Zustand architecture will be adapted to extend and integrate with the threejs-3d-room-designer base.
+- Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
+- State management, UI, and business logic will leverage the base's React architecture, with additional stores and hooks as needed.
+- All architectural diagrams, data models, and component structures below are to be interpreted as extensions or integrations with the threejs-3d-room-designer foundation.
+
+---
 
 ## 📋 Overview
 
@@ -8,33 +30,36 @@ This document outlines the technical architecture for implementing 3D capabiliti
 
 ---
 
-## 🏗️ System Architecture
 
-### High-Level Architecture Diagram
+## 🏗️ System Architecture (Extending threejs-3d-room-designer)
+
+
+### High-Level Architecture Diagram (with threejs-3d-room-designer as core)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────┐
-│                    Next.js Application                     │
+│         Next.js Application (Extends threejs-3d-room-designer) │
 ├─────────────────────────────────────────────────────────────┤
-│  UI Layer                                                   │
+│  UI Layer (React, Tailwind, threejs-3d-room-designer)        │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
 │  │   Canvas2D      │  │   Canvas3D      │  │  UI Controls    │ │
-│  │   (Konva)       │  │  (R3F/Three)   │  │ (React/Tailwind)│ │
+│  │   (Konva)       │  │  (threejs-3d-room-designer/R3F/Three) │  │ (React/Tailwind)│ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 ├─────────────────────────────────────────────────────────────┤
-│  State Management Layer (Zustand + Immer)                  │
+│  State Management Layer (Zustand + Immer + base project)    │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
 │  │  Design Store   │  │   Scene3D Store │  │   UI Store      │ │
 │  │  (2D Elements)  │  │  (3D Config)    │  │ (View State)    │ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 ├─────────────────────────────────────────────────────────────┤
-│  Business Logic Layer                                      │
+│  Business Logic Layer (Extends base product logic)          │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
 │  │ Element System  │  │ 3D Generators   │  │ Export System   │ │
 │  │ (Walls, Doors)  │  │ (Mesh Creation) │  │ (PDF, 3D, IMG)  │ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 ├─────────────────────────────────────────────────────────────┤
-│  Utility Layer                                             │
+│  Utility Layer (Custom + base utilities)                    │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
 │  │ Math Utils      │  │ 3D Transforms   │  │  Storage        │ │
 │  │ (2D Geometry)   │  │ (Conversions)   │  │ (Local/Export)  │ │
@@ -44,7 +69,8 @@ This document outlines the technical architecture for implementing 3D capabiliti
 
 ---
 
-## 📁 Project Structure Enhancement
+
+## 📁 Project Structure Enhancement (Extending threejs-3d-room-designer)
 
 ### Directory Structure
 
@@ -87,9 +113,10 @@ src/
 
 ---
 
-## 🎯 Core Component Architecture
 
-### Scene3D Component
+## 🎯 Core Component Architecture (Extending base components)
+
+### Scene3D Component (customized from threejs-3d-room-designer)
 
 ```typescript
 // src/components/Canvas3D/Scene3D.tsx
@@ -209,7 +236,8 @@ export function ElementRenderer3D({
 
 ---
 
-## 🗃️ Enhanced Data Models
+
+## 🗃️ Enhanced Data Models (Extending base models)
 
 ### 3D-Enhanced Element Types
 
@@ -303,7 +331,8 @@ export interface Scene3DConfig {
 
 ---
 
-## 🔄 State Management Enhancement
+
+## 🔄 State Management Enhancement (Extending base state)
 
 ### Enhanced Design Store
 
@@ -450,7 +479,8 @@ export const useScene3DStore = create<Scene3DState & Scene3DActions>()(
 
 ---
 
-## 🔧 Utility Systems
+
+## 🔧 Utility Systems (Custom utilities layered on base)
 
 ### 2D ↔ 3D Conversion Utilities
 
@@ -561,7 +591,8 @@ export class GeometryGenerator {
 
 ---
 
-## 🎨 Material System Enhancement
+
+## 🎨 Material System Enhancement (Extending base material system)
 
 ### 3D Material Management
 
@@ -622,7 +653,8 @@ export class Material3DManager {
 
 ---
 
-## 🚀 Performance Architecture
+
+## 🚀 Performance Architecture (Extending base optimizations)
 
 ### Optimization Strategies
 
@@ -686,4 +718,13 @@ export function AdaptiveQualityRenderer({ element, cameraPosition }: {
 }
 ```
 
-This comprehensive architecture design provides a robust foundation for implementing 3D capabilities while maintaining the excellent patterns and performance characteristics of the existing 2D system.
+
+---
+
+## 📝 Architectural Notes
+
+- All architectural extensions and customizations should be implemented as React components, hooks, and stores that integrate with or wrap the threejs-3d-room-designer base.
+- Maintain compatibility with upstream updates to the base project.
+- Document all integration points and customizations for maintainability.
+
+This comprehensive architecture design now reflects the adoption of threejs-3d-room-designer as the foundation for 3D capabilities, with all custom features and enhancements layered on top of its extensible React/Three.js architecture.
