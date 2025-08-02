@@ -2,6 +2,62 @@
 require('jest-canvas-mock');
 require('@testing-library/jest-dom');
 
+// Mock Three.js
+jest.mock('three', () => ({
+  Vector3: jest.fn().mockImplementation((x = 0, y = 0, z = 0) => ({
+    x,
+    y,
+    z,
+    clone: jest.fn().mockReturnValue({ x, y, z }),
+    copy: jest.fn(),
+    set: jest.fn(),
+    add: jest.fn(),
+    sub: jest.fn(),
+    multiply: jest.fn(),
+    divide: jest.fn(),
+    normalize: jest.fn().mockReturnValue({ x, y, z }),
+    length: jest.fn().mockReturnValue(Math.sqrt(x * x + y * y + z * z)),
+    distanceTo: jest.fn((other) => {
+      const dx = x - other.x;
+      const dy = y - other.y;
+      const dz = z - other.z;
+      return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }),
+    lerp: jest.fn((target, alpha) => ({
+      x: x + (target.x - x) * alpha,
+      y: y + (target.y - y) * alpha,
+      z: z + (target.z - z) * alpha
+    })),
+    cross: jest.fn((v) => ({
+      x: y * v.z - z * v.y,
+      y: z * v.x - x * v.z,
+      z: x * v.y - y * v.x
+    })),
+    dot: jest.fn((v) => x * v.x + y * v.y + z * v.z),
+  })),
+  Matrix4: jest.fn().mockImplementation(() => ({
+    lookAt: jest.fn(),
+    makeTranslation: jest.fn(),
+    makeRotationFromEuler: jest.fn(),
+    makeScale: jest.fn(),
+    multiply: jest.fn(),
+  })),
+  Box3: jest.fn().mockImplementation(() => ({
+    setFromObject: jest.fn(),
+    union: jest.fn(),
+    getCenter: jest.fn(),
+    getSize: jest.fn(),
+  })),
+  Object3D: jest.fn().mockImplementation(() => ({
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: { x: 1, y: 1, z: 1 },
+    add: jest.fn(),
+    remove: jest.fn(),
+    traverse: jest.fn(),
+  })),
+}));
+
 // Mock localStorage with actual implementation for tests
 const localStorageMock = (() => {
   let store = {};
