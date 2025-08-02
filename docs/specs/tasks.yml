@@ -1,0 +1,41 @@
+tasks:
+  - id: task-001
+    description: Verify project completion up to Phase 3 of the implementation roadmap.
+    task_dependencies: []
+    priority: high
+    risk_score: 12
+    status: in_progress
+    checkpoint: pending
+    validation_criteria:
+      test_types: [manual, automated]
+      expected_outcomes: ["All features up to Phase 3 are verified and working correctly."]
+  - id: task-002
+    description: Verify implementation of ARCHITECTURAL_VIEW_PRESETS.
+    task_dependencies: [task-001]
+    priority: high
+    risk_score: 10
+    status: to_do
+    checkpoint: not_started
+    validation_criteria:
+      test_types: [manual]
+      expected_outcomes: ["Architectural view presets are implemented and functional."]
+  - id: task-003
+    description: Set up and run Playwright for UI testing.
+    task_dependencies: [task-001]
+    priority: medium
+    risk_score: 8
+    status: to_do
+    checkpoint: not_started
+    validation_criteria:
+      test_types: [automated]
+      expected_outcomes: ["Playwright is set up and UI tests are running successfully."]
+  - id: task-004
+    description: Report findings on project completion.
+    task_dependencies: [task-002, task-003]
+    priority: high
+    risk_score: 5
+    status: to_do
+    checkpoint: not_started
+    validation_criteria:
+      test_types: [manual]
+      expected_outcomes: ["A comprehensive report on the project's status is generated."]
