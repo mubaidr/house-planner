@@ -135,6 +135,7 @@ export interface Scene3DConfig {
   lighting: LightingConfig;
   renderSettings: RenderSettings;
   environment: EnvironmentConfig;
+  physics: PhysicsConfig;
 }
 
 export interface LightingConfig {
@@ -158,6 +159,13 @@ export interface EnvironmentConfig {
   backgroundColors: [string, string]; // gradient colors
   groundPlane: boolean;
   gridHelper: boolean;
+}
+
+export interface PhysicsConfig {
+  enabled: boolean;
+  debug: boolean;
+  gravity: [number, number, number];
+  paused: boolean;
 }
 
 // Design state

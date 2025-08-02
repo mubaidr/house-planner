@@ -44,6 +44,12 @@ const DEFAULT_SCENE_CONFIG: Scene3DConfig = {
     groundPlane: true,
     gridHelper: true,
   },
+  physics: {
+    enabled: true,
+    debug: false,
+    gravity: [0, -9.81, 0],
+    paused: false,
+  },
 };
 
 // Camera presets
