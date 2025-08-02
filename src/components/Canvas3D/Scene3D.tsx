@@ -14,13 +14,18 @@ import { MeasureTool3D } from './Tools/MeasureTool3D';
 import ObjectManipulator from './Tools/ObjectManipulator';
 import { ElementPropertiesPanel3D, ToolPalette3D, InfoHUD3D } from './UI/ElementPropertiesPanel3D';
 
+// New UI Components
+import ViewSwitcherFAB from '../UI/ViewSwitcherFAB';
+import BottomStatusBar from '../UI/BottomStatusBar';
+import InfoPanel from '../UI/InfoPanel';
+
 interface Scene3DProps {
   className?: string;
   onElementSelect?: (id: string, type: string) => void;
 }
 
 export function Scene3D({ className, onElementSelect }: Scene3DProps) {
-  const { scene3D, initializeScene3D } = useDesignStore();
+  const { scene3D, initializeScene3D, selection } = useDesignStore();
 
   // Phase 3: UI States
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(false);
@@ -73,10 +78,17 @@ export function Scene3D({ className, onElementSelect }: Scene3DProps) {
     }
   };
 
-  // Add keyboard listeners
+  // Add keyboard listeners and Info HUD toggle listener
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const handleInfoHUDToggle = (e: any) => {
+      setShowInfoHUD(!!(e && e.detail));
+    };
+    window.addEventListener('toggleInfoHUD', handleInfoHUDToggle);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('toggleInfoHUD', handleInfoHUDToggle);
+    };
   }, [measureToolActive, manipulatorActive, showPropertiesPanel, showToolPalette, showInfoHUD]);
 
   return (
@@ -220,18 +232,21 @@ export function Scene3D({ className, onElementSelect }: Scene3DProps) {
         </Suspense>
       </Canvas>
 
-      {/* Phase 3: Keyboard Shortcuts Help */}
-      <div className="absolute top-4 right-4 bg-black bg-opacity-70 text-white p-3 rounded-lg text-sm">
-        <div className="font-bold mb-2">Keyboard Shortcuts</div>
-        <div>M - Toggle Measure Tool</div>
-        <div>G - Toggle Object Manipulator</div>
-        <div>P - Toggle Properties Panel</div>
-        <div>T - Toggle Tool Palette</div>
-        <div>I - Toggle Info HUD</div>
-        <div>ESC - Close All Tools</div>
-        <div>F - Focus on Selection</div>
-        <div>1-4 - Camera Presets</div>
-      </div>
+      {/* New UI Overlay Components */}
+      <ViewSwitcherFAB />
+
+      <BottomStatusBar
+        measureToolActive={measureToolActive}
+        onMeasureToggle={() => setMeasureToolActive(!measureToolActive)}
+        manipulatorActive={manipulatorActive}
+        onManipulatorToggle={() => setManipulatorActive(!manipulatorActive)}
+      />
+
+      <InfoPanel
+        measureToolActive={measureToolActive}
+        manipulatorActive={manipulatorActive}
+        selectedElementId={selection.selectedElementId || undefined}
+      />
     </div>
   );
 }

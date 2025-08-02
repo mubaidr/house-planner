@@ -7,6 +7,7 @@ import { useState } from 'react';
 export function EnhancedViewControls() {
   const { viewMode, setViewMode, setCameraPreset, scene3D, updateScene3D } = useDesignStore();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showInfoHUD, setShowInfoHUD] = useState(true);
 
   const viewModes: { value: ViewMode; label: string; icon: string; description: string }[] = [
     { value: '2d', label: '2D', icon: '📐', description: 'Top-down blueprint view' },
@@ -41,6 +42,25 @@ export function EnhancedViewControls() {
       </div>
 
       <div className="p-4 space-y-6">
+        {/* Info HUD Toggle */}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-700 flex items-center">
+            <span className="mr-2">ℹ️</span>
+            Info HUD
+          </span>
+          <input
+            type="checkbox"
+            checked={showInfoHUD}
+            onChange={e => {
+              setShowInfoHUD(e.target.checked);
+              // Set global state for Info HUD in Scene3D if needed
+              if (typeof window !== 'undefined' && window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('toggleInfoHUD', { detail: e.target.checked }));
+              }
+            }}
+            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+          />
+        </div>
         {/* View Mode Selection */}
         <div>
           <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
