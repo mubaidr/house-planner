@@ -1,7 +1,7 @@
 import { useDesignStore } from '@/stores/designStore';
 
 export function ToolPanel() {
-  const { addWall, addRoom, walls, rooms } = useDesignStore();
+  const { addWall, addRoom, addDoor, addWindow, walls, rooms, doors, windows } = useDesignStore();
 
   const createSampleWall = () => {
     addWall({
@@ -31,10 +31,50 @@ export function ToolPanel() {
     });
   };
 
+  const createSampleDoor = () => {
+    // For demo purposes, place door at a random 3D position
+    addDoor({
+      wallId: walls.length > 0 ? walls[0].id : 'demo-wall',
+      position: { x: Math.random() * 5, y: 0, z: Math.random() * 5 },
+      width: 0.9,
+      height: 2.1,
+      thickness: 0.05,
+      openDirection: Math.random() > 0.5 ? 'left' : 'right',
+      color: '#8B4513',
+      materialId: 'door-wood',
+      properties3D: {
+        frameThickness: 0.08,
+        panelStyle: 'solid',
+        handleStyle: 'modern'
+      }
+    });
+  };
+
+  const createSampleWindow = () => {
+    // For demo purposes, place window at a random 3D position
+    addWindow({
+      wallId: walls.length > 0 ? walls[0].id : 'demo-wall',
+      position: { x: Math.random() * 5, y: 1, z: Math.random() * 5 },
+      width: 1.2,
+      height: 1.5,
+      thickness: 0.15,
+      sillHeight: 1.0,
+      color: '#FFFFFF',
+      materialId: 'window-frame',
+      properties3D: {
+        frameThickness: 0.08,
+        glassType: 'clear',
+        frameStyle: 'modern'
+      }
+    });
+  };
+
   const clearAll = () => {
     const state = useDesignStore.getState();
     walls.forEach(wall => state.deleteWall(wall.id));
     rooms.forEach(room => state.deleteRoom(room.id));
+    doors.forEach(door => state.deleteDoor(door.id));
+    windows.forEach(window => state.deleteWindow(window.id));
   };
 
   return (
@@ -57,6 +97,20 @@ export function ToolPanel() {
         </button>
 
         <button
+          onClick={createSampleDoor}
+          className="w-full px-3 py-2 bg-orange-500 text-white text-sm rounded hover:bg-orange-600"
+        >
+          Add Door
+        </button>
+
+        <button
+          onClick={createSampleWindow}
+          className="w-full px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+        >
+          Add Window
+        </button>
+
+        <button
           onClick={clearAll}
           className="w-full px-3 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600"
         >
@@ -68,6 +122,8 @@ export function ToolPanel() {
         <div className="text-xs text-gray-500 space-y-1">
           <div>Walls: {walls.length}</div>
           <div>Rooms: {rooms.length}</div>
+          <div>Doors: {doors.length}</div>
+          <div>Windows: {windows.length}</div>
         </div>
       </div>
     </div>

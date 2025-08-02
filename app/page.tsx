@@ -3,6 +3,7 @@
 import { Scene3D } from '@/components/Canvas3D/Scene3D';
 import { ViewControls } from '@/components/UI/ViewControls';
 import { ToolPanel } from '@/components/UI/ToolPanel';
+import { DemoSceneCreator } from '@/components/UI/DemoSceneCreator';
 import { useDesignStore } from '@/stores/designStore';
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
         </div>
 
         <ViewControls />
+        <DemoSceneCreator />
         <ToolPanel />
       </div>
 
@@ -32,7 +34,7 @@ export default function Home() {
               {viewMode === '3d' ? '3D View' : viewMode === '2d' ? '2D View' : 'Hybrid View'}
             </h2>
             <div className="text-sm text-gray-500">
-              Foundation Phase - 3D House Planner
+              Phase 2 - Enhanced 3D Elements with Animations
             </div>
           </div>
         </div>

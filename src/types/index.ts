@@ -26,12 +26,15 @@ export interface Wall3DProperties {
 export interface Door {
   id: string;
   wallId: string;
-  position: number; // position along wall (0-1)
+  position: number | { x: number; y: number; z: number }; // position along wall (0-1) or 3D position
   width: number;
   height: number;
+  thickness?: number;
   openDirection: 'left' | 'right' | 'inward' | 'outward';
   color: string;
   materialId?: string;
+  material?: Material; // Resolved material
+  rotation?: number;
   properties3D?: Door3DProperties;
 }
 
@@ -44,12 +47,15 @@ export interface Door3DProperties {
 export interface Window {
   id: string;
   wallId: string;
-  position: number;
+  position: number | { x: number; y: number; z: number }; // position along wall (0-1) or 3D position
   width: number;
   height: number;
+  thickness?: number;
   sillHeight: number;
   color: string;
   materialId?: string;
+  material?: Material; // Resolved material
+  rotation?: number;
   properties3D?: Window3DProperties;
 }
 

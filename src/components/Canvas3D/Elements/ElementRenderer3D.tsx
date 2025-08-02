@@ -1,5 +1,7 @@
 import { Wall3D } from './Wall3D';
 import { Room3D } from './Room3D';
+import { Door3D } from './Door3D';
+import { Window3D } from './Window3D';
 import { useDesignStore } from '@/stores/designStore';
 
 interface ElementRenderer3DProps {
@@ -7,7 +9,7 @@ interface ElementRenderer3DProps {
 }
 
 export function ElementRenderer3D({ onElementSelect }: ElementRenderer3DProps) {
-  const { walls, rooms, selectElement } = useDesignStore();
+  const { walls, rooms, doors, windows, selectElement, selection } = useDesignStore();
 
   const handleSelect = (id: string, type: 'wall' | 'room' | 'door' | 'window') => {
     selectElement(id, type);
@@ -34,6 +36,30 @@ export function ElementRenderer3D({ onElementSelect }: ElementRenderer3DProps) {
             key={wall.id}
             wall={wall}
             onSelect={() => handleSelect(wall.id, 'wall')}
+          />
+        ))}
+      </group>
+
+      {/* Render doors */}
+      <group name="doors">
+        {doors.map(door => (
+          <Door3D
+            key={door.id}
+            door={door}
+            isSelected={selection.selectedElementId === door.id && selection.selectedElementType === 'door'}
+            onClick={() => handleSelect(door.id, 'door')}
+          />
+        ))}
+      </group>
+
+      {/* Render windows */}
+      <group name="windows">
+        {windows.map(window => (
+          <Window3D
+            key={window.id}
+            window={window}
+            isSelected={selection.selectedElementId === window.id && selection.selectedElementType === 'window'}
+            onClick={() => handleSelect(window.id, 'window')}
           />
         ))}
       </group>

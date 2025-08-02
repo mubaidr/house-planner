@@ -16,7 +16,10 @@
     "@react-three/drei": "^10.6.1",
     "@react-three/fiber": "^9.3.0",
     "@react-three/postprocessing": "^3.0.4",
+    "@react-three/rapier": "^2.1.0",
+    "@react-three/uikit": "^0.8.21",
     "@tailwindcss/typography": "^0.5.16",
+    "@use-gesture/react": "^10.3.1",
     "file-saver": "^2.0.5",
     "immer": "^10.1.1",
     "jszip": "^3.10.1",
@@ -27,6 +30,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-konva": "^19.0.7",
+    "react-spring": "^10.0.1",
     "tailwindcss": "^4.1.11",
     "three": "^0.179.1",
     "zustand": "^5.0.7"

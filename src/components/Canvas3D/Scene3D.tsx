@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { SceneLighting } from './Lighting/SceneLighting';
 import { CameraControls } from './Camera/CameraControls';
 import { ElementRenderer3D } from './Elements/ElementRenderer3D';
+import { GestureHandler3D } from './GestureHandler3D';
 import { useDesignStore } from '@/stores/designStore';
 
 interface Scene3DProps {
@@ -35,29 +36,31 @@ export function Scene3D({ className, onElementSelect }: Scene3DProps) {
         <Suspense fallback={null}>
           <SceneLighting />
 
-          <ElementRenderer3D onElementSelect={onElementSelect} />
+          <GestureHandler3D>
+            <ElementRenderer3D onElementSelect={onElementSelect} />
+
+            {/* Environment helpers */}
+            {scene3D.environment.gridHelper && (
+              <gridHelper args={[20, 20, '#888888', '#bbbbbb']} />
+            )}
+
+            {scene3D.environment.groundPlane && (
+              <mesh
+                rotation={[-Math.PI / 2, 0, 0]}
+                position={[0, -0.01, 0]}
+                receiveShadow
+              >
+                <planeGeometry args={[100, 100]} />
+                <meshStandardMaterial
+                  color="#f8f9fa"
+                  transparent
+                  opacity={0.5}
+                />
+              </mesh>
+            )}
+          </GestureHandler3D>
 
           <CameraControls />
-
-          {/* Environment helpers */}
-          {scene3D.environment.gridHelper && (
-            <gridHelper args={[20, 20, '#888888', '#bbbbbb']} />
-          )}
-
-          {scene3D.environment.groundPlane && (
-            <mesh
-              rotation={[-Math.PI / 2, 0, 0]}
-              position={[0, -0.01, 0]}
-              receiveShadow
-            >
-              <planeGeometry args={[100, 100]} />
-              <meshStandardMaterial
-                color="#f8f9fa"
-                transparent
-                opacity={0.5}
-              />
-            </mesh>
-          )}
         </Suspense>
       </Canvas>
     </div>
