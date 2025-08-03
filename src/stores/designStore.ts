@@ -157,6 +157,23 @@ export const useDesignStore = create<EnhancedDesignState & EnhancedDesignActions
       activeFloor: 0,
       scene3D: DEFAULT_SCENE_CONFIG,
 
+      // Reset action for tests
+      reset: () => set(() => ({
+        walls: [],
+        doors: [],
+        windows: [],
+        rooms: [],
+        materials: DEFAULT_MATERIALS,
+        selection: {
+          selectedElementId: null,
+          selectedElementType: null,
+          hoveredElementId: null,
+          hoveredElementType: null,
+        },
+        viewMode: '3d' as ViewMode,
+        activeFloor: 0,
+        scene3D: DEFAULT_SCENE_CONFIG,
+      })),
       // Wall actions
       addWall: (wall) => set((state) => {
         const newWall: Wall = {

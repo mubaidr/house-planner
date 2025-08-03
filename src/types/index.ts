@@ -192,6 +192,8 @@ export interface DesignState {
 
 // Actions interface
 export interface DesignActions {
+  // Reset action for tests
+  reset: () => void;
   // Wall actions
   addWall: (wall: Omit<Wall, 'id'>) => void;
   updateWall: (id: string, updates: Partial<Wall>) => void;

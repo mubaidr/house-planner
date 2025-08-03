@@ -1,26 +1,13 @@
 import { useDesignStore } from '@/stores/designStore';
 import { act, renderHook } from '@testing-library/react';
 
-// Mock Immer and Zustand
-jest.mock('immer', () => {
-  return {
-    produce: jest.fn((state, fn) => {
-      const draft = JSON.parse(JSON.stringify(state));
-      fn(draft);
-      return draft;
-    }),
-  };
-});
 
 describe('Design Store', () => {
   beforeEach(() => {
-    // Reset store before each test
+    // Use store's reset action for test isolation
     const { result } = renderHook(() => useDesignStore());
     act(() => {
-      result.current.walls.forEach(wall => result.current.deleteWall(wall.id));
-      result.current.doors.forEach(door => result.current.deleteDoor(door.id));
-      result.current.windows.forEach(window => result.current.deleteWindow(window.id));
-      result.current.rooms.forEach(room => result.current.deleteRoom(room.id));
+      result.current.reset();
     });
   });
 
@@ -405,16 +392,20 @@ describe('Design Store', () => {
         result.current.addMaterial(materialData);
       });
 
-      const materialId = result.current.materials.find(m => m.name === 'Wood')?.id!;
+      const materialId = result.current.materials.find(m => m.name === 'Wood')?.id;
       const updates = { color: '#654321', properties: { roughness: 0.8 } };
 
-      act(() => {
-        result.current.updateMaterial(materialId, updates);
-      });
+      if (materialId) {
+        act(() => {
+          result.current.updateMaterial(materialId, updates);
+        });
 
-      const updatedMaterial = result.current.materials.find(m => m.id === materialId);
-      expect(updatedMaterial?.color).toBe('#654321');
-      expect(updatedMaterial?.properties.roughness).toBe(0.8);
+        const updatedMaterial = result.current.materials.find(m => m.id === materialId);
+        expect(updatedMaterial?.color).toBe('#654321');
+        expect(updatedMaterial?.properties.roughness).toBe(0.8);
+      } else {
+        throw new Error('Material ID not found for update test');
+      }
     });
 
     it('should delete a material', () => {
@@ -434,15 +425,19 @@ describe('Design Store', () => {
         result.current.addMaterial(materialData);
       });
 
-      const materialId = result.current.materials.find(m => m.name === 'Wood')?.id!;
+      const materialId = result.current.materials.find(m => m.name === 'Wood')?.id;
       const initialCount = result.current.materials.length;
 
-      act(() => {
-        result.current.deleteMaterial(materialId);
-      });
+      if (materialId) {
+        act(() => {
+          result.current.deleteMaterial(materialId);
+        });
 
-      expect(result.current.materials).toHaveLength(initialCount - 1);
-      expect(result.current.materials.find(m => m.id === materialId)).toBeUndefined();
+        expect(result.current.materials).toHaveLength(initialCount - 1);
+        expect(result.current.materials.find(m => m.id === materialId)).toBeUndefined();
+      } else {
+        throw new Error('Material ID not found for delete test');
+      }
     });
   });
 
@@ -539,10 +534,17 @@ describe('Design Store', () => {
       const sceneUpdate = {
         lighting: {
           ambientIntensity: 0.6,
-          directionalIntensity: 1.0
+          directionalIntensity: 1.0,
+          directionalPosition: [10, 10, 5] as [number, number, number],
+          shadows: true,
+          shadowIntensity: 0.3,
         },
         renderSettings: {
-          quality: 'high' as const
+          quality: 'high' as const,
+          shadows: true,
+          postProcessing: false,
+          wireframe: false,
+          antialias: true,
         }
       };
 
