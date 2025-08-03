@@ -79,3 +79,53 @@ tasks:
     validation_criteria:
       test_types: [unit]
       expected_outcomes: ["12 new geometry utility tests", "135 total tests passing", "Phase 2 function coverage"]
+  - id: task-009
+    description: Implement Phase 3 Architectural View Presets System
+    task_dependencies: [task-008]
+    priority: high
+    risk_score: 6
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, integration]
+      expected_outcomes: ["viewPresets.ts with 10 professional presets", "Smooth camera transitions", "Keyboard shortcuts integration"]
+  - id: task-010
+    description: Create Phase 3 Enhanced View Preset Panel UI
+    task_dependencies: [task-009]
+    priority: high
+    risk_score: 5
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, e2e]
+      expected_outcomes: ["ViewPresetPanel.tsx with interactive grid", "Category-based filtering", "Real-time animation feedback"]
+  - id: task-011
+    description: Implement Phase 3 Advanced Lighting Control System
+    task_dependencies: [task-009]
+    priority: high
+    risk_score: 7
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, integration]
+      expected_outcomes: ["LightingPanel.tsx with 6 presets", "Fine-grained lighting controls", "Shadow intensity controls"]
+  - id: task-012
+    description: Integrate Phase 3 Components into Main Application
+    task_dependencies: [task-010, task-011]
+    priority: medium
+    risk_score: 4
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [e2e, integration]
+      expected_outcomes: ["App.tsx integration complete", "All UI panels functional", "Global keyboard shortcuts working"]
+  - id: task-013
+    description: Complete Phase 3 Testing and Documentation
+    task_dependencies: [task-012]
+    priority: high
+    risk_score: 3
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, e2e, build]
+      expected_outcomes: ["135 unit tests passing", "5 E2E tests passing", "Clean TypeScript compilation", "Successful production build"]

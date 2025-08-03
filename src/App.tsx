@@ -5,6 +5,8 @@ import DemoSceneCreator from '@/components/UI/DemoSceneCreator';
 import EnhancedViewControls from '@/components/UI/EnhancedViewControls';
 import StatusPanel from '@/components/UI/StatusPanel';
 import CollapsiblePanel from '@/components/UI/CollapsiblePanel';
+import ViewPresetPanel, { ViewPresetShortcuts } from '@/components/UI/ViewPresetPanel';
+import LightingPanel from '@/components/UI/LightingPanel';
 import '@/styles/globals.css';
 
 const App: React.FC = () => {
@@ -30,6 +32,16 @@ const App: React.FC = () => {
               <EnhancedToolPanel />
             </CollapsiblePanel>
 
+            {/* Camera Views Section - Phase 3 Feature */}
+            <CollapsiblePanel title="Camera Views" icon="📷" defaultExpanded={true}>
+              <ViewPresetPanel />
+            </CollapsiblePanel>
+
+            {/* Lighting & Environment Section - Phase 3 Feature */}
+            <CollapsiblePanel title="Lighting & Environment" icon="💡" defaultExpanded={false}>
+              <LightingPanel />
+            </CollapsiblePanel>
+
             {/* View & Settings Section - Less expanded by default since FAB handles view switching */}
             <CollapsiblePanel title="View & Settings" icon="⚙️" defaultExpanded={false}>
               <EnhancedViewControls />
@@ -46,6 +58,9 @@ const App: React.FC = () => {
       {/* Main 3D Canvas */}
       <main className="flex-1 relative">
         <Scene3D className="absolute inset-0" />
+
+        {/* Global Keyboard Shortcuts Handler */}
+        <ViewPresetShortcuts />
       </main>
     </div>
   );
