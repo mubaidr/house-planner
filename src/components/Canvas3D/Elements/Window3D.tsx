@@ -3,7 +3,13 @@
 import React, { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useSpring, animated } from '@react-spring/three';
+import { useDesignStore } from '@/stores/designStore';
 import { Window } from '@/types';
+import {
+  calculateWindowPositionOnWall,
+  createWindowGeometries,
+  getMaterialProperties
+} from '@/utils/3d/geometryUtils';
 import * as THREE from 'three';
 
 interface Window3DProps {
@@ -16,73 +22,60 @@ export const Window3D: React.FC<Window3DProps> = ({ window, isSelected, onClick 
   const groupRef = useRef<THREE.Group>(null);
   const [isOpen, setIsOpen] = React.useState(false);
 
+  const { walls, materials } = useDesignStore();
+
+  // Find the wall this window belongs to
+  const parentWall = useMemo(() =>
+    walls.find(wall => wall.id === window.wallId),
+    [walls, window.wallId]
+  );
+
+  // Calculate window position using Phase 2 utilities
+  const { position, rotation } = useMemo(() => {
+    if (parentWall) {
+      return calculateWindowPositionOnWall(window, parentWall);
+    }
+    // Fallback to absolute position if no wall found
+    if (typeof window.position === 'object') {
+      return {
+        position: [window.position.x, window.position.y, window.position.z] as [number, number, number],
+        rotation: [0, window.rotation || 0, 0] as [number, number, number],
+      };
+    }
+    return {
+      position: [0, (window.sillHeight || 1) + window.height / 2, 0] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+    };
+  }, [window, parentWall]);
+
+  // Enhanced window geometries using Phase 2 utilities
+  const { frameGeometry, glassGeometry, sillGeometry } = useMemo(() =>
+    createWindowGeometries(window), [window]
+  );
+
   // Calculate rotation for opening animation (for casement windows)
-  const { rotation } = useSpring({
-    rotation: isOpen ? Math.PI / 4 : 0,
+  const { openRotation } = useSpring({
+    openRotation: isOpen ? Math.PI / 4 : 0,
     config: { tension: 120, friction: 14 }
   });
 
-  // Get window position
-  const windowPosition = useMemo(() => {
-    if (typeof window.position === 'object') {
-      return window.position;
-    }
-    return { x: 0, y: window.sillHeight || 1, z: 0 }; // Default position with sill height
-  }, [window.position, window.sillHeight]);
+  // Enhanced material properties using Phase 2 utilities
+  const frameMaterialProps = useMemo(() =>
+    getMaterialProperties(window.materialId, materials, '#FFFFFF'),
+    [window.materialId, materials]
+  );
 
-  // Window frame geometry
-  const frameGeometry = useMemo(() => {
-    const shape = new THREE.Shape();
-    const width = window.width;
-    const height = window.height;
-    const frameThickness = window.properties3D?.frameThickness || 0.08;
+  // Enhanced frame material
+  const frameMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: frameMaterialProps.color,
+    roughness: frameMaterialProps.roughness,
+    metalness: frameMaterialProps.metalness,
+    transparent: frameMaterialProps.opacity < 1,
+    opacity: frameMaterialProps.opacity,
+  }), [frameMaterialProps]);
 
-    // Outer rectangle
-    shape.moveTo(0, 0);
-    shape.lineTo(width, 0);
-    shape.lineTo(width, height);
-    shape.lineTo(0, height);
-    shape.lineTo(0, 0);
-
-    // Inner rectangle (glass opening)
-    const hole = new THREE.Path();
-    hole.moveTo(frameThickness, frameThickness);
-    hole.lineTo(width - frameThickness, frameThickness);
-    hole.lineTo(width - frameThickness, height - frameThickness);
-    hole.lineTo(frameThickness, height - frameThickness);
-    hole.lineTo(frameThickness, frameThickness);
-    shape.holes.push(hole);
-
-    return new THREE.ExtrudeGeometry(shape, {
-      depth: window.thickness || 0.15,
-      bevelEnabled: false
-    });
-  }, [window.width, window.height, window.thickness, window.properties3D?.frameThickness]);
-
-  // Glass pane geometry
-  const glassGeometry = useMemo(() => {
-    const frameThickness = window.properties3D?.frameThickness || 0.08;
-    const glassWidth = window.width - frameThickness * 2;
-    const glassHeight = window.height - frameThickness * 2;
-    return new THREE.PlaneGeometry(glassWidth, glassHeight);
-  }, [window.width, window.height, window.properties3D?.frameThickness]);
-
-  // Window sill geometry
-  const sillGeometry = useMemo(() => {
-    const sillDepth = 0.1;
-    const sillHeight = 0.05;
-    return new THREE.BoxGeometry(window.width + 0.1, sillHeight, sillDepth);
-  }, [window.width]);
-
-  // Materials
-  const frameMaterial = new THREE.MeshStandardMaterial({
-    color: window.material?.color || window.color || '#FFFFFF',
-    roughness: window.material?.properties?.roughness || 0.6,
-    metalness: window.material?.properties?.metalness || 0.2
-  });
-
-  // Glass material based on type
-  const getGlassMaterial = () => {
+  // Enhanced glass material based on type (Phase 2 feature)
+  const glassMaterial = useMemo(() => {
     const glassType = window.properties3D?.glassType || 'clear';
     const baseProps = {
       transparent: true,
@@ -114,17 +107,16 @@ export const Window3D: React.FC<Window3DProps> = ({ window, isSelected, onClick 
           opacity: 0.1
         });
     }
-  };
+  }, [window.properties3D?.glassType]);
 
-  const glassMaterial = useMemo(() => getGlassMaterial(), [window.properties3D?.glassType]);
+  // Enhanced sill material
+  const sillMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: frameMaterialProps.color,
+    roughness: frameMaterialProps.roughness * 1.1, // Slightly rougher than frame
+    metalness: frameMaterialProps.metalness * 0.5,
+  }), [frameMaterialProps]);
 
-  const sillMaterial = new THREE.MeshStandardMaterial({
-    color: window.material?.color || window.color || '#E0E0E0',
-    roughness: 0.7,
-    metalness: 0.1
-  });
-
-  // Selection outline effect
+  // Enhanced selection outline effect
   useFrame(() => {
     if (groupRef.current) {
       if (isSelected) {
@@ -159,33 +151,41 @@ export const Window3D: React.FC<Window3DProps> = ({ window, isSelected, onClick 
   return (
     <group
       ref={groupRef}
-      position={[windowPosition.x, windowPosition.y, windowPosition.z]}
-      rotation={[0, window.rotation || 0, 0]}
+      position={position}
+      rotation={rotation}
       onClick={handleWindowClick}
+      name={`window-${window.id}`}
     >
-      {/* Window Sill */}
+      {/* Enhanced Window Sill */}
       <mesh
         geometry={sillGeometry}
         material={sillMaterial}
         position={[window.width / 2, -0.025, -(window.thickness || 0.15) / 2 - 0.05]}
+        castShadow
+        receiveShadow
       />
 
-      {/* Window Frame */}
-      <mesh geometry={frameGeometry} material={frameMaterial} />
+      {/* Enhanced Window Frame with Phase 2 geometry */}
+      <mesh
+        geometry={frameGeometry}
+        material={frameMaterial}
+        castShadow
+        receiveShadow
+      />
 
-      {/* Animated Glass Panes (for casement style) */}
+      {/* Enhanced Glass Panes with Phase 2 features */}
       {frameStyle === 'modern' ? (
-        // Single pane
+        // Single pane modern window
         <mesh
           geometry={glassGeometry}
           material={glassMaterial}
           position={[window.width / 2, window.height / 2, 0.001]}
         />
       ) : (
-        // Multi-pane with opening capability
+        // Multi-pane classic window with opening capability
         <animated.group
           position={[window.width / 2, window.height / 2, 0]}
-          rotation-y={rotation}
+          rotation-y={openRotation}
         >
           <mesh
             geometry={glassGeometry}
@@ -193,7 +193,7 @@ export const Window3D: React.FC<Window3DProps> = ({ window, isSelected, onClick 
             position={[0, 0, 0.001]}
           />
 
-          {/* Window dividers for classic style */}
+          {/* Enhanced window dividers for classic style */}
           {frameStyle === 'classic' && (
             <>
               {/* Horizontal divider */}
@@ -212,11 +212,19 @@ export const Window3D: React.FC<Window3DProps> = ({ window, isSelected, onClick 
         </animated.group>
       )}
 
-      {/* Window Selection Outline */}
+      {/* Enhanced selection outline for Phase 2 */}
       {isSelected && (
         <mesh position={[window.width / 2, window.height / 2, 0.01]}>
           <ringGeometry args={[0, Math.max(window.width, window.height) / 2, 0, Math.PI * 2]} />
           <meshBasicMaterial color="#0099ff" transparent opacity={0.3} side={THREE.DoubleSide} />
+        </mesh>
+      )}
+
+      {/* Phase 2: Wall connection indicator */}
+      {isSelected && parentWall && (
+        <mesh position={[window.width / 2, window.height + 0.2, 0]}>
+          <sphereGeometry args={[0.08, 8, 6]} />
+          <meshBasicMaterial color="#0099ff" transparent opacity={0.7} />
         </mesh>
       )}
     </group>

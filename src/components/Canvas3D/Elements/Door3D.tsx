@@ -3,7 +3,13 @@
 import React, { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useSpring, animated } from '@react-spring/three';
+import { useDesignStore } from '@/stores/designStore';
 import { Door } from '@/types';
+import {
+  calculateDoorPositionOnWall,
+  createDoorGeometries,
+  getMaterialProperties
+} from '@/utils/3d/geometryUtils';
 import * as THREE from 'three';
 
 interface Door3DProps {
@@ -17,82 +23,87 @@ export const Door3D: React.FC<Door3DProps> = ({ door, isSelected, onClick }) => 
   const doorPanelRef = useRef<THREE.Mesh>(null);
   const [isOpen, setIsOpen] = React.useState(false);
 
+  const { walls, materials } = useDesignStore();
+
+  // Find the wall this door belongs to
+  const parentWall = useMemo(() =>
+    walls.find(wall => wall.id === door.wallId),
+    [walls, door.wallId]
+  );
+
+  // Calculate door position using Phase 2 utilities
+  const { position, rotation } = useMemo(() => {
+    if (parentWall) {
+      return calculateDoorPositionOnWall(door, parentWall);
+    }
+    // Fallback to absolute position if no wall found
+    if (typeof door.position === 'object') {
+      return {
+        position: [door.position.x, door.position.y, door.position.z] as [number, number, number],
+        rotation: [0, door.rotation || 0, 0] as [number, number, number],
+      };
+    }
+    return {
+      position: [0, door.height / 2, 0] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+    };
+  }, [door, parentWall]);
+
+  // Enhanced door geometries using Phase 2 utilities
+  const { frameGeometry, panelGeometry } = useMemo(() =>
+    createDoorGeometries(door), [door]
+  );
+
   // Calculate rotation for opening animation
-  const { rotation } = useSpring({
-    rotation: isOpen ? Math.PI / 2 : 0,
+  const { openRotation } = useSpring({
+    openRotation: isOpen ? Math.PI / 2 : 0,
     config: { tension: 120, friction: 14 }
   });
 
-  // Get door position
-  const doorPosition = useMemo(() => {
-    if (typeof door.position === 'object') {
-      return door.position;
-    }
-    return { x: 0, y: 0, z: 0 }; // Default position for wall-relative doors
-  }, [door.position]);
+  // Enhanced material properties
+  const frameMaterialProps = useMemo(() =>
+    getMaterialProperties(door.materialId, materials, '#8B4513'),
+    [door.materialId, materials]
+  );
 
-  // Door frame geometry
-  const frameGeometry = useMemo(() => {
-    const shape = new THREE.Shape();
-    const width = door.width;
-    const height = door.height;
-    const frameThickness = door.properties3D?.frameThickness || 0.1;
+  const panelMaterialProps = useMemo(() =>
+    getMaterialProperties(door.materialId, materials, '#D2691E'),
+    [door.materialId, materials]
+  );
 
-    // Outer rectangle
-    shape.moveTo(0, 0);
-    shape.lineTo(width, 0);
-    shape.lineTo(width, height);
-    shape.lineTo(0, height);
-    shape.lineTo(0, 0);
-
-    // Inner rectangle (door opening)
-    const hole = new THREE.Path();
-    hole.moveTo(frameThickness, frameThickness);
-    hole.lineTo(width - frameThickness, frameThickness);
-    hole.lineTo(width - frameThickness, height - frameThickness);
-    hole.lineTo(frameThickness, height - frameThickness);
-    hole.lineTo(frameThickness, frameThickness);
-    shape.holes.push(hole);
-
-    return new THREE.ExtrudeGeometry(shape, {
-      depth: door.thickness || 0.2,
-      bevelEnabled: false
-    });
-  }, [door.width, door.height, door.thickness, door.properties3D?.frameThickness]);
-
-  // Door panel geometry
-  const panelGeometry = useMemo(() => {
-    const frameThickness = door.properties3D?.frameThickness || 0.1;
-    const panelWidth = door.width - frameThickness * 2;
-    const panelHeight = door.height - frameThickness * 2;
-    return new THREE.BoxGeometry(panelWidth, panelHeight, (door.thickness || 0.2) * 0.8);
-  }, [door.width, door.height, door.thickness, door.properties3D?.frameThickness]);
-
-  // Handle geometry
+  // Handle geometry for Phase 2 enhanced door handles
   const handleGeometry = useMemo(() => {
+    const handleStyle = door.properties3D?.handleStyle || 'classic';
+    if (handleStyle === 'modern') {
+      return new THREE.BoxGeometry(0.15, 0.05, 0.03);
+    }
     return new THREE.CylinderGeometry(0.02, 0.02, 0.1, 8);
-  }, []);
+  }, [door.properties3D?.handleStyle]);
 
-  // Materials
-  const frameMaterial = new THREE.MeshStandardMaterial({
-    color: door.material?.color || door.color || '#8B4513',
-    roughness: door.material?.properties?.roughness || 0.8,
-    metalness: door.material?.properties?.metalness || 0.1
-  });
+  // Enhanced materials with Phase 2 properties
+  const frameMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: frameMaterialProps.color,
+    roughness: frameMaterialProps.roughness,
+    metalness: frameMaterialProps.metalness,
+    transparent: frameMaterialProps.opacity < 1,
+    opacity: frameMaterialProps.opacity,
+  }), [frameMaterialProps]);
 
-  const panelMaterial = new THREE.MeshStandardMaterial({
-    color: door.material?.color || door.color || '#D2691E',
-    roughness: door.material?.properties?.roughness || 0.7,
-    metalness: door.material?.properties?.metalness || 0.1
-  });
+  const panelMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: panelMaterialProps.color,
+    roughness: panelMaterialProps.roughness * 0.9, // Slightly smoother than frame
+    metalness: panelMaterialProps.metalness,
+    transparent: panelMaterialProps.opacity < 1,
+    opacity: panelMaterialProps.opacity,
+  }), [panelMaterialProps]);
 
-  const handleMaterial = new THREE.MeshStandardMaterial({
-    color: '#FFD700',
+  const handleMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: door.properties3D?.handleStyle === 'modern' ? '#2C3E50' : '#FFD700',
     roughness: 0.3,
     metalness: 0.8
-  });
+  }), [door.properties3D?.handleStyle]);
 
-  // Selection outline effect
+  // Enhanced selection outline effect
   useFrame(() => {
     if (groupRef.current) {
       if (isSelected) {
@@ -126,39 +137,59 @@ export const Door3D: React.FC<Door3DProps> = ({ door, isSelected, onClick }) => 
   return (
     <group
       ref={groupRef}
-      position={[doorPosition.x, doorPosition.y, doorPosition.z]}
-      rotation={[0, door.rotation || 0, 0]}
+      position={position}
+      rotation={rotation}
       onClick={handleDoorClick}
+      name={`door-${door.id}`}
     >
-      {/* Door Frame */}
-      <mesh geometry={frameGeometry} material={frameMaterial} />
+      {/* Enhanced Door Frame with Phase 2 geometry */}
+      <mesh
+        geometry={frameGeometry}
+        material={frameMaterial}
+        castShadow
+        receiveShadow
+      />
 
-      {/* Animated Door Panel */}
+      {/* Animated Door Panel with enhanced positioning */}
       <animated.group
         position={[door.width / 2 - frameThickness, door.height / 2 - frameThickness, 0]}
-        rotation-y={rotation}
+        rotation-y={openRotation}
       >
         <mesh
           ref={doorPanelRef}
           geometry={panelGeometry}
           material={panelMaterial}
           position={[-(door.width - frameThickness * 2) / 2, -(door.height - frameThickness * 2) / 2, 0]}
+          castShadow
         />
 
-        {/* Door Handle */}
+        {/* Enhanced Door Handle with Phase 2 styling */}
         <mesh
           geometry={handleGeometry}
           material={handleMaterial}
-          position={[-(door.width - frameThickness * 2) * 0.8, 0, (door.thickness || 0.2) * 0.4]}
-          rotation={[Math.PI / 2, 0, 0]}
+          position={[
+            -(door.width - frameThickness * 2) * 0.8,
+            0,
+            (door.thickness || 0.2) * 0.4
+          ]}
+          rotation={door.properties3D?.handleStyle === 'modern' ? [0, 0, 0] : [Math.PI / 2, 0, 0]}
+          castShadow
         />
       </animated.group>
 
-      {/* Door Arc (opening path visualization) */}
+      {/* Enhanced Door Arc visualization for Phase 2 */}
       {isSelected && (
         <mesh position={[door.width / 2 - frameThickness, 0.01, door.height / 2]}>
           <ringGeometry args={[0, door.width - frameThickness * 2, 0, Math.PI / 2]} />
           <meshBasicMaterial color="#00ff00" transparent opacity={0.3} side={THREE.DoubleSide} />
+        </mesh>
+      )}
+
+      {/* Phase 2: Wall connection indicator */}
+      {isSelected && parentWall && (
+        <mesh position={[0, door.height + 0.2, 0]}>
+          <sphereGeometry args={[0.1, 8, 6]} />
+          <meshBasicMaterial color="#ff6600" transparent opacity={0.7} />
         </mesh>
       )}
     </group>

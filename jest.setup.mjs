@@ -56,6 +56,87 @@ jest.mock('three', () => ({
     remove: jest.fn(),
     traverse: jest.fn(),
   })),
+  // Phase 2 Geometry Mocks
+  BoxGeometry: jest.fn().mockImplementation((width, height, depth) => ({
+    type: 'BoxGeometry',
+    parameters: { width, height, depth },
+    width,
+    height,
+    depth,
+    clone: jest.fn().mockReturnValue({
+      type: 'BoxGeometry',
+      parameters: { width, height, depth },
+      width,
+      height,
+      depth,
+    }),
+  })),
+  PlaneGeometry: jest.fn().mockImplementation((width, height) => ({
+    type: 'PlaneGeometry',
+    parameters: { width, height },
+    width,
+    height,
+    rotateX: jest.fn(),
+    clone: jest.fn().mockReturnValue({
+      type: 'PlaneGeometry',
+      parameters: { width, height },
+      width,
+      height,
+      rotateX: jest.fn(),
+    }),
+  })),
+  ExtrudeGeometry: jest.fn().mockImplementation((shapes, options) => ({
+    type: 'ExtrudeGeometry',
+    parameters: { shapes, options },
+    rotateX: jest.fn(),
+    clone: jest.fn().mockReturnValue({
+      type: 'ExtrudeGeometry',
+      parameters: { shapes, options },
+      rotateX: jest.fn(),
+    }),
+  })),
+  ShapeGeometry: jest.fn().mockImplementation((shapes) => ({
+    type: 'ShapeGeometry',
+    parameters: { shapes },
+    rotateX: jest.fn(),
+    clone: jest.fn().mockReturnValue({
+      type: 'ShapeGeometry',
+      parameters: { shapes },
+      rotateX: jest.fn(),
+    }),
+  })),
+  CylinderGeometry: jest.fn().mockImplementation((radiusTop, radiusBottom, height) => ({
+    type: 'CylinderGeometry',
+    parameters: { radiusTop, radiusBottom, height },
+    clone: jest.fn().mockReturnValue({
+      type: 'CylinderGeometry',
+      parameters: { radiusTop, radiusBottom, height },
+    }),
+  })),
+  Shape: jest.fn().mockImplementation(() => ({
+    moveTo: jest.fn(),
+    lineTo: jest.fn(),
+    closePath: jest.fn(),
+    holes: [],
+  })),
+  Path: jest.fn().mockImplementation(() => ({
+    moveTo: jest.fn(),
+    lineTo: jest.fn(),
+    closePath: jest.fn(),
+  })),
+  // Material Mocks
+  MeshStandardMaterial: jest.fn().mockImplementation((props) => ({
+    type: 'MeshStandardMaterial',
+    ...props,
+  })),
+  MeshPhysicalMaterial: jest.fn().mockImplementation((props) => ({
+    type: 'MeshPhysicalMaterial',
+    ...props,
+  })),
+  MeshBasicMaterial: jest.fn().mockImplementation((props) => ({
+    type: 'MeshBasicMaterial',
+    ...props,
+  })),
 }));
 
 // Mock localStorage with actual implementation for tests

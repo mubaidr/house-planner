@@ -1,83 +1,102 @@
 import { useDesignStore } from '@/stores/designStore';
 import { Room } from '@/types';
-import * as THREE from 'three';
+import { generateRoomGeometry, getMaterialProperties } from '@/utils/3d/geometryUtils';
 import { useMemo } from 'react';
+import * as THREE from 'three';
 
 interface Room3DProps {
   room: Room;
+  isSelected?: boolean;
   onSelect?: () => void;
 }
 
-export function Room3D({ room, onSelect }: Room3DProps) {
-  const { selection, materials } = useDesignStore();
-  const isSelected = selection.selectedElementId === room.id;
+export const Room3D: React.FC<Room3DProps> = ({ room, isSelected = false, onSelect }) => {
+  const { materials } = useDesignStore();
 
-  // Create floor geometry from room points
-  const floorGeometry = useMemo(() => {
-    if (room.points.length < 3) return null;
+  // Enhanced room geometry generation using Phase 2 utilities
+  const { floorGeometry, ceilingGeometry, center } = useMemo(() => {
+    try {
+      return generateRoomGeometry(room);
+    } catch (error) {
+      console.warn(`Failed to generate geometry for room ${room.id}:`, error);
+      // Return fallback simple geometry
+      const fallbackShape = new THREE.Shape();
+      fallbackShape.moveTo(0, 0);
+      fallbackShape.lineTo(5, 0);
+      fallbackShape.lineTo(5, 5);
+      fallbackShape.lineTo(0, 5);
+      fallbackShape.closePath();
 
-    const shape = new THREE.Shape();
-    shape.moveTo(room.points[0].x, room.points[0].y);
+      const fallbackGeometry = new THREE.ShapeGeometry(fallbackShape);
+      fallbackGeometry.rotateX(-Math.PI / 2);
 
-    for (let i = 1; i < room.points.length; i++) {
-      shape.lineTo(room.points[i].x, room.points[i].y);
+      return {
+        floorGeometry: fallbackGeometry,
+        ceilingGeometry: fallbackGeometry.clone(),
+        center: { x: 2.5, y: 2.5 }
+      };
     }
-    shape.closePath();
+  }, [room]);
 
-    const geometry = new THREE.ShapeGeometry(shape);
-    // Rotate to lie flat on XZ plane
-    geometry.rotateX(-Math.PI / 2);
+  // Enhanced material properties using Phase 2 utilities
+  const floorMaterialProps = useMemo(() =>
+    getMaterialProperties(room.floorMaterialId, materials, '#8b5a2b'),
+    [room.floorMaterialId, materials]
+  );
 
-    return geometry;
-  }, [room.points]);
+  const ceilingMaterialProps = useMemo(() =>
+    getMaterialProperties(room.properties3D?.ceilingMaterialId, materials, '#ffffff'),
+    [room.properties3D?.ceilingMaterialId, materials]
+  );
 
-  // Get material
-  const floorMaterial = materials.find(m => m.id === room.floorMaterialId) ||
-                       materials.find(m => m.id === 'floor-wood') ||
-                       materials[0];
+  // Calculate room elevations
+  const floorElevation = room.properties3D?.floorElevation || 0;
+  const ceilingHeight = room.ceilingHeight || room.properties3D?.ceilingHeight || 3;
 
-  if (!floorGeometry) return null;
+  // Enhanced floor material with Phase 2 properties
+  const floorMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: floorMaterialProps.color,
+    roughness: floorMaterialProps.roughness,
+    metalness: floorMaterialProps.metalness,
+    transparent: floorMaterialProps.opacity < 1,
+    opacity: floorMaterialProps.opacity,
+  }), [floorMaterialProps]);
 
-  const elevation = room.properties3D?.floorElevation || 0;
+  // Enhanced ceiling material
+  const ceilingMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: ceilingMaterialProps.color,
+    roughness: ceilingMaterialProps.roughness,
+    metalness: ceilingMaterialProps.metalness,
+    transparent: ceilingMaterialProps.opacity < 1,
+    opacity: ceilingMaterialProps.opacity,
+  }), [ceilingMaterialProps]);
 
   return (
-    <group>
-      {/* Floor */}
+    <group name={`room-${room.id}`}>
+      {/* Enhanced Floor with Phase 2 features */}
       <mesh
         geometry={floorGeometry}
-        position={[0, elevation, 0]}
+        material={floorMaterial}
+        position={[0, floorElevation, 0]}
         onClick={onSelect}
         onPointerOver={() => useDesignStore.getState().hoverElement(room.id, 'room')}
         onPointerOut={() => useDesignStore.getState().hoverElement(null, null)}
         receiveShadow
-      >
-        <meshStandardMaterial
-          color={floorMaterial?.color || '#8b5a2b'}
-          roughness={floorMaterial?.properties.roughness || 0.7}
-          metalness={floorMaterial?.properties.metalness || 0.0}
-        />
-      </mesh>
+      />
 
-      {/* Ceiling (if room has height) */}
-      {room.ceilingHeight && (
-        <mesh
-          geometry={floorGeometry}
-          position={[0, elevation + room.ceilingHeight, 0]}
-          receiveShadow
-        >
-          <meshStandardMaterial
-            color="#ffffff"
-            roughness={0.9}
-            metalness={0.0}
-          />
-        </mesh>
-      )}
+      {/* Enhanced Ceiling with proper height */}
+      <mesh
+        geometry={ceilingGeometry}
+        material={ceilingMaterial}
+        position={[0, floorElevation + ceilingHeight, 0]}
+        receiveShadow
+      />
 
-      {/* Selection indicator */}
+      {/* Enhanced selection indicator */}
       {isSelected && (
         <mesh
           geometry={floorGeometry}
-          position={[0, elevation + 0.01, 0]}
+          position={[0, floorElevation + 0.01, 0]}
         >
           <meshBasicMaterial
             color="#3b82f6"
@@ -85,6 +104,22 @@ export function Room3D({ room, onSelect }: Room3DProps) {
             transparent
             opacity={0.3}
           />
+        </mesh>
+      )}
+
+      {/* Phase 2: Room center indicator when selected */}
+      {isSelected && (
+        <mesh position={[center.x, floorElevation + 0.1, center.y]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.05, 8]} />
+          <meshBasicMaterial color="#3b82f6" transparent opacity={0.5} />
+        </mesh>
+      )}
+
+      {/* Phase 2: Room label (placeholder for text component) */}
+      {room.name && isSelected && (
+        <mesh position={[center.x, floorElevation + 2, center.y]}>
+          <sphereGeometry args={[0.1, 8, 6]} />
+          <meshBasicMaterial color="#ffffff" />
         </mesh>
       )}
     </group>

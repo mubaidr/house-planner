@@ -24,23 +24,25 @@ export function ElementRenderer3D({ onElementSelect }: ElementRenderer3DProps) {
           <Room3D
             key={room.id}
             room={room}
+            isSelected={selection.selectedElementId === room.id && selection.selectedElementType === 'room'}
             onSelect={() => handleSelect(room.id, 'room')}
           />
         ))}
       </group>
 
-      {/* Render walls */}
+      {/* Render walls with Phase 2 enhanced selection handling */}
       <group name="walls">
         {walls.map(wall => (
           <Wall3D
             key={wall.id}
             wall={wall}
+            isSelected={selection.selectedElementId === wall.id && selection.selectedElementType === 'wall'}
             onSelect={() => handleSelect(wall.id, 'wall')}
           />
         ))}
       </group>
 
-      {/* Render doors */}
+      {/* Render doors with Phase 2 enhanced wall integration */}
       <group name="doors">
         {doors.map(door => (
           <Door3D
@@ -52,7 +54,7 @@ export function ElementRenderer3D({ onElementSelect }: ElementRenderer3DProps) {
         ))}
       </group>
 
-      {/* Render windows */}
+      {/* Render windows with Phase 2 enhanced wall integration */}
       <group name="windows">
         {windows.map(window => (
           <Window3D

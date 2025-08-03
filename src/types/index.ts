@@ -81,8 +81,17 @@ export interface Room {
 
 export interface Room3DProperties {
   floorElevation: number;
+  floorThickness?: number;
   ceilingMaterialId?: string;
   wallMaterialIds?: Record<string, string>; // wallId -> materialId
+  // Enhanced properties for Phase 2
+  ceilingHeight?: number;
+  textureScale?: number;
+  materialProperties?: {
+    roughness?: number;
+    metalness?: number;
+    opacity?: number;
+  };
 }
 
 // Material system

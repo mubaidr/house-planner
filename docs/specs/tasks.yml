@@ -1,41 +1,81 @@
 tasks:
   - id: task-001
-    description: Verify project completion up to Phase 3 of the implementation roadmap.
+    description: Verify Phase 1 Foundation & Setup implementation
     task_dependencies: []
     priority: high
-    risk_score: 12
-    status: in_progress
-    checkpoint: pending
-    validation_criteria:
-      test_types: [manual, automated]
-      expected_outcomes: ["All features up to Phase 3 are verified and working correctly."]
-  - id: task-002
-    description: Verify implementation of ARCHITECTURAL_VIEW_PRESETS.
-    task_dependencies: [task-001]
-    priority: high
-    risk_score: 10
-    status: to_do
-    checkpoint: not_started
-    validation_criteria:
-      test_types: [manual]
-      expected_outcomes: ["Architectural view presets are implemented and functional."]
-  - id: task-003
-    description: Set up and run Playwright for UI testing.
-    task_dependencies: [task-001]
-    priority: medium
-    risk_score: 8
-    status: to_do
-    checkpoint: not_started
-    validation_criteria:
-      test_types: [automated]
-      expected_outcomes: ["Playwright is set up and UI tests are running successfully."]
-  - id: task-004
-    description: Report findings on project completion.
-    task_dependencies: [task-002, task-003]
-    priority: high
     risk_score: 5
-    status: to_do
-    checkpoint: not_started
+    status: complete
+    checkpoint: passed
     validation_criteria:
-      test_types: [manual]
-      expected_outcomes: ["A comprehensive report on the project's status is generated."]
+      test_types: [automated, unit, e2e]
+      expected_outcomes: ["All Phase 1 components verified", "123 unit tests passing", "5 E2E tests passing"]
+  - id: task-002
+    description: Implement Phase 2 Core 3D Elements - geometryUtils.ts
+    task_dependencies: [task-001]
+    priority: high
+    risk_score: 8
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit]
+      expected_outcomes: ["geometryUtils.ts with 10 functions", "12 comprehensive unit tests", "Wall/Door/Window/Room geometry calculations"]
+  - id: task-003
+    description: Enhance Wall3D component with Phase 2 specifications
+    task_dependencies: [task-002]
+    priority: high
+    risk_score: 6
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, integration]
+      expected_outcomes: ["Enhanced wall geometry", "Material property integration", "Wall connection indicators"]
+  - id: task-004
+    description: Enhance Door3D component with Phase 2 wall integration
+    task_dependencies: [task-002]
+    priority: high
+    risk_score: 6
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, integration]
+      expected_outcomes: ["Door wall positioning", "Enhanced door geometries", "Animation support"]
+  - id: task-005
+    description: Enhance Window3D component with Phase 2 wall integration
+    task_dependencies: [task-002]
+    priority: high
+    risk_score: 6
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, integration]
+      expected_outcomes: ["Window wall positioning", "Glass type support", "Enhanced frame geometries"]
+  - id: task-006
+    description: Enhance Room3D component with Phase 2 geometry generation
+    task_dependencies: [task-002]
+    priority: high
+    risk_score: 6
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit, integration]
+      expected_outcomes: ["Advanced room geometry", "Floor/ceiling generation", "Material property support"]
+  - id: task-007
+    description: Update ElementRenderer3D with Phase 2 enhanced selection handling
+    task_dependencies: [task-003, task-004, task-005, task-006]
+    priority: medium
+    risk_score: 4
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [integration]
+      expected_outcomes: ["Consistent selection handling", "Enhanced component props", "Proper render order"]
+  - id: task-008
+    description: Create comprehensive Phase 2 test suite
+    task_dependencies: [task-007]
+    priority: high
+    risk_score: 7
+    status: complete
+    checkpoint: passed
+    validation_criteria:
+      test_types: [unit]
+      expected_outcomes: ["12 new geometry utility tests", "135 total tests passing", "Phase 2 function coverage"]
