@@ -1,4 +1,3 @@
-
 # 3D House Planner Implementation Plan
 
 > **Comprehensive guide for implementing 3D capabilities in the House Planner application**
@@ -7,19 +6,19 @@
 
 ## 🚨 Project Foundation Update
 
-**As of August 2025, the 3D House Planner implementation will be based on [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
+**As of August 2025, all 3D features will be developed by extending the architectural concepts and feature set inspired by `CodeHole7/threejs-3d-room-designer`, a React-bundled Three.js room planner and product configurator.**
 
-### Key Project Features of the New Base:
+### Key Project Features of the New Base
+
 - React-bundled Three.js architecture
-- 2D/3D floorplan editing, product placement/configuration
-- Model morph/material/style configuration
-- Extensible via React components/hooks
-- Built-in product configurator and room editing
+- Floorplan design with wall drawing
+- Room and product configuration
+- Real-time 3D rendering
 
-### Customization & Extension Strategy:
-- All custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
-- Existing Next.js/React/Zustand patterns will be adapted to integrate with the base.
-- All documentation, architecture, requirements, and implementation plans below are now interpreted as extensions or integrations with threejs-3d-room-designer.
+### Customization & Extension Strategy
+
+- All custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top of the base architecture.
+- We will maintain compatibility and leverage a React/Three.js approach for all new features.
 
 ---
 
@@ -40,6 +39,7 @@ This directory contains complete documentation for implementing a 3D version of 
 - **[API Specifications](./08-api-specifications.md)** - Data models and interface definitions
 - **[Testing Strategy](./09-testing-strategy.md)** - Quality assurance and testing approach
 - **[Deployment Guide](./10-deployment-guide.md)** - Production deployment considerations
+- **[11. Floorplan System Design](./11-floorplan-system-design.md)**: Technical design for the core floorplan system, including wall joining, room detection, and placement constraints.
 
 ## 🎯 Executive Summary
 
@@ -147,11 +147,6 @@ npm run dev
 
 ## 🔗 Related Resources
 
-- [Current 2D Application Documentation](../README.md)
-- [React Three Fiber Documentation](https://docs.pmnd.rs/react-three-fiber)
-- [Three.js Documentation](https://threejs.org/docs/)
-- [Architectural Visualization Best Practices](https://threejs-journey.com/)
-
----
-
-*This documentation was created on August 1, 2025, based on comprehensive analysis of the existing 2D House Planner application and current 3D web technology landscape.*
+- [Project Kanban Board](https://github.com/users/CodeHole7/projects/1)
+- [Weekly Sync Notes](https://example.com/weekly-sync)
+- [Current 2D Application Documentation](../../README.md)
