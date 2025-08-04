@@ -50,244 +50,339 @@ Transform the existing excellent 2D House Planner into a comprehensive architect
 
 ## 📝 Functional Requirements
 
-## FR-001: 3D Scene Management
-
-### Description
-The system shall provide comprehensive 3D scene management capabilities that seamlessly integrate with the existing 2D design workflow.
-
-### Requirements
-
-**FR-001.1: Scene Initialization**
-
-- **Requirement**: System shall initialize 3D scene when user activates 3D mode
-- **Acceptance Criteria**:
-  - 3D scene loads within 2 seconds on standard hardware
-  - All existing 2D elements are automatically converted to 3D representations
-  - Scene maintains spatial accuracy relative to 2D measurements
-  - Memory usage increases by no more than 200MB for typical designs
-
-**FR-001.2: View Mode Toggle**
-
-- **Requirement**: Users shall be able to seamlessly switch between 2D and 3D views
-- **Acceptance Criteria**:
-  - Toggle button switches modes in under 500ms
-  - All design data is preserved during mode switching
-  - User can continue editing in either mode without data loss
-  - Current selection state is maintained across mode switches
-
-**FR-001.3: Real-Time Synchronization**
-
-- **Requirement**: Changes in 2D mode shall be immediately reflected in 3D mode and vice versa
-- **Acceptance Criteria**:
-  - 2D changes appear in 3D within 100ms
-  - 3D changes are accurately represented in 2D plan view
-  - Undo/redo functionality works consistently across both modes
-  - Auto-save functionality captures both 2D and 3D state
+Following the proven feature system from threejs-3d-room-designer, our requirements are organized around three core feature areas that align with user workflows and architectural design processes.
 
 ---
 
-## FR-002: 3D Element Rendering
+## 🏗️ FEATURE AREA 1: FloorPlan Design
 
-### Description
-The system shall accurately render all 2D design elements in three-dimensional space with appropriate materials, lighting, and visual fidelity.
+*3D design with top-down view for precise drawing and object placement*
 
-### Requirements
+### FR-FP-001: 3D Design with Top-Down View
 
-**FR-002.1: Wall Rendering**
+#### Description
+3D design capabilities with top-down orthographic view for precise drawing and layout operations.
 
-- **Requirement**: System shall render walls as 3D geometric objects with accurate dimensions
+#### Requirements
+
+**FR-FP-001.1: Top-Down Drawing System**
+
+- **Requirement**: Top-down orthographic view for precise architectural drawing in 3D space
 - **Acceptance Criteria**:
-  - Walls display with correct length, height, and thickness
-  - Wall corners are properly connected and mitered
-  - Wall materials are applied with realistic textures
-  - Wall openings (doors/windows) are correctly cut through wall geometry
-  - Wall selection highlighting works in 3D space
+  - Orthographic camera with adjustable zoom and pan
+  - Grid overlay with customizable spacing (1", 6", 12", etc.)
+  - Snap-to-grid functionality with visual feedback
+  - Angle snapping at 15°, 30°, 45°, and 90° intervals
+  - Distance constraint input during drawing operations
 
-**FR-002.2: Room Generation**
+**FR-FP-001.2: 3D Wall Creation**
 
-- **Requirement**: System shall automatically generate 3D room volumes from 2D floor plans
+- **Requirement**: Advanced wall creation and editing in 3D space with top-down precision
 - **Acceptance Criteria**:
-  - Floor geometry is generated from room boundary points
-  - Ceiling geometry is created at appropriate height
-  - Room volumes are correctly enclosed by walls
-  - Room materials (flooring, ceiling) are properly applied
-  - Room labels are positioned appropriately in 3D space
+  - Multi-segment wall creation with automatic corner detection
+  - Wall thickness variations (load-bearing vs partition walls)
+  - Curved wall support with parametric control
+  - Wall height variations within single structure
+  - Automatic wall cleanup and intersection handling
+  - Real-time 3D preview while drawing in top-down view
 
-**FR-002.3: Door and Window Rendering**
+**FR-FP-001.3: Precision Drawing Tools**
 
-- **Requirement**: Doors and windows shall be rendered as detailed 3D objects positioned correctly on walls
+- **Requirement**: Professional-grade drawing tools for accurate floor plans
 - **Acceptance Criteria**:
-  - Doors include frame, panel, and handle geometry
-  - Windows include frame and glass with appropriate transparency
-  - Opening positions are accurately calculated on wall surfaces
-  - Door swing animations are available for walkthrough mode
-  - Hardware details are visible at appropriate zoom levels
+  - Grid snapping with customizable increments (1", 6", 12", etc.)
+  - Angle snapping at 15°, 30°, 45°, and 90° intervals
+  - Distance constraint input during drawing
+  - Orthogonal and parallel line constraints
+  - Geometric construction tools (perpendicular, parallel, offset)
 
-**FR-002.4: Multi-Floor Support**
+### FR-FP-002: Multi-Floor Support
 
-- **Requirement**: System shall render multi-story buildings with proper floor separation
+#### Description
+Comprehensive multi-story building support with vertical navigation and floor relationships.
+
+#### Requirements
+
+**FR-FP-002.1: Floor Management System**
+
+- **Requirement**: Complete floor-level management with architectural relationships
 - **Acceptance Criteria**:
-  - Each floor is positioned at correct vertical height
-  - Stairs connect floors with accurate geometry
-  - Floor slabs separate different levels
-  - Elevator shafts and openings are properly modeled
-  - Floor visibility can be toggled independently
+  - Unlimited floor creation with custom naming
+  - Floor height customization and ceiling height control
+  - Floor visibility toggle with selective editing
+  - Floor copying with wall/room duplication
+  - Basement and sub-level support with negative elevations
+
+**FR-FP-002.2: Vertical Circulation**
+
+- **Requirement**: Stair and elevator placement with automatic floor connections
+- **Acceptance Criteria**:
+  - Parametric stair generation (straight, L-shaped, U-shaped, spiral)
+  - Automatic floor opening creation for stairs
+  - Elevator shaft placement with multi-floor alignment
+  - Ramp creation for accessibility compliance
+  - Vertical circulation validation and error checking
+
+**FR-FP-002.3: Cross-Floor Relationships**
+
+- **Requirement**: Intelligent management of elements spanning multiple floors
+- **Acceptance Criteria**:
+  - Structural column alignment across floors
+  - Plumbing/electrical shaft continuity
+  - Load-bearing wall stack validation
+  - Foundation and roof relationship management
+  - Cross-floor dimension and alignment tools
+
+### FR-FP-003: View Management
+
+#### Description
+Seamless view switching between top-down and perspective modes for different design tasks.
+
+#### Requirements
+
+**FR-FP-003.1: View Mode Switching**
+
+- **Requirement**: Fluid switching between top-down and perspective views
+- **Acceptance Criteria**:
+  - Top-down orthographic view for precise drawing and placement
+  - Perspective 3D view for visualization and validation
+  - Isometric view for technical illustrations
+  - Smooth animated transitions between view modes
+  - Camera state preservation across view switches
+
+**FR-FP-003.2: Context-Aware View Selection**
+
+- **Requirement**: Automatic view recommendations based on current task
+- **Acceptance Criteria**:
+  - Top-down view automatically selected for drawing operations
+  - Perspective view suggested for material application and lighting
+  - View switching shortcuts and toolbar integration
+  - View mode memory per editing context
+  - Performance optimization for large scenes in both views
 
 ---
 
-## FR-003: Navigation & Camera Controls
+## 🏠 FEATURE AREA 2: Room Configuration
 
-### Description
-The system shall provide intuitive and professional camera navigation controls suitable for architectural visualization.
+*Interactive room setup with furniture placement and environmental controls*
 
-### Requirements
+### FR-RC-001: Interactive Product Placement
 
-**FR-003.1: Camera Control System**
+#### Description
+Advanced furniture and fixture placement system with intelligent positioning and collision detection.
 
-- **Requirement**: Users shall have multiple camera control options for different use cases
+#### Requirements
+
+**FR-RC-001.1: Furniture Library System**
+
+- **Requirement**: Comprehensive furniture library with categorization and search
 - **Acceptance Criteria**:
-  - Orbit controls allow smooth rotation around the design
-  - Pan functionality moves the view without rotation
-  - Zoom controls work smoothly without frame rate drops
-  - Camera movement has appropriate momentum and damping
-  - Controls are consistent with industry-standard 3D software
+  - 500+ furniture items across all room types
+  - Category-based browsing (living room, bedroom, kitchen, etc.)
+  - Search functionality with tags and dimensions
+  - Custom furniture import (GLTF, OBJ formats)
+  - User favorites and recent items system
 
-**FR-003.2: View Presets**
+**FR-RC-001.2: Intelligent Placement Tools**
 
-- **Requirement**: System shall provide architectural view presets for common perspectives
+- **Requirement**: Smart placement assistance with collision detection and suggestions
 - **Acceptance Criteria**:
-  - Plan view shows top-down orthographic projection
-  - Front, side, and back elevation views are available
-  - Isometric view provides clear 3D overview
-  - Interior walkthrough preset positions camera at human eye level
-  - Custom views can be saved and recalled by users
+  - Real-time collision detection with walls and other objects
+  - Snap-to-wall functionality for appropriate furniture
+  - Automatic spacing suggestions for furniture groupings
+  - Accessibility clearance validation (36" pathways, door swings)
+  - Undo/redo support for all placement operations
 
-**FR-003.3: Smooth Transitions**
+**FR-RC-001.3: View-Optimized Editing**
 
-- **Requirement**: Camera movements between presets shall be smooth and professionally animated
+- **Requirement**: Furniture placement optimized for different view modes
 - **Acceptance Criteria**:
-  - Preset transitions complete in 1-2 seconds
-  - Camera path follows smooth interpolated curve
-  - Animation can be skipped by user input
-  - Multiple rapid preset changes are queued appropriately
-  - Animation performance maintains target frame rate
+  - Top-down view for precise positioning and alignment
+  - Perspective view for spatial relationship validation
+  - Real-time preview in both view modes during placement
+  - Context-sensitive placement tools based on active view
+  - Seamless editing workflow across view switches
+
+### FR-RC-002: Room Environment Management
+
+#### Description
+Complete room environment configuration including lighting, materials, and ambiance settings.
+
+#### Requirements
+
+**FR-RC-002.1: Lighting Design System**
+
+- **Requirement**: Professional lighting design tools for each room
+- **Acceptance Criteria**:
+  - Multiple light types (ambient, task, accent, decorative)
+  - Fixture placement with electrical consideration
+  - Light intensity and color temperature control
+  - Natural lighting simulation with window placement
+  - Lighting scene presets (day, evening, night)
+
+**FR-RC-002.2: Material Assignment**
+
+- **Requirement**: Room-specific material application with realistic rendering
+- **Acceptance Criteria**:
+  - Separate materials for walls, floors, and ceilings
+  - Material library with 200+ architectural finishes
+  - Custom material creation with texture upload
+  - Material cost estimation integration
+  - Material sample export for physical reference
+
+**FR-RC-002.3: Room Style Presets**
+
+- **Requirement**: Complete room style templates for quick setup
+- **Acceptance Criteria**:
+  - 50+ professionally designed room presets
+  - Style categories (modern, traditional, minimalist, etc.)
+  - One-click room transformation with furniture replacement
+  - Custom style creation and saving
+  - Style sharing and export capabilities
+
+### FR-RC-003: Multi-Room Relationships
+
+#### Description
+Management of room connections, flow, and overall building organization.
+
+#### Requirements
+
+**FR-RC-003.1: Room Connection System**
+
+- **Requirement**: Visual and functional room relationship management
+- **Acceptance Criteria**:
+  - Door and opening management between rooms
+  - Traffic flow visualization and analysis
+  - Room accessibility compliance checking
+  - Privacy level settings (public, private, semi-private)
+  - Room hierarchy and grouping (wings, zones, levels)
+
+**FR-RC-003.2: Building Flow Analysis**
+
+- **Requirement**: Comprehensive building circulation and flow analysis
+- **Acceptance Criteria**:
+  - Circulation path visualization
+  - Emergency egress route validation
+  - Privacy and noise level analysis
+  - Natural light distribution mapping
+  - Functional adjacency matrix compliance
 
 ---
 
-## FR-004: Interactive Tools
+## ⚙️ FEATURE AREA 3: Product Configuration
 
-### Description
-The system shall provide professional-grade 3D tools for measurement, analysis, and design validation.
+*Advanced product customization with materials, dimensions, and style variants*
 
-### Requirements
+### FR-PC-001: Dynamic Product Dimensions
 
-**FR-004.1: 3D Measurement Tools**
+#### Description
+Intelligent product scaling and morphing system that maintains proportions and functionality.
 
-- **Requirement**: Users shall be able to measure distances, areas, and volumes in 3D space
+#### Requirements
+
+**FR-PC-001.1: Parametric Scaling System**
+
+- **Requirement**: Non-uniform scaling with intelligent constraints
 - **Acceptance Criteria**:
-  - Point-to-point distance measurement with sub-centimeter accuracy
-  - Area calculation for walls, floors, and surfaces
-  - Volume calculation for rooms and spaces
-  - Measurements display in appropriate units (metric/imperial)
-  - Measurement annotations persist until manually cleared
+  - Width, depth, and height scaling with constraint preservation
+  - Minimum/maximum dimension enforcement
+  - Proportional relationships maintained (seat height to table height)
+  - Real-time dimension feedback during scaling
+  - Dimension input with imperial/metric unit support
 
-**FR-004.2: Element Selection**
+**FR-PC-001.2: Morph-Based Adaptation**
 
-- **Requirement**: Users shall be able to select and manipulate elements in 3D space
+- **Requirement**: Advanced geometry morphing for complex furniture pieces
 - **Acceptance Criteria**:
-  - Click selection works on all element types
-  - Multi-selection using Ctrl+click or drag selection
-  - Selected elements are highlighted with clear visual feedback
-  - Selection state synchronizes between 2D and 3D modes
-  - Keyboard shortcuts work consistently in 3D mode
+  - Curved surface adaptation (sofas, chairs) without distortion
+  - Multiple morph targets for single product
+  - Smooth interpolation between dimension variants
+  - Structural integrity validation during morphing
+  - Performance optimization for real-time morphing
 
-**FR-004.3: Transform Tools**
+**FR-PC-001.3: Configuration Validation**
 
-- **Requirement**: Selected elements shall be manipulable using professional transform gizmos
+- **Requirement**: Automatic validation of product configurations
 - **Acceptance Criteria**:
-  - Translation gizmo moves elements along X, Y, Z axes
-  - Rotation gizmo rotates elements around appropriate pivot points
-  - Scale gizmo resizes elements proportionally or non-proportionally
-  - Transform feedback shows real-time preview
-  - Transforms can be constrained to specific axes or planes
+  - Structural feasibility checking
+  - Manufacturing constraint validation
+  - Cost impact calculation for dimension changes
+  - Configuration conflict detection and resolution
+  - Error messaging with suggested corrections
 
----
+### FR-PC-002: Advanced Material System
 
-## FR-005: Material & Lighting System
+#### Description
+Professional-grade material system with PBR rendering and realistic appearance.
 
-### Description
-The system shall provide realistic material representation and lighting for professional-quality architectural visualization.
+#### Requirements
 
-### Requirements
+**FR-PC-002.1: PBR Material Pipeline**
 
-**FR-005.1: Material Application**
-
-- **Requirement**: System shall support physically-based rendering (PBR) materials
+- **Requirement**: Physically-based rendering materials with accurate light interaction
 - **Acceptance Criteria**:
-  - Materials include diffuse, normal, roughness, and metalness maps
-  - Material library includes common architectural materials
-  - Users can apply materials to individual elements or surfaces
-  - Material changes are visible in real-time
-  - Material properties can be adjusted through user interface
+  - Albedo, normal, roughness, metalness, and AO map support
+  - HDR environment mapping for realistic reflections
+  - Material layer blending for complex surfaces
+  - Real-time material preview with lighting updates
+  - Material validation for rendering performance
 
-**FR-005.2: Lighting System**
+**FR-PC-002.2: Material Library Management**
 
-- **Requirement**: Scene lighting shall provide realistic illumination for architectural visualization
+- **Requirement**: Comprehensive material library with organization and search
 - **Acceptance Criteria**:
-  - Multiple light types: ambient, directional, point, and spot lights
-  - Shadow casting with soft shadow support
-  - Dynamic lighting responds to time-of-day settings
-  - Interior lighting simulation for artificial light sources
-  - Lighting can be customized for presentation needs
+  - 1000+ architectural and furniture materials
+  - Category-based organization (wood, metal, fabric, stone, etc.)
+  - Search with visual similarity and property filters
+  - Custom material creation with texture import
+  - Material version control and update management
 
-**FR-005.3: Environmental Effects**
+**FR-PC-002.3: Surface-Specific Assignment**
 
-- **Requirement**: System shall support environmental effects to enhance realism
+- **Requirement**: Granular material assignment to product surfaces
 - **Acceptance Criteria**:
-  - Sky dome provides realistic background and reflections
-  - Ground plane with appropriate material
-  - Atmospheric effects like fog or haze (optional)
-  - Environmental lighting affects material appearance
-  - Weather effects can be simulated (rain, snow, etc.)
+  - Individual surface selection and material assignment
+  - Material inheritance from product categories
+  - Batch material operations across multiple products
+  - Material conflict detection (inappropriate combinations)
+  - Material sample generation for client presentation
 
----
+### FR-PC-003: Style Variants and Presets
 
-## FR-006: Export & Sharing
+#### Description
+Complete style management system with predefined variants and custom configurations.
 
-### Description
-The system shall provide comprehensive export capabilities for 3D models and renderings suitable for professional use.
+#### Requirements
 
-### Requirements
+**FR-PC-003.1: Style Variant System**
 
-**FR-006.1: 3D Model Export**
-
-- **Requirement**: Users shall be able to export 3D models in industry-standard formats
+- **Requirement**: Predefined style variants for each product category
 - **Acceptance Criteria**:
-  - GLTF export includes geometry, materials, and lighting
-  - OBJ export provides geometry for use in other 3D software
-  - FBX export supports complex scenes with animations
-  - Export maintains scale and unit accuracy
-  - Exported models can be imported into major 3D software
+  - Multiple style options per product (traditional, modern, contemporary)
+  - Style-specific geometry and material combinations
+  - Style compatibility validation across room elements
+  - Style transformation animations for user feedback
+  - Style impact analysis on room aesthetics
 
-**FR-006.2: High-Quality Rendering**
+**FR-PC-003.2: Configuration Presets**
 
-- **Requirement**: System shall generate high-resolution renderings for presentation
+- **Requirement**: Saved configuration presets for complex products
 - **Acceptance Criteria**:
-  - Multiple resolution options up to 4K (3840x2160)
-  - Anti-aliasing and post-processing effects
-  - Rendering completes in under 30 seconds for 4K images
-  - Output quality suitable for professional presentations
-  - Batch rendering of multiple views
+  - User-created configuration saving and naming
+  - Preset sharing between projects and users
+  - Configuration preset marketplace integration
+  - Preset validation for current product version
+  - Preset migration for product updates
 
-**FR-006.3: PDF Integration**
+**FR-PC-003.3: Custom Configuration Framework**
 
-- **Requirement**: 3D views shall be integrated into existing PDF export functionality
+- **Requirement**: Framework for creating custom product configurations
 - **Acceptance Criteria**:
-  - PDF exports include both 2D plans and 3D perspective views
-  - Multiple 3D views can be included in single PDF
-  - Image quality is optimized for print reproduction
-  - PDF file size remains reasonable for email sharing
-  - Existing PDF templates are enhanced with 3D capabilities
+  - Visual configuration builder interface
+  - Parameter dependency management
+  - Configuration validation rules
+  - Custom configuration export for manufacturing
+  - Integration with external product configurators
 
 ---
 

@@ -30,10 +30,33 @@ This document provides a detailed implementation roadmap for adding 3D capabilit
 
 ### Development Philosophy
 
+- **Feature-Driven Development**: Organized around the three core feature areas from threejs-3d-room-designer
 - **Incremental Enhancement**: Each phase adds value without breaking existing functionality
 - **User-Centered Development**: Regular user testing and feedback integration
 - **Quality First**: Comprehensive testing at each phase
 - **Performance Focused**: Optimization built-in from the start
+
+### Feature-Based Organization
+
+Following the proven structure of threejs-3d-room-designer, development is organized around three core feature areas:
+
+#### 1. **FloorPlan Design** 📐
+
+- 3D design with top-down view for precise drawing
+- Multi-floor support and vertical navigation
+- Precision tools and measurement systems
+
+#### 2. **Room Configuration** 🏠
+
+- Interactive product placement in top-down and perspective views
+- Environment management (lighting, materials)
+- Multi-room relationships and flow
+
+#### 3. **Product Configuration** ⚙️
+
+- Dynamic product dimensions and morphing
+- Advanced material and style systems
+- Configuration presets and customization
 
 ### Risk Mitigation
 

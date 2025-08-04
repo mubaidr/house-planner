@@ -29,12 +29,13 @@ This directory contains complete documentation for implementing a 3D version of 
 
 ### 📚 Documentation Structure
 
+- **[Feature System Overview](./feature-system-overview.md)** - Complete guide to our feature-based architecture
 - **[Current Analysis](./01-current-analysis.md)** - Detailed assessment of the existing 2D application
 - **[3D Technology Assessment](./02-technology-assessment.md)** - Evaluation of 3D libraries and technology choices
 - **[Architecture Design](./03-architecture-design.md)** - Technical architecture and system design
 - **[UX Design Strategy](./04-ux-design-strategy.md)** - User experience design for 3D interface
 - **[Implementation Roadmap](./05-implementation-roadmap.md)** - Phase-by-phase development plan
-- **[Requirements Specification](./06-requirements-specification.md)** - Detailed feature requirements
+- **[Requirements Specification](./06-requirements-specification.md)** - Detailed feature requirements organized by feature area
 - **[Performance Guidelines](./07-performance-guidelines.md)** - Optimization strategies and best practices
 - **[API Specifications](./08-api-specifications.md)** - Data models and interface definitions
 - **[Testing Strategy](./09-testing-strategy.md)** - Quality assurance and testing approach
@@ -51,20 +52,49 @@ The 2D House Planner is a robust, well-architected Next.js application with:
 - Multi-floor support and material library system
 
 ### Recommended Approach
-**React Three Fiber + Three.js Ecosystem** provides:
+**React Three Fiber + Three.js Ecosystem** building upon **threejs-3d-room-designer** foundation:
 - Seamless integration with existing React/Next.js architecture
 - Native Zustand compatibility for state management
-- Mature ecosystem with architectural application support
+- Proven architectural patterns from the base room designer
 - Maintainable codebase leveraging existing patterns
-- Progressive enhancement from 2D to 3D capabilities
+- Feature-based development approach following industry standards
+
+### Core Feature System
+
+Following the proven architecture of threejs-3d-room-designer, our implementation focuses on three main feature areas:
+
+#### 1. **FloorPlan Design** 📐
+
+- Advanced 3D design with top-down view for precise drawing
+- Multi-floor support with vertical navigation
+- Precision measurement and grid snapping systems
+- Advanced geometric operations (boolean, offsetting, etc.)
+
+#### 2. **Room Configuration** 🏠
+
+- Interactive product placement in top-down and 3D perspective views
+- Real-time positioning, rotation, and scaling
+- Collision detection and smart placement assistance
+- Room-specific configuration (lighting, materials, ambiance)
+- Multi-floor room relationships and connections
+
+#### 3. **Product Configuration** ⚙️
+
+- Dynamic product dimensions with intelligent morphing
+- Advanced material system with PBR textures
+- Style variants and configuration presets
+- Custom furniture and fixture libraries
+- Professional-grade material and finish options
 
 ### Implementation Strategy
-**Progressive Disclosure Approach**:
-1. **Foundation Phase**: Core 3D rendering with view mode switching
-2. **Element Phase**: 3D versions of walls, doors, windows, rooms
-3. **Tools Phase**: 3D measurement, navigation, and interaction tools
-4. **Polish Phase**: Materials, lighting, and professional rendering
-5. **Advanced Phase**: Complex geometries, environmental effects, and exports
+
+**Feature-Driven Development Approach**:
+
+1. **FloorPlan Foundation**: Core 3D editing with top-down view for precision
+2. **Room System**: 3D room generation and configuration tools
+3. **Product Integration**: Furniture placement and customization
+4. **Advanced Features**: Materials, lighting, and professional rendering
+5. **Professional Tools**: Export, measurement, and presentation features
 
 ### Success Metrics
 - **Performance**: 60 FPS, sub-2 second load times
