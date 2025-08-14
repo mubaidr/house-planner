@@ -17,6 +17,7 @@ export interface DesignState {
     doors: { [id: string]: Door };
     windows: { [id: string]: Window };
     rooms: { [id: string]: Room };
+    roofs: { [id: string]: Roof };
   };
   // ... other state properties
 }
@@ -48,6 +49,15 @@ export interface Room {
   floorMaterialId?: string;
   ceilingMaterialId?: string;
 }
+
+export interface Roof {
+  id: string;
+  footprintWallIds: string[]; // The external walls forming the roof base
+  pitch: number;
+  overhang: number;
+  roofMaterialId?: string;
+  type: 'flat' | 'gable' | 'hip';
+}
 ```
 
 ## 2. Wall System
@@ -64,6 +74,11 @@ The wall system is based on connected line segments in a 2D plane (X-Z).
 1. When a user draws a new wall, the system will check for proximity to the endpoints of existing walls.
 2. If the new wall's start or end point is within a snapping threshold, it will snap to the existing point.
 3. The `connections` arrays of both the new wall and the existing wall(s) are updated to reflect the new join.
+4. **Snapping logic will prioritize:**
+    - Grid points (major and minor)
+    - Existing wall endpoints and midpoints
+    - Orthogonal alignment (0/90 degrees) to existing walls
+    - Edges of the overall house footprint
 
 ### Wall Splitting (T-Junctions)
 
@@ -82,6 +97,7 @@ Rooms are automatically detected by finding closed loops in the wall graph.
 3. If the traversal returns to the starting point, a closed loop (a room) has been found.
 4. The IDs of the walls in the traversal path are collected to define the new `Room` entity.
 5. A `Room` object is created and added to the `designStore`.
+6. **Constraint:** For the MVP, the room detection will validate that all corners are approximately 90 degrees. Non-orthogonal rooms will be flagged as invalid.
 
 ## 4. 3D Geometry Generation
 
@@ -107,6 +123,14 @@ Rooms are automatically detected by finding closed loops in the wall graph.
 3. A 2D shape is created from these vertices.
 4. `THREE.ShapeGeometry` or `THREE.ExtrudeGeometry` (with a small height) is used to create the floor and ceiling meshes.
 
+### Roof Geometry
+
+1. A `Roof` can only be generated if a valid, closed external wall footprint exists.
+2. The system identifies the outermost walls to define the roof's base polygon.
+3. Based on the `roof.type` (e.g., 'gable'), a procedural geometry generator creates the roof mesh.
+4. Parameters like `pitch` and `overhang` control the final shape.
+5. The roof geometry is automatically positioned on top of the walls.
+
 ## 5. Constraint & Validation Engine
 
 The system will enforce placement rules to ensure a valid architectural design.
@@ -128,3 +152,10 @@ The system will enforce placement rules to ensure a valid architectural design.
   - For walls, this is handled by the snapping and joining logic.
   - For furniture/products, Axis-Aligned Bounding Box (AABB) intersection tests will be performed against other objects within the same room.
   - Invalid placements will be visually indicated to the user (e.g., red outline).
+
+### Architectural Constraints
+
+- **Rule:** Rooms must be formed by walls joining at 90-degree angles.
+- **Implementation:** The room detection algorithm will validate corner angles. An error will be shown if a room has non-orthogonal corners.
+- **Rule:** A roof can only be placed on a house with a closed external wall loop.
+- **Implementation:** The UI for adding a roof will be disabled until a valid footprint is detected. The `roof.footprintWallIds` must reference a valid, closed loop of walls.

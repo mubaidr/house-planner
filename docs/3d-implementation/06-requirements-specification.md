@@ -1,4 +1,3 @@
-
 # Requirements Specification
 
 > **Comprehensive requirements documentation for 3D House Planner development with acceptance criteria and validation methods**
@@ -52,58 +51,71 @@ Transform the existing excellent 2D House Planner into a comprehensive architect
 
 Following the proven feature system from threejs-3d-room-designer, our requirements are organized around three core feature areas that align with user workflows and architectural design processes.
 
+Note on constraints (August 2025): For the MVP, we will enforce stricter placement and geometry rules to keep authoring simple and robust:
+
+- Default plan view is top-down orthographic.
+- Rooms are formed by orthogonal walls and must close into rectangles/squares (irregular/curved walls can be disabled via a feature flag and added later).
+- Doors and windows can only be placed inside host walls and must not extend beyond wall extents.
+- Roofs can only be placed/generated on top of a valid building envelope (closed outer walls); no free-floating roofs.
+- Walls snap to grid, angles (0/90° by default), endpoints, midpoints, and existing house edges.
+- Multi-room houses are supported; each room must be a closed orthogonal loop.
+- Materials are managed per element type (walls, doors, windows, roofs) via a curated library.
+
 ---
 
 ## 🏗️ FEATURE AREA 1: FloorPlan Design
 
-*3D design with top-down view for precise drawing and object placement*
-
 ### FR-FP-001: 3D Design with Top-Down View
 
 #### Description
+
 3D design capabilities with top-down orthographic view for precise drawing and layout operations.
 
 #### Requirements
 
-**FR-FP-001.1: Top-Down Drawing System**
+FR-FP-001.1: Top-Down Drawing System (Default)
 
 - **Requirement**: Top-down orthographic view for precise architectural drawing in 3D space
 - **Acceptance Criteria**:
-  - Orthographic camera with adjustable zoom and pan
+  - Orthographic camera with adjustable zoom and pan (default app view)
   - Grid overlay with customizable spacing (1", 6", 12", etc.)
   - Snap-to-grid functionality with visual feedback
   - Angle snapping at 15°, 30°, 45°, and 90° intervals
   - Distance constraint input during drawing operations
 
-**FR-FP-001.2: 3D Wall Creation**
+FR-FP-001.2: 3D Wall Creation (Orthogonal-first)
 
 - **Requirement**: Advanced wall creation and editing in 3D space with top-down precision
 - **Acceptance Criteria**:
   - Multi-segment wall creation with automatic corner detection
   - Wall thickness variations (load-bearing vs partition walls)
-  - Curved wall support with parametric control
+  - Orthogonal constraint mode: walls default to 0°/90°; angle unlock is a feature flag
+  - Curved wall support with parametric control (flagged off by default in MVP)
   - Wall height variations within single structure
   - Automatic wall cleanup and intersection handling
   - Real-time 3D preview while drawing in top-down view
 
-**FR-FP-001.3: Precision Drawing Tools**
+FR-FP-001.3: Precision Drawing & Snapping Tools
 
 - **Requirement**: Professional-grade drawing tools for accurate floor plans
 - **Acceptance Criteria**:
   - Grid snapping with customizable increments (1", 6", 12", etc.)
-  - Angle snapping at 15°, 30°, 45°, and 90° intervals
+  - Angle snapping at 90° (default), with optional 15°/30°/45° when advanced angle mode is enabled
   - Distance constraint input during drawing
-  - Orthogonal and parallel line constraints
+  - Orthogonal and parallel line constraints (on by default)
+  - Endpoint, midpoint, and house-edge snapping
+  - Wall-to-wall snapping with auto-join and T-junction splitting
   - Geometric construction tools (perpendicular, parallel, offset)
 
 ### FR-FP-002: Multi-Floor Support
 
 #### Description
+
 Comprehensive multi-story building support with vertical navigation and floor relationships.
 
 #### Requirements
 
-**FR-FP-002.1: Floor Management System**
+FR-FP-002.1: Floor Management System
 
 - **Requirement**: Complete floor-level management with architectural relationships
 - **Acceptance Criteria**:
@@ -113,7 +125,7 @@ Comprehensive multi-story building support with vertical navigation and floor re
   - Floor copying with wall/room duplication
   - Basement and sub-level support with negative elevations
 
-**FR-FP-002.2: Vertical Circulation**
+FR-FP-002.2: Vertical Circulation
 
 - **Requirement**: Stair and elevator placement with automatic floor connections
 - **Acceptance Criteria**:
@@ -123,7 +135,7 @@ Comprehensive multi-story building support with vertical navigation and floor re
   - Ramp creation for accessibility compliance
   - Vertical circulation validation and error checking
 
-**FR-FP-002.3: Cross-Floor Relationships**
+FR-FP-002.3: Cross-Floor Relationships
 
 - **Requirement**: Intelligent management of elements spanning multiple floors
 - **Acceptance Criteria**:
@@ -136,21 +148,22 @@ Comprehensive multi-story building support with vertical navigation and floor re
 ### FR-FP-003: View Management
 
 #### Description
+
 Seamless view switching between top-down and perspective modes for different design tasks.
 
 #### Requirements
 
-**FR-FP-003.1: View Mode Switching**
+FR-FP-003.1: View Mode Switching
 
 - **Requirement**: Fluid switching between top-down and perspective views
 - **Acceptance Criteria**:
-  - Top-down orthographic view for precise drawing and placement
+  - Top-down orthographic view for precise drawing and placement (default)
   - Perspective 3D view for visualization and validation
   - Isometric view for technical illustrations
   - Smooth animated transitions between view modes
   - Camera state preservation across view switches
 
-**FR-FP-003.2: Context-Aware View Selection**
+FR-FP-003.2: Context-Aware View Selection
 
 - **Requirement**: Automatic view recommendations based on current task
 - **Acceptance Criteria**:
@@ -160,20 +173,55 @@ Seamless view switching between top-down and perspective modes for different des
   - View mode memory per editing context
   - Performance optimization for large scenes in both views
 
+### FR-FP-004: Building Envelope & Roof System
+
+#### Description
+
+Generate and manage roofs based on the house’s outer envelope; ensure roofs are only placed on valid buildings.
+
+#### Requirements
+
+FR-FP-004.1: Building Envelope Detection
+
+- **Requirement**: Detect the outer boundary (footprint) formed by external walls
+- **Acceptance Criteria**:
+  - Automatic identification of closed exterior wall loops
+  - Exclude interior room partitions from the footprint
+  - Visual outline of footprint in plan view
+  - Error if no valid closed loop exists
+
+FR-FP-004.2: Roof Generation & Placement
+
+- **Requirement**: Place roofs only on valid envelopes with simple presets
+- **Acceptance Criteria**:
+  - Roof presets: flat, gable, hip (gable/hip require axis-aligned footprint)
+  - Roof attaches to envelope; no placement allowed without valid footprint
+  - Adjustable pitch, overhang, and eave height
+  - Roof materials selectable from a roof-specific library
+  - Real-time 3D preview; plan view outline
+
+FR-FP-004.3: Roof Editing & Constraints
+
+- **Requirement**: Easy editing with constraints
+- **Acceptance Criteria**:
+  - Drag handles for pitch/overhang with numeric entry
+  - Snap roof edges to footprint edges; maintain enclosure
+  - Prevent self-intersections and invalid pitches
+  - Undo/redo support
+
 ---
 
 ## 🏠 FEATURE AREA 2: Room Configuration
 
-*Interactive room setup with furniture placement and environmental controls*
-
 ### FR-RC-001: Interactive Product Placement
 
 #### Description
+
 Advanced furniture and fixture placement system with intelligent positioning and collision detection.
 
 #### Requirements
 
-**FR-RC-001.1: Furniture Library System**
+FR-RC-001.1: Furniture Library System
 
 - **Requirement**: Comprehensive furniture library with categorization and search
 - **Acceptance Criteria**:
@@ -183,7 +231,7 @@ Advanced furniture and fixture placement system with intelligent positioning and
   - Custom furniture import (GLTF, OBJ formats)
   - User favorites and recent items system
 
-**FR-RC-001.2: Intelligent Placement Tools**
+FR-RC-001.2: Intelligent Placement Tools
 
 - **Requirement**: Smart placement assistance with collision detection and suggestions
 - **Acceptance Criteria**:
@@ -193,7 +241,7 @@ Advanced furniture and fixture placement system with intelligent positioning and
   - Accessibility clearance validation (36" pathways, door swings)
   - Undo/redo support for all placement operations
 
-**FR-RC-001.3: View-Optimized Editing**
+FR-RC-001.3: View-Optimized Editing
 
 - **Requirement**: Furniture placement optimized for different view modes
 - **Acceptance Criteria**:
@@ -206,11 +254,12 @@ Advanced furniture and fixture placement system with intelligent positioning and
 ### FR-RC-002: Room Environment Management
 
 #### Description
+
 Complete room environment configuration including lighting, materials, and ambiance settings.
 
 #### Requirements
 
-**FR-RC-002.1: Lighting Design System**
+FR-RC-002.1: Lighting Design System
 
 - **Requirement**: Professional lighting design tools for each room
 - **Acceptance Criteria**:
@@ -220,7 +269,7 @@ Complete room environment configuration including lighting, materials, and ambia
   - Natural lighting simulation with window placement
   - Lighting scene presets (day, evening, night)
 
-**FR-RC-002.2: Material Assignment**
+FR-RC-002.2: Material Assignment
 
 - **Requirement**: Room-specific material application with realistic rendering
 - **Acceptance Criteria**:
@@ -230,7 +279,7 @@ Complete room environment configuration including lighting, materials, and ambia
   - Material cost estimation integration
   - Material sample export for physical reference
 
-**FR-RC-002.3: Room Style Presets**
+FR-RC-002.3: Room Style Presets
 
 - **Requirement**: Complete room style templates for quick setup
 - **Acceptance Criteria**:
@@ -243,21 +292,23 @@ Complete room environment configuration including lighting, materials, and ambia
 ### FR-RC-003: Multi-Room Relationships
 
 #### Description
+
 Management of room connections, flow, and overall building organization.
 
 #### Requirements
 
-**FR-RC-003.1: Room Connection System**
+FR-RC-003.1: Room Connection System
 
 - **Requirement**: Visual and functional room relationship management
 - **Acceptance Criteria**:
   - Door and opening management between rooms
+  - Rooms must be orthogonal and fully enclosed by walls
   - Traffic flow visualization and analysis
   - Room accessibility compliance checking
   - Privacy level settings (public, private, semi-private)
   - Room hierarchy and grouping (wings, zones, levels)
 
-**FR-RC-003.2: Building Flow Analysis**
+FR-RC-003.2: Building Flow Analysis
 
 - **Requirement**: Comprehensive building circulation and flow analysis
 - **Acceptance Criteria**:
@@ -276,11 +327,12 @@ Management of room connections, flow, and overall building organization.
 ### FR-PC-001: Dynamic Product Dimensions
 
 #### Description
+
 Intelligent product scaling and morphing system that maintains proportions and functionality.
 
 #### Requirements
 
-**FR-PC-001.1: Parametric Scaling System**
+FR-PC-001.1: Parametric Scaling System
 
 - **Requirement**: Non-uniform scaling with intelligent constraints
 - **Acceptance Criteria**:
@@ -290,7 +342,7 @@ Intelligent product scaling and morphing system that maintains proportions and f
   - Real-time dimension feedback during scaling
   - Dimension input with imperial/metric unit support
 
-**FR-PC-001.2: Morph-Based Adaptation**
+FR-PC-001.2: Morph-Based Adaptation
 
 - **Requirement**: Advanced geometry morphing for complex furniture pieces
 - **Acceptance Criteria**:
@@ -300,7 +352,7 @@ Intelligent product scaling and morphing system that maintains proportions and f
   - Structural integrity validation during morphing
   - Performance optimization for real-time morphing
 
-**FR-PC-001.3: Configuration Validation**
+FR-PC-001.3: Configuration Validation
 
 - **Requirement**: Automatic validation of product configurations
 - **Acceptance Criteria**:
@@ -313,11 +365,12 @@ Intelligent product scaling and morphing system that maintains proportions and f
 ### FR-PC-002: Advanced Material System
 
 #### Description
+
 Professional-grade material system with PBR rendering and realistic appearance.
 
 #### Requirements
 
-**FR-PC-002.1: PBR Material Pipeline**
+FR-PC-002.1: PBR Material Pipeline
 
 - **Requirement**: Physically-based rendering materials with accurate light interaction
 - **Acceptance Criteria**:
@@ -327,7 +380,7 @@ Professional-grade material system with PBR rendering and realistic appearance.
   - Real-time material preview with lighting updates
   - Material validation for rendering performance
 
-**FR-PC-002.2: Material Library Management**
+FR-PC-002.2: Material Library Management
 
 - **Requirement**: Comprehensive material library with organization and search
 - **Acceptance Criteria**:
@@ -337,7 +390,16 @@ Professional-grade material system with PBR rendering and realistic appearance.
   - Custom material creation with texture import
   - Material version control and update management
 
-**FR-PC-002.3: Surface-Specific Assignment**
+FR-PC-002.4: Element-Specific Material Libraries
+
+- **Requirement**: Curated, per-element material catalogs for ease and correctness
+- **Acceptance Criteria**:
+  - Separate libraries for walls (paints/plasters), doors (wood/metal finishes), windows (frames/glass), roofs (tiles/shingles/metal)
+  - Only compatible materials shown for selected element type
+  - Favorites and recent materials per element category
+  - Library is searchable with tags and physical properties (roughness, color, cost)
+
+FR-PC-002.3: Surface-Specific Assignment
 
 - **Requirement**: Granular material assignment to product surfaces
 - **Acceptance Criteria**:
@@ -350,11 +412,12 @@ Professional-grade material system with PBR rendering and realistic appearance.
 ### FR-PC-003: Style Variants and Presets
 
 #### Description
+
 Complete style management system with predefined variants and custom configurations.
 
 #### Requirements
 
-**FR-PC-003.1: Style Variant System**
+FR-PC-003.1: Style Variant System
 
 - **Requirement**: Predefined style variants for each product category
 - **Acceptance Criteria**:
@@ -364,7 +427,7 @@ Complete style management system with predefined variants and custom configurati
   - Style transformation animations for user feedback
   - Style impact analysis on room aesthetics
 
-**FR-PC-003.2: Configuration Presets**
+FR-PC-003.2: Configuration Presets
 
 - **Requirement**: Saved configuration presets for complex products
 - **Acceptance Criteria**:
@@ -374,7 +437,7 @@ Complete style management system with predefined variants and custom configurati
   - Preset validation for current product version
   - Preset migration for product updates
 
-**FR-PC-003.3: Custom Configuration Framework**
+FR-PC-003.3: Custom Configuration Framework
 
 - **Requirement**: Framework for creating custom product configurations
 - **Acceptance Criteria**:
@@ -388,14 +451,15 @@ Complete style management system with predefined variants and custom configurati
 
 ## ⚡ Non-Functional Requirements
 
-## NFR-001: Performance Requirements
+### NFR-001: Performance Requirements
 
-### Description
+#### Description
+
 The system shall maintain high performance standards while providing 3D functionality.
 
-### Requirements
+#### Requirements
 
-**NFR-001.1: Frame Rate Performance**
+NFR-001.1: Frame Rate Performance
 
 - **Requirement**: 3D rendering shall maintain smooth frame rates on target hardware
 - **Acceptance Criteria**:
@@ -405,7 +469,7 @@ The system shall maintain high performance standards while providing 3D function
   - Automatic quality adjustment based on performance
   - Performance warnings for complex scenes
 
-**NFR-001.2: Memory Usage**
+NFR-001.2: Memory Usage
 
 - **Requirement**: Memory consumption shall remain within acceptable limits
 - **Acceptance Criteria**:
@@ -415,7 +479,7 @@ The system shall maintain high performance standards while providing 3D function
   - Memory leaks are prevented through proper cleanup
   - Memory monitoring available in development builds
 
-**NFR-001.3: Load Time Performance**
+NFR-001.3: Load Time Performance
 
 - **Requirement**: 3D mode activation shall be fast enough for practical use
 - **Acceptance Criteria**:
@@ -427,14 +491,15 @@ The system shall maintain high performance standards while providing 3D function
 
 ---
 
-## NFR-002: Compatibility Requirements
+### NFR-002: Compatibility Requirements
 
-### Description
+#### Description
+
 The system shall maintain compatibility with existing platforms and browsers while supporting new 3D features.
 
-### Requirements
+#### Requirements
 
-**NFR-002.1: Browser Support**
+NFR-002.1: Browser Support
 
 - **Requirement**: 3D features shall work on modern web browsers with WebGL support
 - **Acceptance Criteria**:
@@ -444,7 +509,7 @@ The system shall maintain compatibility with existing platforms and browsers whi
   - Edge 90+ with full feature support
   - Graceful degradation for unsupported browsers
 
-**NFR-002.2: Device Compatibility**
+NFR-002.2: Device Compatibility
 
 - **Requirement**: 3D functionality shall adapt to different device capabilities
 - **Acceptance Criteria**:
@@ -454,7 +519,7 @@ The system shall maintain compatibility with existing platforms and browsers whi
   - Touch input support for tablet navigation
   - Keyboard shortcuts work on all platforms
 
-**NFR-002.3: Hardware Requirements**
+NFR-002.3: Hardware Requirements
 
 - **Requirement**: System shall specify and detect minimum hardware requirements
 - **Acceptance Criteria**:
@@ -466,14 +531,15 @@ The system shall maintain compatibility with existing platforms and browsers whi
 
 ---
 
-## NFR-003: Usability Requirements
+### NFR-003: Usability Requirements
 
-### Description
+#### Description
+
 The system shall maintain the ease of use that characterizes the current application while adding 3D capabilities.
 
-### Requirements
+#### Requirements
 
-**NFR-003.1: Learning Curve**
+NFR-003.1: Learning Curve
 
 - **Requirement**: 3D features shall be learnable without extensive training
 - **Acceptance Criteria**:
@@ -483,7 +549,7 @@ The system shall maintain the ease of use that characterizes the current applica
   - Error messages are clear and actionable
   - UI follows established patterns from 2D interface
 
-**NFR-003.2: Accessibility**
+NFR-003.2: Accessibility
 
 - **Requirement**: 3D features shall maintain accessibility standards
 - **Acceptance Criteria**:
@@ -495,14 +561,15 @@ The system shall maintain the ease of use that characterizes the current applica
 
 ---
 
-## NFR-004: Reliability Requirements
+### NFR-004: Reliability Requirements
 
-### Description
+#### Description
+
 The system shall provide reliable operation with appropriate error handling and recovery mechanisms.
 
-### Requirements
+#### Requirements
 
-**NFR-004.1: Error Handling**
+NFR-004.1: Error Handling
 
 - **Requirement**: System shall gracefully handle 3D-related errors
 - **Acceptance Criteria**:
@@ -512,7 +579,7 @@ The system shall provide reliable operation with appropriate error handling and 
   - Network issues don't crash the application
   - Error reporting includes sufficient diagnostic information
 
-**NFR-004.2: Data Integrity**
+NFR-004.2: Data Integrity
 
 - **Requirement**: 3D operations shall not corrupt existing 2D design data
 - **Acceptance Criteria**:
@@ -537,6 +604,8 @@ The system shall provide reliable operation with appropriate error handling and 
 ### Integration Testing
 - **Target**: 100% coverage of 2D-3D integration points
 - **Scope**: Mode switching, data synchronization, export workflows
+  - Placement constraints: doors/windows must be inside walls; roof requires valid envelope
+  - Snapping rules: grid, endpoints, midpoints, house-edge; orthogonal lock
 - **Framework**: React Testing Library with WebGL mocks
 - **Automation**: Run on pull requests and releases
 

@@ -1,7 +1,6 @@
-
 # Architecture Design
 
-> **Technical architecture and system design for 3D House Planner implementation**
+> Technical architecture and system design for 3D House Planner implementation
 
 ---
 
@@ -9,14 +8,15 @@
 
 **As of August 2025, the 3D House Planner implementation will be based on [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), an open-source React-bundled Three.js room planner and product configurator.**
 
-### Key Features of the New Base:
+### Key Features of the New Base
+
 - React-bundled Three.js architecture
 - 2D/3D floorplan editing with interactive product placement/configuration
 - Model morph/material/style configuration
 - Extensible via React components and hooks
 - Built-in support for product configurator, room editing, and model customization
 
-### Integration & Adaptation Strategy:
+### Integration & Adaptation Strategy
 
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - State management, UI, and business logic will leverage the base's React architecture, with additional stores and hooks as needed.
@@ -39,9 +39,10 @@ Building upon the threejs-3d-room-designer foundation, our architecture is organ
 
 #### 1. FloorPlan Design Features 📐
 
-- **3D Editor with Top-Down View**: Precise drawing with orthographic projection
+- **3D Editor with Top-Down View**: Precise drawing with orthographic projection, snapping, and architectural constraints (orthogonal walls, etc.).
 - **Multi-Floor Management**: Vertical building navigation and floor relationships
 - **Precision Tools**: Professional measurement and drawing tools
+- **Roof System**: Procedural roof generation on valid building footprints.
 
 #### 2. Room Configuration Features 🏠
 
@@ -52,7 +53,7 @@ Building upon the threejs-3d-room-designer foundation, our architecture is organ
 #### 3. Product Configuration Features ⚙️
 
 - **Dynamic Dimensions**: Intelligent scaling and morphing systems
-- **Material Management**: Advanced PBR material application
+- **Material Management**: Advanced PBR material application with element-specific libraries (walls, roofs, doors, etc.).
 - **Style Variants**: Configuration presets and customization
 
 ### High-Level Architecture Diagram
@@ -102,14 +103,14 @@ src/
 │   ├── Canvas3D/                 # New 3D canvas system
 │   │   ├── Scene3D.tsx          # Main 3D scene container
 │   │   ├── Camera/              # Camera controls and presets
-│   │   ├── Elements/            # 3D element renderers
+│   │   ├── Elements/            # 3D element renderers (Wall, Door, Window, Roof)
 │   │   ├── Lighting/            # Lighting system
 │   │   ├── Controls/            # 3D interaction tools
 │   │   └── Effects/             # Post-processing effects
 │   ├── UI/                      # Enhanced UI components
 │   └── Export/                  # Enhanced export system
 ├── stores/
-│   ├── designStore.ts           # Enhanced with 3D state
+│   ├── designStore.ts           # Enhanced with 3D state (including roofs)
 │   ├── scene3DStore.ts          # New 3D scene management
 │   └── viewStore.ts             # View mode management
 ├── hooks/
@@ -117,10 +118,11 @@ src/
 │   │   ├── useCamera3D.ts       # Camera management
 │   │   ├── useScene3D.ts        # Scene state management
 │   │   └── use3DControls.ts     # 3D interaction handling
-│   └── use3DTransition.ts       # 2D ↔ 3D transitions
+│   ├── use3DTransition.ts       # 2D ↔ 3D transitions
+│   └── useConstraints.ts        # New hook for snapping and placement rules
 ├── utils/
 │   ├── 3d/                      # New 3D utilities
-│   │   ├── geometry3D.ts        # 3D geometry generation
+│   ├── geometry3D.ts        # 3D geometry generation (including roofs)
 │   │   ├── materials3D.ts       # 3D material management
 │   │   ├── transforms.ts        # 2D ↔ 3D conversions
 │   │   └── export3D.ts          # 3D export utilities
@@ -195,17 +197,19 @@ import { Wall3D } from './Wall3D';
 import { Door3D } from './Door3D';
 import { Window3D } from './Window3D';
 import { Room3D } from './Room3D';
+import { Roof3D } from './Roof3D';
 
 interface ElementRenderer3DProps {
   walls: Wall[];
   doors: Door[];
   windows: Window[];
   rooms: Room[];
+  roofs: Roof[];
   onSelect?: (id: string, type: string) => void;
 }
 
 export function ElementRenderer3D({
-  walls, doors, windows, rooms, onSelect
+  walls, doors, windows, rooms, roofs, onSelect
 }: ElementRenderer3DProps) {
   return (
     <group name="architectural-elements">
@@ -246,6 +250,17 @@ export function ElementRenderer3D({
             key={window.id}
             window={window}
             onSelect={() => onSelect?.(window.id, 'window')}
+          />
+        ))}
+      </group>
+
+      {/* Render roof */}
+      <group name="roofs">
+        {roofs.map(roof => (
+          <Roof3D
+            key={roof.id}
+            roof={roof}
+            onSelect={() => onSelect?.(roof.id, 'roof')}
           />
         ))}
       </group>
@@ -605,6 +620,14 @@ export class GeometryGenerator {
     group.add(panelMesh);
 
     return group;
+  }
+
+  static createRoofGeometry(roof: Roof3D, footprint: Vector3[]): BufferGeometry {
+    // Logic to generate roof geometry based on type (gable, hip)
+    // and parameters (pitch, overhang) from the footprint vertices.
+    // This will be a complex function involving geometric calculations.
+    const geometry = new BufferGeometry(); // Placeholder
+    return geometry;
   }
 }
 ```

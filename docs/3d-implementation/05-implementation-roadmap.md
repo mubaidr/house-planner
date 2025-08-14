@@ -1,4 +1,3 @@
-
 # Implementation Roadmap
 
 > **Phase-by-phase development plan for implementing 3D capabilities with clear milestones and deliverables**
@@ -42,9 +41,10 @@ Following the proven structure of threejs-3d-room-designer, development is organ
 
 #### 1. **FloorPlan Design** 📐
 
-- 3D design with top-down view for precise drawing
+- 3D design with top-down view for precise drawing, with enforced constraints (snapping, orthogonal walls).
 - Multi-floor support and vertical navigation
 - Precision tools and measurement systems
+- Roof system with procedural generation and placement constraints.
 
 #### 2. **Room Configuration** 🏠
 
@@ -55,12 +55,12 @@ Following the proven structure of threejs-3d-room-designer, development is organ
 #### 3. **Product Configuration** ⚙️
 
 - Dynamic product dimensions and morphing
-- Advanced material and style systems
+- Advanced material and style systems with element-specific libraries.
 - Configuration presets and customization
 
 ### Risk Mitigation
 
-- **Feature Flags**: All 3D features behind feature toggles
+- **Feature Flags**: All 3D features behind feature toggles, especially for new constraints like orthogonal-only walls.
 - **Fallback Support**: 2D mode always available as backup
 - **Progressive Loading**: 3D assets loaded only when needed
 - **Browser Compatibility**: Graceful degradation for unsupported browsers
@@ -76,10 +76,11 @@ Following the proven structure of threejs-3d-room-designer, development is organ
 - Create basic 3D scene infrastructure
 - Implement view mode switching
 - Set up development and testing environment
+- Implement core constraint engine (snapping, orthogonal lock).
 
 ### Deliverables
 
-#### Week 1: Environment Setup
+#### Week 1: Environment Setup & Core Constraints
 **Day 1-2: Dependency Installation & Configuration**
 ```bash
 # Install 3D dependencies
@@ -90,7 +91,7 @@ npm install three leva @types/three
 # Add Vite optimizations for Three.js
 ```
 
-**Day 3-4: Basic 3D Scene**
+**Day 3-4: Basic 3D Scene & Constraint Hook**
 ```typescript
 // src/components/Canvas3D/Scene3D.tsx
 export function Scene3D() {
@@ -105,6 +106,13 @@ export function Scene3D() {
       <OrbitControls />
     </Canvas>
   );
+}
+
+// src/hooks/useConstraints.ts
+export function useConstraints() {
+  const snapToGrid = (point) => { ... };
+  const getOrthogonalAngle = (start, end) => { ... };
+  return { snapToGrid, getOrthogonalAngle };
 }
 ```
 
@@ -445,241 +453,70 @@ export function Room3D({ room, isSelected, onSelect }: Room3DProps) {
 
 ---
 
-## Phase 3: Interaction & Navigation (Weeks 6-7)
+## Phase 3: Roof System & Advanced Interaction (Weeks 6-7)
 
 ### Objectives
-- Implement professional camera controls
-- Add view presets for architectural perspectives
+- Implement procedural roof generation
+- Add professional camera controls
 - Create 3D measurement tools
 - Enhance element manipulation in 3D space
 
-### Week 6: Camera System
+### Week 6: Roof System
 
-**Day 26-28: Camera Controls Enhancement**
+**Day 26-28: Roof Generation Logic**
+```typescript
+// src/utils/3d/roofGeometry.ts
+export function generateRoofGeometry(footprint: Point[], type: 'gable' | 'hip', pitch: number) {
+  // ... logic to create roof from footprint, type, and pitch
+}
+
+// src/components/Canvas3D/Elements/Roof3D.tsx
+export function Roof3D({ roof }: RoofProps) {
+  const geometry = useMemo(() => {
+    const footprint = getFootprintPoints(roof.wallIds);
+    return generateRoofGeometry(footprint, roof.type, roof.pitch);
+  }, [roof]);
+
+  return <mesh geometry={geometry}><meshStandardMaterial color="maroon" /></mesh>;
+}
+```
+
+**Day 29-30: Roof Tool UI**
+```typescript
+// src/components/UI/RoofPanel.tsx
+export function RoofPanel() {
+  const { selectedRoof, updateRoof } = useDesignStore();
+  // ... UI with sliders for pitch, overhang, and type selector
+}
+```
+
+### Week 7: Camera & Measurement Tools
+
+**Day 31-33: Camera Controls Enhancement**
 ```typescript
 // src/components/Canvas3D/Camera/CameraControls.tsx
-export function CameraControls({ presets }: { presets: ViewPreset[] }) {
-  const { camera, gl } = useThree();
-  const controlsRef = useRef<OrbitControlsImpl>(null);
-
-  const animateToPreset = useCallback((preset: ViewPreset) => {
-    if (!controlsRef.current) return;
-
-    // Animate camera to new position
-    const controls = controlsRef.current;
-    const startPosition = camera.position.clone();
-    const startTarget = controls.target.clone();
-
-    const duration = 1000; // 1 second animation
-    const startTime = Date.now();
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      // Smooth easing function
-      const eased = 1 - Math.pow(1 - progress, 3);
-
-      camera.position.lerpVectors(startPosition, preset.camera.position, eased);
-      controls.target.lerpVectors(startTarget, preset.camera.target, eased);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    animate();
-  }, [camera]);
-
-  return (
-    <>
-      <OrbitControls
-        ref={controlsRef}
-        enableDamping={true}
-        dampingFactor={0.05}
-        minDistance={5}
-        maxDistance={100}
-        maxPolarAngle={Math.PI / 2.1} // Prevent camera from going under ground
-      />
-
-      {/* View preset buttons */}
-      <div className="camera-presets">
-        {presets.map((preset) => (
-          <button
-            key={preset.name}
-            onClick={() => animateToPreset(preset)}
-            className="preset-button"
-          >
-            {preset.icon} {preset.name}
-          </button>
-        ))}
-      </div>
-    </>
-  );
-}
+// ... (as before, with presets)
 ```
 
-**Day 29-30: View Presets Implementation**
-```typescript
-// src/data/viewPresets.ts
-export const ARCHITECTURAL_VIEW_PRESETS: ViewPreset[] = [
-  {
-    name: 'Plan',
-    icon: '🏠',
-    description: 'Top-down architectural view',
-    camera: {
-      position: new Vector3(0, 50, 0),
-      target: new Vector3(0, 0, 0),
-      fov: 50,
-    },
-    orthographic: true,
-  },
-  {
-    name: 'Front',
-    icon: '📐',
-    description: 'Front elevation view',
-    camera: {
-      position: new Vector3(0, 10, 30),
-      target: new Vector3(0, 10, 0),
-      fov: 60,
-    },
-  },
-  {
-    name: 'Isometric',
-    icon: '📦',
-    description: 'Three-dimensional perspective',
-    camera: {
-      position: new Vector3(20, 15, 20),
-      target: new Vector3(0, 5, 0),
-      fov: 75,
-    },
-  },
-  {
-    name: 'Interior',
-    icon: '🚶',
-    description: 'Walk-through perspective',
-    camera: {
-      position: new Vector3(0, 7, 0),
-      target: new Vector3(10, 7, 0),
-      fov: 90,
-    },
-  },
-];
-```
-
-### Week 7: Measurement & Interaction Tools
-
-**Day 31-33: 3D Measurement System**
+**Day 34-35: 3D Measurement System**
 ```typescript
 // src/components/Canvas3D/Tools/MeasureTool3D.tsx
-export function MeasureTool3D() {
-  const [measuring, setMeasuring] = useState(false);
-  const [startPoint, setStartPoint] = useState<Vector3 | null>(null);
-  const [endPoint, setEndPoint] = useState<Vector3 | null>(null);
-
-  const handleCanvasClick = useCallback((event: ThreeEvent<MouseEvent>) => {
-    const point = event.point;
-
-    if (!measuring) {
-      setStartPoint(point.clone());
-      setMeasuring(true);
-    } else {
-      setEndPoint(point.clone());
-      setMeasuring(false);
-
-      // Calculate and display distance
-      const distance = startPoint!.distanceTo(point);
-      showMeasurement(startPoint!, point, distance);
-    }
-  }, [measuring, startPoint]);
-
-  const distance = useMemo(() => {
-    if (!startPoint || !endPoint) return 0;
-    return startPoint.distanceTo(endPoint);
-  }, [startPoint, endPoint]);
-
-  return (
-    <>
-      {/* Measurement line */}
-      {startPoint && endPoint && (
-        <line>
-          <bufferGeometry>
-            <bufferAttribute
-              attach="attributes-position"
-              array={new Float32Array([
-                startPoint.x, startPoint.y, startPoint.z,
-                endPoint.x, endPoint.y, endPoint.z,
-              ])}
-              count={2}
-              itemSize={3}
-            />
-          </bufferGeometry>
-          <lineBasicMaterial color="#ff0000" linewidth={2} />
-        </line>
-      )}
-
-      {/* Distance label */}
-      {startPoint && endPoint && (
-        <Text
-          position={[
-            (startPoint.x + endPoint.x) / 2,
-            (startPoint.y + endPoint.y) / 2 + 1,
-            (startPoint.z + endPoint.z) / 2,
-          ]}
-          fontSize={0.5}
-          color="#ff0000"
-        >
-          {distance.toFixed(2)}m
-        </Text>
-      )}
-    </>
-  );
-}
-```
-
-**Day 34-35: Element Manipulation Gizmos**
-```typescript
-// src/components/Canvas3D/Tools/TransformGizmo.tsx
-export function TransformGizmo({ targetElement }: { targetElement: Element3D }) {
-  const [mode, setMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
-
-  return (
-    <group position={targetElement.position}>
-      {/* Translation handles */}
-      {mode === 'translate' && (
-        <>
-          <ArrowHelper dir={new Vector3(1, 0, 0)} color="#ff0000" length={2} />
-          <ArrowHelper dir={new Vector3(0, 1, 0)} color="#00ff00" length={2} />
-          <ArrowHelper dir={new Vector3(0, 0, 1)} color="#0000ff" length={2} />
-        </>
-      )}
-
-      {/* Mode switcher */}
-      <Html distanceFactor={10}>
-        <div className="gizmo-controls">
-          <button onClick={() => setMode('translate')}>Move</button>
-          <button onClick={() => setMode('rotate')}>Rotate</button>
-          <button onClick={() => setMode('scale')}>Scale</button>
-        </div>
-      </Html>
-    </group>
-  );
-}
+// ... (as before)
 ```
 
 ### Success Criteria
+- [ ] Roofs generate correctly on valid house footprints.
 - [ ] Smooth camera animations between view presets
 - [ ] Intuitive orbit controls with proper constraints
 - [ ] Accurate 3D measurements between any two points
 - [ ] Element selection and manipulation gizmos
-- [ ] Professional camera movement for presentations
 
 ---
 
 ## Phase 4: Materials & Lighting (Weeks 8-9)
 
 ### Objectives
-- Implement physically-based rendering (PBR) materials
+- Implement physically-based rendering (PBR) materials with element-specific libraries.
 - Create realistic lighting system with shadows
 - Add environmental effects and atmosphere
 - Optimize rendering performance
@@ -760,6 +597,10 @@ export class Material3DSystem {
 export function MaterialRenderer3D({ element }: { element: Element3D }) {
   const material3DSystem = useMemo(() => new Material3DSystem(), []);
   const [material, setMaterial] = useState<MeshStandardMaterial | null>(null);
+  const materialLibrary = useMemo(() => {
+    // Fetch material library based on element type (wall, roof, etc.)
+    return getMaterialLibrary(element.type);
+  }, [element.type]);
 
   useEffect(() => {
     if (element.material3DConfig) {

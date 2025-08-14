@@ -1,7 +1,6 @@
-
 # Testing Strategy
 
-> **Comprehensive testing strategy for 3D House Planner implementation covering unit, integration, performance, and user acceptance testing**
+> Comprehensive testing strategy for 3D House Planner implementation covering unit, integration, performance, and user acceptance testing
 
 ---
 
@@ -9,7 +8,8 @@
 
 **As of August 2025, all 3D testing will be layered on and extend [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
 
-### Testing Adaptation:
+### Testing Adaptation
+
 - All testing strategies below are to be interpreted as customizations, extensions, or integrations with the base project.
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
@@ -37,16 +37,21 @@ This document outlines a comprehensive testing strategy to ensure the 3D House P
 ### Testing Scope
 
 **In Scope**:
+
 - All new 3D rendering components
 - 2D-3D data synchronization
 - Camera controls and navigation
-- Material and lighting systems
+- Material and lighting systems, including element-specific libraries
+- Roof generation and placement
+- Placement constraints (orthogonal rooms, doors-in-walls, roof-on-house)
+- Snapping logic (grid, angle, element)
 - Export and import functionality
 - Performance optimization features
 - Cross-browser compatibility
 - Accessibility compliance
 
 **Out of Scope**:
+
 - Existing 2D functionality (covered by existing tests)
 - Third-party library internals (Three.js, React Three Fiber)
 - Browser-specific WebGL implementations
@@ -57,7 +62,7 @@ This document outlines a comprehensive testing strategy to ensure the 3D House P
 
 ### Test Pyramid Structure
 
-```
+```text
                     E2E Tests (5%)
                    /               \
               Integration Tests (25%)
@@ -319,8 +324,8 @@ describe('useScene3D Hook', () => {
 
 ```typescript
 // __tests__/utils/3d/geometryUtils.test.ts
-import { generateWallGeometry, generateRoomGeometry } from '@/utils/3d/geometryUtils';
-import { Wall, Room } from '@/types';
+import { generateWallGeometry, generateRoomGeometry, generateRoofGeometry } from '@/utils/3d/geometryUtils';
+import { Wall, Room, Roof } from '@/types';
 
 describe('3D Geometry Utils', () => {
   describe('generateWallGeometry', () => {
@@ -412,6 +417,27 @@ describe('3D Geometry Utils', () => {
 
       expect(floorGeometry).toBeDefined();
       expect(floorGeometry.parameters.shapes).toBeDefined();
+    });
+  });
+
+  describe('generateRoofGeometry', () => {
+    it('creates gable roof geometry correctly', () => {
+      const roof: Roof = {
+        id: 'roof-1',
+        pitch: 30,
+        overhang: 0.5,
+        type: 'gable',
+      };
+      const footprint = [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 8 },
+        { x: 0, y: 8 },
+      ];
+
+      const geometry = generateRoofGeometry(roof, footprint);
+      expect(geometry).toBeDefined();
+      // Add more specific assertions about the roof geometry
     });
   });
 });
@@ -535,6 +561,40 @@ describe('2D-3D Synchronization', () => {
 
     // Verify selection still maintained
     expect(store.selectedElementId).toBe('wall-1');
+  });
+
+  it('prevents placing a door outside of a wall', async () => {
+    render(<AppLayout />);
+    // Switch to 3D mode and door tool
+    await user.click(screen.getByText('3D View'));
+    await user.click(screen.getByText('Door Tool'));
+
+    // Attempt to place door in empty space
+    const canvas3D = screen.getByTestId('canvas-3d');
+    await user.click(canvas3D, { clientX: 300, clientY: 300 });
+
+    // Verify no door was created
+    const store = useDesignStore.getState();
+    expect(store.doors).toHaveLength(0);
+    expect(screen.getByText(/must be placed inside a wall/i)).toBeInTheDocument();
+  });
+
+  it('enforces orthogonal wall drawing when constraint is active', async () => {
+    render(<AppLayout />);
+    // Ensure orthogonal lock is on
+    const store = useDesignStore.getState();
+    store.setOrthogonalLock(true);
+
+    // Draw a non-orthogonal wall
+    const canvas2D = screen.getByTestId('canvas-2d');
+    await user.click(canvas2D, { clientX: 100, clientY: 100 });
+    fireEvent.mouseMove(canvas2D, { clientX: 150, clientY: 120 }); // Move to a non-90-degree angle
+    fireEvent.click(canvas2D, { clientX: 150, clientY: 120 });
+
+    // Verify the created wall is orthogonal
+    const wall = store.walls[0];
+    const angle = Math.atan2(wall.endY - wall.startY, wall.endX - wall.startX) * (180 / Math.PI);
+    expect(Math.abs(angle) % 90).toBe(0);
   });
 });
 ```
