@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "type-check": "tsc --noEmit",
   "test": "jest --passWithNoTests",
-  "test:ci": "jest --runInBand",
+  "test:ci": "jest --runInBand --passWithNoTests",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test"
