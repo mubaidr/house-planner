@@ -548,7 +548,7 @@ export class ProductionMonitoring {
   private setupErrorTracking() {
     // Sentry configuration
     Sentry.init({
-      dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn: import.meta.env.VITE_SENTRY_DSN,
       environment: process.env.NODE_ENV,
       beforeSend: (event, hint) => {
         // Filter out known non-critical errors
@@ -674,7 +674,7 @@ export default async function health(
   const response: HealthCheck = {
     status,
     timestamp: new Date().toISOString(),
-    version: process.env.NEXT_PUBLIC_APP_VERSION || 'unknown',
+  version: import.meta.env.VITE_APP_VERSION || 'unknown',
     checks,
     uptime: process.uptime(),
   };
