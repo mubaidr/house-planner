@@ -91,6 +91,10 @@ src/
 - **Styling**: Tailwind CSS
 - **Types**: TypeScript with strict mode
 
+## 📊 Progress Tracking
+
+For detailed progress tracking through implementation phases, see [PROGRESS.md](PROGRESS.md).
+
 ## 🎮 Usage
 
 ### Basic Operations
@@ -126,6 +130,9 @@ src/
 ### 3D Elements
 - **Walls**: Parametric geometry with start/end points, thickness, height
 - **Rooms**: Polygon-based floors with optional ceilings
+- **Doors**: Animated opening mechanisms (hinged, sliding)
+- **Windows**: Frame and glass rendering
+- **Stairs**: Individual steps with optional railings
 - **Materials**: PBR material system with roughness, metalness, opacity
 - **Selection**: Visual feedback with outline and color changes
 
@@ -149,10 +156,10 @@ src/
 
 ## 📋 Next Implementation Phases
 
-### Phase 2: Core 3D Elements (Planned)
-- [ ] Door3D component with opening animations
-- [ ] Window3D component with frame and glass
-- [ ] Stair3D component with steps and railings
+### Phase 2: Core 3D Elements (In Progress)
+- [x] Door3D component with opening animations
+- [x] Window3D component with frame and glass
+- [x] Stair3D component with steps and railings
 - [ ] Enhanced wall connections and corners
 
 ### Phase 3: Tools & Interaction (Planned)
@@ -194,10 +201,9 @@ src/
 ## 🐛 Known Issues & Limitations
 
 1. **2D View**: Not yet implemented (shows placeholder)
-2. **Doors/Windows**: Basic structure defined but not rendered
-3. **Wall Connections**: Corners and junctions need improvement
-4. **Export System**: Not yet implemented
-5. **Mobile**: Desktop-focused design
+2. **Wall Connections**: Corners and junctions need improvement
+3. **Export System**: Not yet implemented
+4. **Mobile**: Desktop-focused design
 
 ## 🔍 Testing
 
@@ -220,6 +226,8 @@ This implementation follows the documented architecture in:
 - `/docs/3d-implementation/README.md` - Overall plan
 - `/docs/3d-implementation/03-architecture-design.md` - Technical architecture
 - `/docs/3d-implementation/05-implementation-roadmap.md` - Development phases
+- `/PROGRESS.md` - Implementation progress tracking
+- `/qwen.md` - Qwen Code agent reference document
 
 ## 🤝 Contributing
 
@@ -231,6 +239,6 @@ This implementation follows the documented architecture in:
 
 ---
 
-**Status**: Foundation Phase Complete ✅
-**Next**: Begin Core 3D Elements Phase
-**Last Updated**: August 2, 2025
+**Status: Core 3D Elements Phase In Progress ✅
+**Next: Complete Core 3D Elements Phase
+**Last Updated: August 15, 2025
