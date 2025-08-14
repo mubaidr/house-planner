@@ -112,7 +112,7 @@ server-side rendering, or built-in API routes. For production:
 
 If you relied on Next.js-specific webpack tweaks (like aliasing `three`),
 apply equivalent configuration in your Vite build or adjust imports to use
-optimized builds of heavy libraries.
+optimized builds of heavy libraries. (Vite handles most modern library optimizations out of the box.)
 
 ---
 

@@ -17,7 +17,7 @@ This document provides a detailed analysis of the current 2D House Planner appli
 ### **Technology Stack**
 
 **Core Framework**
-- **Next.js 15**: Latest version with App Router and React 19 support
+- **Vite**: Lightning-fast dev/build tool for React 19 and TypeScript
 - **React 19**: Modern React with concurrent features and enhanced TypeScript support
 - **TypeScript**: Strict type safety throughout the application
 - **Turbopack**: High-performance bundling for development

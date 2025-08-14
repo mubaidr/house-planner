@@ -17,7 +17,7 @@
 - Built-in support for product configurator, room editing, and model customization
 
 ### Integration & Adaptation Strategy:
-- The existing Next.js/React/Zustand architecture will be adapted to extend and integrate with the threejs-3d-room-designer base.
+
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - State management, UI, and business logic will leverage the base's React architecture, with additional stores and hooks as needed.
 - All architectural diagrams, data models, and component structures below are to be interpreted as extensions or integrations with the threejs-3d-room-designer foundation.
@@ -57,9 +57,9 @@ Building upon the threejs-3d-room-designer foundation, our architecture is organ
 
 ### High-Level Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────┐
-│              Next.js Application (House Planner Extended)                │
+│              Vite-based React Application (House Planner Extended)       │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  Feature Layer (Organized by User Workflows)                           │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐        │
@@ -94,9 +94,9 @@ Building upon the threejs-3d-room-designer foundation, our architecture is organ
 
 ### Directory Structure
 
-```
+```text
 src/
-├── app/                          # Next.js App Router
+├── main.tsx / App.tsx            # Vite React entry points
 ├── components/
 │   ├── Canvas/                   # Existing 2D canvas system
 │   ├── Canvas3D/                 # New 3D canvas system
@@ -678,7 +678,8 @@ export class Material3DManager {
 
 ### Optimization Strategies
 
-**Rendering Optimization**
+#### Rendering Optimization
+
 ```typescript
 // Instance rendering for repeated elements
 export function OptimizedWallRenderer({ walls }: { walls: Wall3D[] }) {
@@ -713,7 +714,8 @@ export function OptimizedWallRenderer({ walls }: { walls: Wall3D[] }) {
 }
 ```
 
-**Level of Detail (LOD) System**
+#### Level of Detail (LOD) System
+
 ```typescript
 // Adaptive quality based on camera distance
 export function AdaptiveQualityRenderer({ element, cameraPosition }: {

@@ -18,7 +18,7 @@
 
 ### Customization & Extension Strategy:
 - All custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
-- Existing Next.js/React/Zustand patterns will be adapted to integrate with the base.
+- Existing React/Zustand patterns (now using Vite, not Next.js) will be adapted to integrate with the base.
 - Technology choices below are now interpreted as extensions or integrations with threejs-3d-room-designer.
 
 ---
@@ -43,7 +43,7 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
 
 ### **Selection Criteria Weights**
 
-- **React Integration (30%)**: Seamless integration with existing React/Next.js architecture
+- **React Integration (30%)**: Seamless integration with existing React/Vite architecture
 - **Architectural Suitability (25%)**: Support for CAD-style precision and professional workflows
 - **Performance (20%)**: Rendering performance for complex architectural models
 - **Ecosystem (15%)**: Available tools, plugins, and community resources
@@ -116,7 +116,7 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
 
 | Current System             | R3F Integration             | Compatibility Score |
 | -------------------------- | --------------------------- | ------------------- |
-| **Next.js 15**             | Native SSR support          | ⭐⭐⭐⭐⭐               |
+| **Vite**                   | Lightning-fast dev/build    | ⭐⭐⭐⭐⭐               |
 | **React 19**               | Built for React patterns    | ⭐⭐⭐⭐⭐               |
 | **TypeScript**             | Full type definitions       | ⭐⭐⭐⭐⭐               |
 | **Zustand**                | R3F uses Zustand internally | ⭐⭐⭐⭐⭐               |
@@ -295,7 +295,7 @@ function House3D() {
 npm install @react-three/fiber @react-three/drei three
 npm install --save-dev @types/three
 
-# Add to existing Next.js configuration
+# Add to existing Vite configuration
 // next.config.ts
 export default {
   webpack: (config) => {

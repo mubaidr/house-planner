@@ -44,7 +44,7 @@ This directory contains complete documentation for implementing a 3D version of 
 ## 🎯 Executive Summary
 
 ### Current State
-The 2D House Planner is a robust, well-architected Next.js application with:
+The 2D House Planner is a robust, well-architected Vite + React application with:
 - Excellent user experience designed for non-technical users
 - Strong TypeScript type system and Zustand state management
 - Comprehensive feature set for 2D architectural planning
@@ -53,13 +53,9 @@ The 2D House Planner is a robust, well-architected Next.js application with:
 
 ### Recommended Approach
 **React Three Fiber + Three.js Ecosystem** building upon **threejs-3d-room-designer** foundation:
-- Seamless integration with existing React/Next.js architecture
-- Native Zustand compatibility for state management
-- Proven architectural patterns from the base room designer
-- Maintainable codebase leveraging existing patterns
-- Feature-based development approach following industry standards
 
 ### Core Feature System
+
 
 Following the proven architecture of threejs-3d-room-designer, our implementation focuses on three main feature areas:
 

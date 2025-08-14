@@ -87,7 +87,7 @@ npm install @react-three/fiber @react-three/drei @react-three/postprocessing
 npm install three leva @types/three
 
 # Update build configuration
-# Add webpack/Next.js optimizations for Three.js
+# Add Vite optimizations for Three.js
 ```
 
 **Day 3-4: Basic 3D Scene**
