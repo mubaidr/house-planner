@@ -67,126 +67,52 @@ This guide provides step-by-step instructions for deploying the 3D House Planner
 # .env.production
 # Application Configuration
 NODE_ENV=production
-NEXT_PUBLIC_APP_VERSION=3.0.0
-NEXT_PUBLIC_API_URL=https://api.houseplanner.com
-NEXT_PUBLIC_CDN_URL=https://cdn.houseplanner.com
+VITE_APP_VERSION=3.0.0
+VITE_API_URL=https://api.houseplanner.com
+VITE_CDN_URL=https://cdn.houseplanner.com
 
 # 3D Feature Flags
-NEXT_PUBLIC_ENABLE_3D=true
-NEXT_PUBLIC_3D_QUALITY_AUTO=true
-NEXT_PUBLIC_WEBGL_DEBUG=false
+VITE_ENABLE_3D=true
+VITE_3D_QUALITY_AUTO=true
+VITE_WEBGL_DEBUG=false
 
 # Performance Configuration
-NEXT_PUBLIC_MAX_TEXTURE_SIZE=2048
-NEXT_PUBLIC_MAX_SCENE_COMPLEXITY=100000
-NEXT_PUBLIC_ENABLE_LOD=true
-NEXT_PUBLIC_ENABLE_INSTANCING=true
+VITE_MAX_TEXTURE_SIZE=2048
+VITE_MAX_SCENE_COMPLEXITY=100000
+VITE_ENABLE_LOD=true
+VITE_ENABLE_INSTANCING=true
 
 # Monitoring and Analytics
-NEXT_PUBLIC_SENTRY_DSN=https://your-sentry-dsn
-NEXT_PUBLIC_GA_TRACKING_ID=GA-XXXXXXXXX
-NEXT_PUBLIC_PERFORMANCE_MONITORING=true
+VITE_SENTRY_DSN=https://your-sentry-dsn
+VITE_GA_TRACKING_ID=GA-XXXXXXXXX
+VITE_PERFORMANCE_MONITORING=true
 
 # CDN and Assets
-NEXT_PUBLIC_TEXTURE_CDN=https://textures.houseplanner.com
-NEXT_PUBLIC_MODEL_CDN=https://models.houseplanner.com
+VITE_TEXTURE_CDN=https://textures.houseplanner.com
+VITE_MODEL_CDN=https://models.houseplanner.com
 
 # Security
-NEXT_PUBLIC_CSP_NONCE=auto-generated
+VITE_CSP_NONCE=auto-generated
 CONTENT_SECURITY_POLICY=strict
 ```
 
-### Next.js Production Configuration
+### Vite Production Notes
 
-```typescript
-// next.config.production.ts
-import type { NextConfig } from 'next';
+Vite builds a static frontend and outputs files to the `dist/` directory by
+default. It does not provide Next.js server features like image optimization,
+server-side rendering, or built-in API routes. For production:
 
-const nextConfig: NextConfig = {
-  output: 'standalone',
-  compress: true,
-  poweredByHeader: false,
+- Serve `dist/` from your static file server or CDN.
+- Implement security headers (CSP, HSTS, X-Frame-Options, etc.) at the CDN or
+  reverse-proxy (Nginx, Cloudflare) level — see the Nginx example below.
+- Use a separate backend (serverless functions, Node server, or API service)
+  for API routes and health checks.
+- For image optimization, use a dedicated image CDN (Cloudinary, Imgix) or
+  configure your CDN to perform format/quality transforms.
 
-  // Image optimization
-  images: {
-    domains: [
-      'cdn.houseplanner.com',
-      'textures.houseplanner.com'
-    ],
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 31536000, // 1 year
-  },
-
-  // Headers for security and performance
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          }
-        ]
-      },
-      {
-        source: '/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      }
-    ];
-  },
-
-  // Content Security Policy
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/api/health',
-          destination: '/api/health'
-        }
-      ]
-    };
-  },
-
-  // Bundle optimization
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Optimize Three.js bundle
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'three': 'three/build/three.min.js'
-      };
-
-      // Tree shaking for Three.js
-      config.optimization.usedExports = true;
-      config.optimization.sideEffects = false;
-    }
-
-    return config;
-  },
-
-  // Experimental features
-  experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['three', '@react-three/fiber', '@react-three/drei']
-  }
-};
-
-export default nextConfig;
-```
+If you relied on Next.js-specific webpack tweaks (like aliasing `three`),
+apply equivalent configuration in your Vite build or adjust imports to use
+optimized builds of heavy libraries.
 
 ---
 
@@ -226,16 +152,15 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 node
+RUN adduser --system --uid 1001 node
 
 COPY --from=builder /app/public ./public
 
-# Automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy Vite build output (dist)
+COPY --from=builder --chown=node:node /app/dist ./dist
 
-USER nextjs
+USER node
 
 EXPOSE 3000
 ENV PORT 3000
