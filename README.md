@@ -2,7 +2,7 @@
 
 # 3D House Planner - Foundation Phase Implementation
 
-> **A React Three Fiber-based 3D house planning application built on Next.js 15 with TypeScript**
+> **A React Three Fiber-based 3D house planning application built with Vite + React 19 and TypeScript**
 
 ## 🎯 Implementation Status
 
@@ -53,16 +53,16 @@
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (Vite)
 npm run dev
 
 # Build for production
 npm run build
 ```
 
-### Development
-- Development server: http://localhost:3001
-- Hot reload enabled with Turbopack
+- Development
+- Development server: http://localhost:5173
+- Hot reload enabled by Vite
 - TypeScript strict mode enabled
 
 ## 🏗️ Architecture
