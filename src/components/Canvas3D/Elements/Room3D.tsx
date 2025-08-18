@@ -33,11 +33,78 @@ export function Room3D({ roomId }: Room3DProps) {
       .filter((wall): wall is NonNullable<typeof wall> => wall !== undefined);
   }, [room, walls]);
   
-  // Calculate room floor geometry
+  // Calculate room floor geometry using actual wall connections
   const floorGeometry = useMemo(() => {
     if (roomWalls.length === 0) return null;
     
-    // For simplicity, we'll create a basic rectangle if we have 4 walls
+    // Create points array for the floor shape by connecting walls
+    const points: THREE.Vector2[] = [];
+    
+    // For connected walls, we need to trace the perimeter
+    // For now, we'll create a simplified approach that works for rectangular rooms
+    if (roomWalls.length >= 3) {
+      // Collect all unique corner points
+      const corners: THREE.Vector2[] = [];
+      
+      roomWalls.forEach(wall => {
+        // Add start and end points
+        corners.push(new THREE.Vector2(wall.start.x, wall.start.z));
+        corners.push(new THREE.Vector2(wall.end.x, wall.end.z));
+      });
+      
+      // Remove duplicate points (with small tolerance)
+      const uniqueCorners: THREE.Vector2[] = [];
+      const tolerance = 0.001;
+      
+      corners.forEach(corner => {
+        const isDuplicate = uniqueCorners.some(existing => 
+          Math.abs(existing.x - corner.x) < tolerance && 
+          Math.abs(existing.y - corner.z) < tolerance
+        );
+        
+        if (!isDuplicate) {
+          uniqueCorners.push(corner);
+        }
+      });
+      
+      // Sort points to form a proper polygon (simplified approach)
+      if (uniqueCorners.length >= 3) {
+        // Find centroid
+        let cx = 0, cz = 0;
+        uniqueCorners.forEach(p => {
+          cx += p.x;
+          cz += p.y;
+        });
+        cx /= uniqueCorners.length;
+        cz /= uniqueCorners.length;
+        
+        // Sort points by angle from centroid
+        uniqueCorners.sort((a, b) => {
+          const angleA = Math.atan2(a.y - cz, a.x - cx);
+          const angleB = Math.atan2(b.y - cz, b.x - cx);
+          return angleA - angleB;
+        });
+        
+        // Create shape
+        const shape = new THREE.Shape();
+        shape.moveTo(uniqueCorners[0].x, uniqueCorners[0].y);
+        
+        for (let i = 1; i < uniqueCorners.length; i++) {
+          shape.lineTo(uniqueCorners[i].x, uniqueCorners[i].y);
+        }
+        
+        shape.closePath();
+        
+        const geometry = new THREE.ShapeGeometry(shape);
+        
+        // Store for cleanup
+        geometryRef.current = geometry;
+        
+        return geometry;
+      }
+    }
+    
+    // Fallback to rectangle for 4 walls
     if (roomWalls.length === 4) {
       // Find min/max coordinates
       let minX = Infinity, minZ = Infinity;

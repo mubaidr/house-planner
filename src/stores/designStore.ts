@@ -69,6 +69,14 @@ export interface Room {
   name?: string;
 }
 
+export interface Roof {
+  id: string;
+  points: Vector3[]; // Points defining the roof shape
+  type: 'flat' | 'gable' | 'hip' | 'mansard';
+  materialId?: string;
+  height?: number; // For non-flat roofs
+}
+
 export interface Material {
   id: string;
   name: string;
@@ -84,9 +92,10 @@ export interface DesignState {
   windows: Window[];
   stairs: Stair[];
   rooms: Room[];
+  roofs: Roof[];
   materials: Material[];
   selectedElementId: string | null;
-  selectedElementType: 'wall' | 'door' | 'window' | 'room' | 'stair' | null;
+  selectedElementType: 'wall' | 'door' | 'window' | 'room' | 'stair' | 'roof' | null;
   viewMode: '2d' | '3d' | 'hybrid';
 }
 
@@ -116,6 +125,11 @@ export interface DesignActions {
   updateRoom: (id: string, updates: Partial<Room>) => void;
   removeRoom: (id: string) => void;
   
+  // Roof actions
+  addRoof: (roof: Omit<Roof, 'id'>) => void;
+  updateRoof: (id: string, updates: Partial<Roof>) => void;
+  removeRoof: (id: string) => void;
+  
   // Selection actions
   selectElement: (id: string | null, type: DesignState['selectedElementType']) => void;
   
@@ -136,6 +150,7 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       windows: [],
       stairs: [],
       rooms: [],
+      roofs: [],
       materials: [
         { id: 'wall-default', name: 'Default Wall', color: '#cccccc', roughness: 0.8, metalness: 0.1, opacity: 1 },
         { id: 'door-wood', name: 'Wood Door', color: '#8B4513', roughness: 0.7, metalness: 0.2, opacity: 1 },
@@ -143,6 +158,7 @@ export const useDesignStore = create<DesignState & DesignActions>()(
         { id: 'floor-wood', name: 'Wood Floor', color: '#DEB887', roughness: 0.6, metalness: 0.1, opacity: 1 },
         { id: 'ceiling-white', name: 'White Ceiling', color: '#F5F5F5', roughness: 0.9, metalness: 0.0, opacity: 1 },
         { id: 'stair-wood', name: 'Wood Stairs', color: '#8B4513', roughness: 0.7, metalness: 0.2, opacity: 1 },
+        { id: 'roof-red', name: 'Red Roof', color: '#8B0000', roughness: 0.8, metalness: 0.1, opacity: 1 },
       ],
       selectedElementId: null,
       selectedElementType: null,
@@ -234,6 +250,23 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       
       removeRoom: (id) => set((state) => {
         state.rooms = state.rooms.filter(r => r.id !== id);
+      }),
+      
+      // Roof actions
+      addRoof: (roof) => set((state) => {
+        const id = `roof-${Date.now()}`;
+        state.roofs.push({ ...roof, id });
+      }),
+      
+      updateRoof: (id, updates) => set((state) => {
+        const roofIndex = state.roofs.findIndex(r => r.id === id);
+        if (roofIndex !== -1) {
+          state.roofs[roofIndex] = { ...state.roofs[roofIndex], ...updates };
+        }
+      }),
+      
+      removeRoof: (id) => set((state) => {
+        state.roofs = state.roofs.filter(r => r.id !== id);
       }),
       
       // Selection actions

@@ -14,10 +14,7 @@ export function ElementRenderer3D() {
   const windows = useDesignStore(state => state.windows);
   const stairs = useDesignStore(state => state.stairs);
   const rooms = useDesignStore(state => state.rooms);
-
-  // For now, we'll use placeholder IDs for roofs
-  // In a full implementation, these would come from the store
-  const roofIds = ['roof-1'];
+  const roofs = useDesignStore(state => state.roofs);
 
   return (
     <group name="architectural-elements">
@@ -58,8 +55,8 @@ export function ElementRenderer3D() {
 
       {/* Render roofs */}
       <group name="roofs">
-        {roofIds.map(roofId => (
-          <Roof3D key={roofId} roofId={roofId} />
+        {roofs.map(roof => (
+          <Roof3D key={roof.id} roofId={roof.id} />
         ))}
       </group>
 
