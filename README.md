@@ -160,6 +160,7 @@ For detailed progress tracking through implementation phases, see [PROGRESS.md](
 - [x] Door3D component with opening animations
 - [x] Window3D component with frame and glass
 - [x] Stair3D component with steps and railings
+- [x] Roof3D component with proper store integration
 - [ ] Enhanced wall connections and corners
 
 ### Phase 3: Tools & Interaction (Planned)
@@ -227,7 +228,7 @@ This implementation follows the documented architecture in:
 - `/docs/3d-implementation/03-architecture-design.md` - Technical architecture
 - `/docs/3d-implementation/05-implementation-roadmap.md` - Development phases
 - `/PROGRESS.md` - Implementation progress tracking
-- `/qwen.md` - Qwen Code agent reference document
+- `/QWEN.md` - Qwen Code agent reference document
 
 ## 🤝 Contributing
 
@@ -241,4 +242,4 @@ This implementation follows the documented architecture in:
 
 **Status: Core 3D Elements Phase In Progress ✅
 **Next: Complete Core 3D Elements Phase
-**Last Updated: August 15, 2025
+**Last Updated: August 18, 2025

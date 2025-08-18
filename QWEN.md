@@ -62,7 +62,7 @@ src/
 ### State Management
 1. **Multiple Stores**: Separated concerns across multiple Zustand stores for better organization
 2. **Zustand with Immer**: Used for immutable state updates with familiar mutation syntax
-3. **Element Types**: All elements have specific types in the store (wall, door, window, room, stair)
+3. **Element Types**: All elements have specific types in the store (wall, door, window, room, stair, roof)
 4. **Selection State**: Single selected element with type tracking for proper property panel display
 5. **Performance**: Used selectors to minimize unnecessary re-renders
 
