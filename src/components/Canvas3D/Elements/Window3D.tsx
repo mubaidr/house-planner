@@ -12,11 +12,9 @@ export function Window3D({ windowId }: Window3DProps) {
   const selectedElementId = useDesignStore(state => state.selectedElementId);
   const selectElement = useDesignStore(state => state.selectElement);
 
-  // If window or wall doesn't exist, don't render
-  if (!windowElement || !wall) return null;
-
   // Calculate window position on wall
   const windowPosition = useMemo(() => {
+    if (!windowElement || !wall) return new THREE.Vector3();
     // Calculate wall length
     const wallLength = Math.sqrt(
       Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
@@ -40,14 +38,18 @@ export function Window3D({ windowId }: Window3DProps) {
 
   // Calculate window rotation based on wall angle
   const windowRotation = useMemo(() => {
+    if (!wall) return new THREE.Euler();
     const wallAngle = Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x);
 
     return new THREE.Euler(0, wallAngle, 0);
   }, [wall]);
 
+  // If window or wall doesn't exist, don't render
+  if (!windowElement || !wall) return null;
+
   // Handle window selection
-  const handleSelect = (e: THREE.Event) => {
-    (e as any).nativeEvent?.stopPropagation();
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
     selectElement(windowId, 'window');
   };
 

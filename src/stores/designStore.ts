@@ -143,7 +143,7 @@ export interface DesignActions {
 
 export const useDesignStore = create<DesignState & DesignActions>()(
   subscribeWithSelector(
-    immer((set, get) => ({
+    immer((set, _get) => ({
       // Initial state
       walls: [],
       doors: [],

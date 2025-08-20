@@ -22,15 +22,14 @@ export function Stair3D({ stairId }: Stair3DProps) {
     };
   }, []);
 
-  // If stair doesn't exist, don't render
-  if (!stair) return null;
-
   // Calculate stair position and rotation
   const stairPosition = useMemo(() => {
+    if (!stair) return new THREE.Vector3();
     return new THREE.Vector3(stair.start.x, stair.start.y, stair.start.z);
   }, [stair]);
 
   const stairRotation = useMemo(() => {
+    if (!stair) return new THREE.Euler();
     const angle = Math.atan2(stair.end.z - stair.start.z, stair.end.x - stair.start.x);
 
     return new THREE.Euler(0, angle, 0);
@@ -38,6 +37,7 @@ export function Stair3D({ stairId }: Stair3DProps) {
 
   // Create individual steps
   const steps = useMemo(() => {
+    if (!stair) return { geometries: [], positions: [] };
     const stepGeometries: THREE.BufferGeometry[] = [];
     const stepPositions: THREE.Vector3[] = [];
 
@@ -68,7 +68,7 @@ export function Stair3D({ stairId }: Stair3DProps) {
 
   // Create railing if needed
   const railing = useMemo(() => {
-    if (!stair.hasHandrail) return null;
+    if (!stair || !stair.hasHandrail) return null;
 
     // Calculate stair length
     const length = Math.sqrt(
@@ -86,9 +86,12 @@ export function Stair3D({ stairId }: Stair3DProps) {
     return { geometry, position: new THREE.Vector3(0, y, z) };
   }, [stair]);
 
+  // If stair doesn't exist, don't render
+  if (!stair) return null;
+
   // Handle stair selection
-  const handleSelect = (e: THREE.Event) => {
-    (e as any).nativeEvent?.stopPropagation();
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
     selectElement(stairId, 'stair');
   };
 

@@ -23,11 +23,9 @@ export function Room3D({ roomId }: Room3DProps) {
     };
   }, []);
 
-  // If room doesn't exist, don't render
-  if (!room) return null;
-
   // Get room walls
   const roomWalls = useMemo(() => {
+    if (!room) return [];
     return room.wallIds
       .map(id => walls.find(w => w.id === id))
       .filter((wall): wall is NonNullable<typeof wall> => wall !== undefined);
@@ -38,7 +36,7 @@ export function Room3D({ roomId }: Room3DProps) {
     if (roomWalls.length === 0) return null;
 
     // Create points array for the floor shape by connecting walls
-    const points: THREE.Vector2[] = [];
+    const _points: THREE.Vector2[] = [];
 
     // For connected walls, we need to trace the perimeter
     // For now, we'll create a simplified approach that works for rectangular rooms
@@ -140,9 +138,12 @@ export function Room3D({ roomId }: Room3DProps) {
     return null;
   }, [roomWalls]);
 
+  // If room doesn't exist, don't render
+  if (!room) return null;
+
   // Handle room selection
-  const handleSelect = (e: THREE.Event) => {
-    (e as any).nativeEvent?.stopPropagation();
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
     selectElement(roomId, 'room');
   };
 

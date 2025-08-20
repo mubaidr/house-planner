@@ -72,7 +72,7 @@ function WallProperties({
   wall: Wall;
   onUpdate: (id: string, updates: Partial<Wall>) => void;
 }) {
-  const handleChange = (field: string, value: any) => {
+  const handleChange = <K extends keyof Wall>(field: K, value: Wall[K]) => {
     onUpdate(wall.id, { [field]: value });
   };
 
@@ -104,7 +104,7 @@ function WallProperties({
         <label className="block text-sm font-medium text-gray-700">Type</label>
         <select
           value={wall.type}
-          onChange={e => handleChange('type', e.target.value as any)}
+          onChange={e => handleChange('type', e.target.value as Wall['type'])}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="load-bearing">Load Bearing</option>
@@ -123,7 +123,7 @@ function DoorProperties({
   door: Door;
   onUpdate: (id: string, updates: Partial<Door>) => void;
 }) {
-  const handleChange = (field: string, value: any) => {
+  const handleChange = <K extends keyof Door>(field: K, value: Door[K]) => {
     onUpdate(door.id, { [field]: value });
   };
 
@@ -159,7 +159,7 @@ function DoorProperties({
         <label className="block text-sm font-medium text-gray-700">Type</label>
         <select
           value={door.type}
-          onChange={e => handleChange('type', e.target.value as any)}
+          onChange={e => handleChange('type', e.target.value as Door['type'])}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="hinged">Hinged</option>
@@ -173,7 +173,7 @@ function DoorProperties({
         <label className="block text-sm font-medium text-gray-700">Swing Direction</label>
         <select
           value={door.swingDirection}
-          onChange={e => handleChange('swingDirection', e.target.value as any)}
+          onChange={e => handleChange('swingDirection', e.target.value as Door['swingDirection'])}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="left">Left</option>
@@ -237,7 +237,7 @@ function WindowProperties({
   window: Window;
   onUpdate: (id: string, updates: Partial<Window>) => void;
 }) {
-  const handleChange = (field: string, value: any) => {
+  const handleChange = <K extends keyof Window>(field: K, value: Window[K]) => {
     onUpdate(window.id, { [field]: value });
   };
 
@@ -269,7 +269,7 @@ function WindowProperties({
         <label className="block text-sm font-medium text-gray-700">Type</label>
         <select
           value={window.type}
-          onChange={e => handleChange('type', e.target.value as any)}
+          onChange={e => handleChange('type', e.target.value as Window['type'])}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="single">Single</option>

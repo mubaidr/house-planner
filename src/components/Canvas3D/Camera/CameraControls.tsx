@@ -1,17 +1,17 @@
-import { useFrame, useThree } from '@react-three/fiber';
+import { ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import * as THREE from 'three';
 
 export function CameraControls() {
-  const { camera } = useThree();
+  const { camera: _camera } = useThree();
   const [isPanning, setIsPanning] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
   const lastMousePosition = useRef({ x: 0, y: 0 });
-  const target = useRef(new THREE.Vector3(0, 0, 0));
+  const _target = useRef(new THREE.Vector3(0, 0, 0));
 
   // Handle mouse down
-  const handleMouseDown = (e: THREE.Event) => {
-    const nativeEvent = (e as any).nativeEvent;
+  const handleMouseDown = (e: ThreeEvent<MouseEvent>) => {
+    const nativeEvent = e.nativeEvent;
     if (nativeEvent instanceof MouseEvent) {
       // Left click for rotation, right click for panning
       if (nativeEvent.button === 0) {

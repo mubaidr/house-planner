@@ -4,7 +4,7 @@ import * as designStore from '@/stores/designStore';
 describe('Phase-1 Verification', () => {
   it('verifies that design store has required elements', () => {
     // This is more of a type-checking test to ensure our interfaces are correct
-    const mockState: any = {
+    const mockState: Partial<designStore.DesignState> = {
       walls: [],
       doors: [],
       windows: [],

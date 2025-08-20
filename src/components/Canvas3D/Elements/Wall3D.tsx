@@ -22,11 +22,9 @@ export function Wall3D({ wallId }: Wall3DProps) {
     };
   }, []);
 
-  // If wall doesn't exist, don't render
-  if (!wall) return null;
-
   // Calculate wall geometry
   const wallGeometry = useMemo(() => {
+    if (!wall) return null;
     // Calculate wall length
     const length = Math.sqrt(
       Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
@@ -46,6 +44,7 @@ export function Wall3D({ wallId }: Wall3DProps) {
 
   // Calculate wall position
   const wallPosition = useMemo(() => {
+    if (!wall) return new THREE.Vector3();
     // Position at the center of the wall
     return new THREE.Vector3(
       (wall.start.x + wall.end.x) / 2,
@@ -56,14 +55,18 @@ export function Wall3D({ wallId }: Wall3DProps) {
 
   // Calculate wall rotation
   const wallRotation = useMemo(() => {
+    if (!wall) return new THREE.Euler();
     const angle = Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x);
 
     return new THREE.Euler(0, angle, 0);
   }, [wall]);
 
+  // If wall doesn't exist, don't render
+  if (!wall) return null;
+
   // Handle wall selection
-  const handleSelect = (e: THREE.Event) => {
-    (e as any).nativeEvent?.stopPropagation();
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
     selectElement(wallId, 'wall');
   };
 

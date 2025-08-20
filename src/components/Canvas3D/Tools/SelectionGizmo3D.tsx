@@ -34,7 +34,7 @@ export function SelectionGizmo3D() {
   let position = new THREE.Vector3(0, 0, 0);
 
   switch (selectedElementType) {
-    case 'wall':
+    case 'wall': {
       const wall = selectedElement as Wall;
       position = new THREE.Vector3(
         (wall.start.x + wall.end.x) / 2,
@@ -42,8 +42,8 @@ export function SelectionGizmo3D() {
         (wall.start.z + wall.end.z) / 2
       );
       break;
-
-    case 'door':
+    }
+    case 'door': {
       const door = selectedElement as Door;
       const doorWall = walls.find(w => w.id === door.wallId);
       if (doorWall) {
@@ -65,8 +65,8 @@ export function SelectionGizmo3D() {
         );
       }
       break;
-
-    case 'window':
+    }
+    case 'window': {
       const windowElement = selectedElement as Window;
       const windowWall = walls.find(w => w.id === windowElement.wallId);
       if (windowWall) {
@@ -88,6 +88,7 @@ export function SelectionGizmo3D() {
         );
       }
       break;
+    }
   }
 
   return (

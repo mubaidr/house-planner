@@ -16,9 +16,6 @@ export function Door3D({ doorId }: Door3DProps) {
   const groupRef = useRef<THREE.Group>(null);
   const panelRef = useRef<THREE.Mesh>(null);
 
-  // If door or wall doesn't exist, don't render
-  if (!door || !wall) return null;
-
   // Calculate door position on wall
   const doorPosition = useMemo(() => {
     if (!door || !wall) return new THREE.Vector3(0, 0, 0);
@@ -53,18 +50,9 @@ export function Door3D({ doorId }: Door3DProps) {
     return new THREE.Euler(0, wallAngle, 0);
   }, [wall]);
 
-  // Handle door selection
-  const handleSelect = (e: THREE.Event) => {
-    (e as any).nativeEvent?.stopPropagation();
-    selectElement(doorId, 'door');
-  };
-
-  // Check if door is selected
-  const isSelected = selectedElementId === doorId;
-
   // Animate door opening based on type
   useFrame(() => {
-    if (!groupRef.current || !panelRef.current) return;
+    if (!door || !groupRef.current || !panelRef.current) return;
 
     switch (door.type) {
       case 'hinged':
@@ -100,6 +88,18 @@ export function Door3D({ doorId }: Door3DProps) {
         break;
     }
   });
+
+  // If door or wall doesn't exist, don't render
+  if (!door || !wall) return null;
+
+  // Handle door selection
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    selectElement(doorId, 'door');
+  };
+
+  // Check if door is selected
+  const isSelected = selectedElementId === doorId;
 
   return (
     <group ref={groupRef} position={doorPosition} rotation={doorRotation} onClick={handleSelect}>

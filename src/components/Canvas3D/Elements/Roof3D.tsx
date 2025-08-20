@@ -22,12 +22,9 @@ export function Roof3D({ roofId }: Roof3DProps) {
     };
   }, []);
 
-  // If roof doesn't exist, don't render
-  if (!roof) return null;
-
   // Calculate roof geometry
   const roofGeometry = useMemo(() => {
-    if (roof.points.length < 3) return null;
+    if (!roof || roof.points.length < 3) return null;
 
     // Create shape from roof points
     const shape = new THREE.Shape();
@@ -53,19 +50,22 @@ export function Roof3D({ roofId }: Roof3DProps) {
     return geometry;
   }, [roof]);
 
+  // Calculate roof height from points
+  const roofHeight = useMemo(() => {
+    return roof && roof.points.length > 0 ? roof.points[0].y : 0;
+  }, [roof]);
+
+  // If roof doesn't exist, don't render
+  if (!roof) return null;
+
   // Handle roof selection
-  const handleSelect = (e: THREE.Event) => {
-    (e as any).nativeEvent?.stopPropagation();
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
     selectElement(roofId, 'roof');
   };
 
   // Check if roof is selected
   const isSelected = selectedElementId === roofId;
-
-  // Calculate roof height from points
-  const roofHeight = useMemo(() => {
-    return roof.points.length > 0 ? roof.points[0].y : 0;
-  }, [roof]);
 
   return (
     <group onClick={handleSelect}>

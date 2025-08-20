@@ -36,7 +36,7 @@ export function MeasurementTool3D() {
   const wall = selectedElement as Wall;
 
   // Calculate wall length
-  const wallLength = Math.sqrt(
+  const _wallLength = Math.sqrt(
     Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
   );
 
