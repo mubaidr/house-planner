@@ -31,7 +31,7 @@ export interface Wall {
   // Connections to other walls at start and end points
   connections: {
     start: string[]; // Wall IDs
-    end: string[];   // Wall IDs
+    end: string[]; // Wall IDs
   };
 }
 
@@ -75,14 +75,14 @@ The wall system is based on connected line segments in a 2D plane (X-Z).
 2. If the new wall's start or end point is within a snapping threshold, it will snap to the existing point.
 3. The `connections` arrays of both the new wall and the existing wall(s) are updated to reflect the new join.
 4. **Snapping logic will prioritize:**
-    - Grid points (major and minor)
-    - Existing wall endpoints and midpoints
-    - Orthogonal alignment (0/90 degrees) to existing walls
-    - Edges of the overall house footprint
+   - Grid points (major and minor)
+   - Existing wall endpoints and midpoints
+   - Orthogonal alignment (0/90 degrees) to existing walls
+   - Edges of the overall house footprint
 
 ### Wall Splitting (T-Junctions)
 
-1. If a new wall's endpoint snaps to the *body* of an existing wall (not an endpoint), the existing wall will be split into two new walls.
+1. If a new wall's endpoint snaps to the _body_ of an existing wall (not an endpoint), the existing wall will be split into two new walls.
 2. The original wall is removed, and two new walls are created that meet at the junction point.
 3. The `connections` are updated accordingly to form a "T" junction.
 

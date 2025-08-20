@@ -1,7 +1,7 @@
 import { Scene3D } from '@/components/Canvas3D/Scene3D';
+import { PropertiesPanel } from '@/components/UI/PropertiesPanel';
 import { ToolPanel } from '@/components/UI/ToolPanel';
 import { ViewControls } from '@/components/UI/ViewControls';
-import { PropertiesPanel } from '@/components/UI/PropertiesPanel';
 
 export default function App() {
   return (

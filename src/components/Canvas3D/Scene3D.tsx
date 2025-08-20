@@ -1,10 +1,10 @@
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid } from '@react-three/drei';
 import { useDesignStore } from '@/stores/designStore';
-import { ElementRenderer3D } from './Elements/ElementRenderer3D';
-import { SceneLighting } from './Lighting/SceneLighting';
+import { Grid, OrbitControls } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
 import { CameraControls } from './Camera/CameraControls';
 import { PostProcessing3D } from './Effects/PostProcessing3D';
+import { ElementRenderer3D } from './Elements/ElementRenderer3D';
+import { SceneLighting } from './Lighting/SceneLighting';
 
 export function Scene3D() {
   const viewMode = useDesignStore(state => state.viewMode);
@@ -22,19 +22,16 @@ export function Scene3D() {
   }
 
   return (
-    <Canvas
-      camera={{ position: [0, 10, 10], fov: 75 }}
-      shadows
-    >
+    <Canvas camera={{ position: [0, 10, 10], fov: 75 }} shadows>
       {/* Lighting */}
       <SceneLighting />
-      
+
       {/* Grid for reference */}
-      <Grid 
-        position={[0, -0.01, 0]} 
-        args={[20, 20]} 
-        cellSize={1} 
-        cellThickness={0.5} 
+      <Grid
+        position={[0, -0.01, 0]}
+        args={[20, 20]}
+        cellSize={1}
+        cellThickness={0.5}
         cellColor="#6f6f6f"
         sectionSize={5}
         sectionThickness={1}
@@ -42,18 +39,18 @@ export function Scene3D() {
         fadeDistance={30}
         fadeStrength={1}
       />
-      
+
       {/* Camera controls */}
       <CameraControls />
-      
+
       {/* Render all elements */}
       <ElementRenderer3D />
-      
+
       {/* Post-processing effects */}
       <PostProcessing3D />
-      
+
       {/* Camera controls */}
-      <OrbitControls 
+      <OrbitControls
         makeDefault
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 2}

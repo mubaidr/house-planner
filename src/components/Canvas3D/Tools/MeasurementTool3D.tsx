@@ -1,6 +1,6 @@
+import type { Door, Wall, Window } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
 import * as THREE from 'three';
-import type { Wall, Door, Window } from '@/stores/designStore';
 
 export function MeasurementTool3D() {
   const selectedElementId = useDesignStore(state => state.selectedElementId);
@@ -8,7 +8,7 @@ export function MeasurementTool3D() {
   const { walls, doors, windows } = useDesignStore(state => ({
     walls: state.walls,
     doors: state.doors,
-    windows: state.windows
+    windows: state.windows,
   })) as { walls: Wall[]; doors: Door[]; windows: Window[] };
 
   // For now, we'll just show a simple measurement if a wall is selected
@@ -17,7 +17,7 @@ export function MeasurementTool3D() {
   // Get the selected element
   const selectedElement = (() => {
     if (!selectedElementId || !selectedElementType) return null;
-    
+
     switch (selectedElementType) {
       case 'wall':
         return walls.find(w => w.id === selectedElementId);
@@ -37,8 +37,7 @@ export function MeasurementTool3D() {
 
   // Calculate wall length
   const wallLength = Math.sqrt(
-    Math.pow(wall.end.x - wall.start.x, 2) + 
-    Math.pow(wall.end.z - wall.start.z, 2)
+    Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
   );
 
   // Calculate midpoint for measurement display
@@ -49,10 +48,7 @@ export function MeasurementTool3D() {
   );
 
   // Calculate wall angle for text orientation
-  const wallAngle = Math.atan2(
-    wall.end.z - wall.start.z,
-    wall.end.x - wall.start.x
-  );
+  const wallAngle = Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x);
 
   return (
     <group>
@@ -61,18 +57,28 @@ export function MeasurementTool3D() {
         <bufferGeometry attach="geometry">
           <bufferAttribute
             attach="attributes-position"
-            array={new Float32Array([
-              wall.start.x, wall.height + 0.1, wall.start.z,
-              wall.end.x, wall.height + 0.1, wall.end.z
-            ])}
+            array={
+              new Float32Array([
+                wall.start.x,
+                wall.height + 0.1,
+                wall.start.z,
+                wall.end.x,
+                wall.height + 0.1,
+                wall.end.z,
+              ])
+            }
             count={2}
             itemSize={3}
             args={[
               new Float32Array([
-                wall.start.x, wall.height + 0.1, wall.start.z,
-                wall.end.x, wall.height + 0.1, wall.end.z
-              ]), 
-              3
+                wall.start.x,
+                wall.height + 0.1,
+                wall.start.z,
+                wall.end.x,
+                wall.height + 0.1,
+                wall.end.z,
+              ]),
+              3,
             ]}
           />
         </bufferGeometry>

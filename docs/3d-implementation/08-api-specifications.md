@@ -1,4 +1,3 @@
-
 # API Specifications
 
 > **Comprehensive API documentation for 3D House Planner integration with detailed interface specifications and usage examples**
@@ -10,6 +9,7 @@
 **As of August 2025, all API extensions and integrations will be layered on and extend [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
 
 ### API Adaptation:
+
 - All API specifications below are to be interpreted as customizations, extensions, or integrations with the base project.
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
@@ -78,10 +78,10 @@ const sceneManager = new Scene3DManager();
 await sceneManager.initialize({
   canvas: canvasRef.current,
   antialias: true,
-  powerPreference: 'high-performance'
+  powerPreference: 'high-performance',
 });
 
-sceneManager.onModeChange((mode) => {
+sceneManager.onModeChange(mode => {
   console.log(`Switched to ${mode} mode`);
 });
 
@@ -135,7 +135,7 @@ const renderer = new Element3DRenderer();
 const wallObject = await renderer.renderWall(wall, {
   quality: 'high',
   shadows: true,
-  materials: true
+  materials: true,
 });
 
 scene.add(wallObject);
@@ -211,12 +211,12 @@ await cameraController.setViewPreset({
   camera: {
     position: new Vector3(10, 10, 10),
     target: new Vector3(0, 0, 0),
-    fov: 75
-  }
+    fov: 75,
+  },
 });
 
 // Listen for camera changes
-cameraController.onCameraChange((state) => {
+cameraController.onCameraChange(state => {
   console.log('Camera moved:', state.position);
 });
 ```
@@ -275,7 +275,7 @@ interface MeasurementResult {
 const interactionManager = new Interaction3DManager();
 
 // Setup element selection
-interactionManager.onElementSelect((elementId) => {
+interactionManager.onElementSelect(elementId => {
   console.log('Selected element:', elementId);
   highlightElement(elementId);
 });
@@ -355,12 +355,12 @@ const woodMaterial = await materialSystem.createPBRMaterial({
   id: 'oak_wood',
   name: 'Oak Wood',
   type: 'physical',
-  baseColor: new Color(0x8B4513),
+  baseColor: new Color(0x8b4513),
   roughness: 0.8,
   metalness: 0.0,
   diffuseMap: '/textures/wood_diffuse.jpg',
   normalMap: '/textures/wood_normal.jpg',
-  roughnessMap: '/textures/wood_roughness.jpg'
+  roughnessMap: '/textures/wood_roughness.jpg',
 });
 ```
 
@@ -427,10 +427,10 @@ const sunLightId = lightingSystem.addLight({
   id: 'sun',
   type: 'directional',
   position: new Vector3(10, 20, 5),
-  color: new Color(0xFFFFEE),
+  color: new Color(0xffffee),
   intensity: 1.0,
   castShadow: true,
-  shadowMapSize: 2048
+  shadowMapSize: 2048,
 });
 
 // Apply architectural lighting preset
@@ -440,7 +440,7 @@ lightingSystem.applyLightingPreset({
   description: 'Professional architectural visualization lighting',
   lights: [
     // Sun light, fill light, ambient light configuration
-  ]
+  ],
 });
 ```
 
@@ -459,22 +459,12 @@ interface Export3DSystem {
   exportDAE(scene: Scene, options?: DAEExportOptions): Promise<Blob>;
 
   // Image Export
-  exportImage(
-    camera: Camera,
-    scene: Scene,
-    options?: ImageExportOptions
-  ): Promise<Blob>;
+  exportImage(camera: Camera, scene: Scene, options?: ImageExportOptions): Promise<Blob>;
 
-  exportAnimation(
-    animation: AnimationClip,
-    options?: AnimationExportOptions
-  ): Promise<Blob>;
+  exportAnimation(animation: AnimationClip, options?: AnimationExportOptions): Promise<Blob>;
 
   // Batch Export
-  exportMultipleViews(
-    views: CameraView[],
-    options?: BatchExportOptions
-  ): Promise<ExportResult[]>;
+  exportMultipleViews(views: CameraView[], options?: BatchExportOptions): Promise<ExportResult[]>;
 
   // Progress Tracking
   onProgress(callback: (progress: ExportProgress) => void): Unsubscribe;
@@ -511,7 +501,7 @@ interface ExportProgress {
 const exportSystem = new Export3DSystem();
 
 // Export high-quality image
-exportSystem.onProgress((progress) => {
+exportSystem.onProgress(progress => {
   console.log(`Export ${progress.stage}: ${Math.round(progress.progress * 100)}%`);
 });
 
@@ -520,7 +510,7 @@ const imageBlob = await exportSystem.exportImage(camera, scene, {
   height: 2160,
   format: 'png',
   pixelRatio: 2,
-  antialiasing: true
+  antialiasing: true,
 });
 
 // Export GLTF model
@@ -528,7 +518,7 @@ const modelBlob = await exportSystem.exportGLTF(scene, {
   binary: false,
   embedImages: true,
   animations: true,
-  materials: true
+  materials: true,
 });
 ```
 
@@ -637,10 +627,10 @@ monitor.setThresholds({
   minFPS: 30,
   maxFrameTime: 33,
   maxMemory: 500 * 1024 * 1024, // 500MB
-  maxDrawCalls: 1000
+  maxDrawCalls: 1000,
 });
 
-monitor.onThresholdExceeded((alert) => {
+monitor.onThresholdExceeded(alert => {
   console.warn('Performance issue:', alert);
   // Trigger quality reduction
 });
@@ -746,14 +736,14 @@ interface Scene3DEvents {
 const eventManager = new Event3DManager();
 
 // Listen for element selection
-eventManager.on<Scene3DEvents['element:selected']>('element:selected', (data) => {
+eventManager.on<Scene3DEvents['element:selected']>('element:selected', data => {
   console.log('Element selected:', data.elementId);
   updateUI(data.elementId);
 });
 
 // Create event group for export operations
 const exportGroup = eventManager.createGroup('export');
-exportGroup.on('export:progress', (progress) => {
+exportGroup.on('export:progress', progress => {
   updateProgressBar(progress.progress);
 });
 ```

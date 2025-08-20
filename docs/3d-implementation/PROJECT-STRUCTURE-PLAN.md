@@ -71,12 +71,15 @@ src/
 ### Canvas3D Components
 
 #### Scene3D.tsx
+
 ```
 src/components/Canvas3D/Scene3D.tsx
 ```
+
 Main 3D scene container that orchestrates all 3D components.
 
 #### Camera System
+
 ```
 src/components/Canvas3D/Camera/
 ├── CameraControls.tsx    # Orbit controls implementation
@@ -84,6 +87,7 @@ src/components/Canvas3D/Camera/
 ```
 
 #### Element Renderers
+
 ```
 src/components/Canvas3D/Elements/
 ├── ElementRenderer3D.tsx  # Main element renderer orchestrator
@@ -96,6 +100,7 @@ src/components/Canvas3D/Elements/
 ```
 
 #### Lighting System
+
 ```
 src/components/Canvas3D/Lighting/
 ├── SceneLighting.tsx     # Main lighting system
@@ -103,6 +108,7 @@ src/components/Canvas3D/Lighting/
 ```
 
 #### Tools
+
 ```
 src/components/Canvas3D/Tools/
 ├── MeasurementTool3D.tsx # 3D measurement system
@@ -110,12 +116,14 @@ src/components/Canvas3D/Tools/
 ```
 
 #### Effects
+
 ```
 src/components/Canvas3D/Effects/
 └── PostProcessing3D.tsx  # Post-processing effects
 ```
 
 ### UI Components
+
 ```
 src/components/UI/
 ├── ViewControls.tsx      # View mode switching controls
@@ -127,6 +135,7 @@ src/components/UI/
 ## 📁 State Management
 
 ### Stores
+
 ```
 src/stores/
 ├── designStore.ts        # Core design state (walls, doors, rooms)
@@ -135,6 +144,7 @@ src/stores/
 ```
 
 ### Hooks
+
 ```
 src/hooks/
 ├── 3d/
@@ -148,6 +158,7 @@ src/hooks/
 ## 📁 Utilities
 
 ### 3D Utilities
+
 ```
 src/utils/3d/
 ├── geometry3D.ts         # 3D geometry generation
@@ -157,6 +168,7 @@ src/utils/3d/
 ```
 
 ### Math Utilities
+
 ```
 src/utils/math3D.ts       # 3D mathematical operations
 ```
@@ -164,6 +176,7 @@ src/utils/math3D.ts       # 3D mathematical operations
 ## 📁 Type Definitions
 
 ### Element Types
+
 ```
 src/types/elements/
 ├── Wall3D.ts             # Wall type definitions
@@ -174,22 +187,26 @@ src/types/elements/
 ```
 
 ### Scene Types
+
 ```
 src/types/scene3D.ts      # 3D scene type definitions
 ```
 
 ### Material Types
+
 ```
 src/types/materials3D.ts  # 3D material type definitions
 ```
 
 ## 📁 Styles
+
 ```
 src/styles/
 └── globals.css           # Global CSS styles
 ```
 
 ## 📁 Test Structure
+
 ```
 __tests__/
 ├── components/
@@ -217,6 +234,7 @@ __tests__/
 ```
 
 ## 📁 Documentation
+
 ```
 docs/
 ├── 3d-implementation/
@@ -243,6 +261,7 @@ docs/
 ```
 
 ## 📁 Configuration
+
 ```
 config/
 ├── vite.config.ts        # Vite configuration
@@ -253,6 +272,7 @@ config/
 ```
 
 ## 📁 Assets
+
 ```
 public/
 ├── textures/             # 3D texture assets
@@ -262,11 +282,13 @@ public/
 ```
 
 ## 📁 Build Output
+
 ```
 dist/                     # Production build output
 ```
 
 ## 📁 Development Tools
+
 ```
 .github/
 ├── workflows/           # CI/CD workflows

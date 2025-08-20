@@ -18,6 +18,7 @@ This document provides a detailed implementation plan for the 3D House Planner a
 ## 🏗️ Current Status
 
 Based on the README, the foundation phase has been completed with:
+
 - Basic 3D scene with lighting and camera controls
 - Wall3D and Room3D components
 - View mode switching (2D/3D/Hybrid)
@@ -31,6 +32,7 @@ Based on the README, the foundation phase has been completed with:
 ✅ **Status**: Completed according to README
 
 **Deliverables**:
+
 - ✅ React Three Fiber + Three.js ecosystem integration
 - ✅ Basic 3D scene with lighting and camera controls
 - ✅ Orbit camera controls with customizable presets
@@ -47,28 +49,36 @@ Based on the README, the foundation phase has been completed with:
 **Objective**: Implement core architectural elements with enhanced 3D representations
 
 #### 2.1 Door System
+
 **Week 1: Door Implementation**
+
 - Create Door3D component with frame and panel geometry
 - Implement wall-attached placement with precise positioning
 - Add opening animations (swing, slide)
 - Create door configuration panel (size, type, material)
 
 #### 2.2 Window System
+
 **Week 2: Window Implementation**
+
 - Create Window3D component with frame and glass geometry
 - Implement wall-attached placement with precise positioning
 - Add glazing options (single, double, triple pane)
 - Create window configuration panel (size, type, material)
 
 #### 2.3 Stair System
+
 **Week 3: Stair Implementation**
+
 - Create Stair3D component with steps and railings
 - Implement parametric stair generation (straight, L-shaped, U-shaped)
 - Add railings and handrails with customization options
 - Create stair configuration panel (type, dimensions, materials)
 
 #### 2.4 Enhanced Wall System
+
 **Week 4: Wall Enhancements**
+
 - Improve wall connections and corner handling
 - Add wall types (load-bearing, partition)
 - Implement wall openings management
@@ -79,28 +89,36 @@ Based on the README, the foundation phase has been completed with:
 **Objective**: Implement professional-grade tools for 3D design
 
 #### 3.1 Wall Drawing Tool
+
 **Week 5: Drawing Tools**
+
 - Implement 3D wall drawing with snapping and constraints
 - Add grid snapping with customizable spacing
 - Implement angle snapping (15°, 30°, 45°, 90°)
 - Add distance constraint input during drawing
 
 #### 3.2 Room Creation Tool
+
 **Week 6: Room Tools**
+
 - Implement room creation by wall selection
 - Add room type classification (bedroom, kitchen, etc.)
 - Implement room material assignment
 - Add room area and perimeter calculations
 
 #### 3.3 Measurement Tools
+
 **Week 7: Measurement System**
+
 - Implement 3D measurement tools
 - Add distance, area, and volume calculations
 - Create measurement visualization with labels
 - Implement dimension lines with arrows
 
 #### 3.4 Element Manipulation
+
 **Week 8: Manipulation Tools**
+
 - Add element manipulation handles (move, rotate, scale)
 - Implement constraint-based editing
 - Add undo/redo functionality
@@ -111,21 +129,27 @@ Based on the README, the foundation phase has been completed with:
 **Objective**: Implement professional-grade materials and lighting system
 
 #### 4.1 Advanced Material System
+
 **Week 9: Material Enhancement**
+
 - Implement texture loading and mapping
 - Add PBR material editor (roughness, metalness, normal maps)
 - Create material library with categorization
 - Add custom material creation
 
 #### 4.2 Lighting System
+
 **Week 10: Lighting Enhancement**
+
 - Implement lighting environment presets
 - Add time-of-day simulation
 - Create shadow visualization tools
 - Add ambient lighting controls
 
 #### 4.3 Post-Processing Effects
+
 **Week 11: Visual Effects**
+
 - Implement post-processing effects (bloom, depth of field)
 - Add anti-aliasing options
 - Create visual effect presets
@@ -136,21 +160,27 @@ Based on the README, the foundation phase has been completed with:
 **Objective**: Implement professional export capabilities and advanced features
 
 #### 5.1 Export System
+
 **Week 12: Export Implementation**
+
 - Implement 3D model export (glTF, OBJ)
 - Add high-resolution rendering
 - Create 2D floor plan generation from 3D
 - Implement professional drawing templates
 
 #### 5.2 Advanced Features
+
 **Week 13: Professional Tools**
+
 - Add multi-floor support with vertical navigation
 - Implement roof generation system
 - Create section view tools
 - Add walkthrough mode
 
 #### 5.3 Polish & Optimization
+
 **Week 14: Final Polish**
+
 - Performance optimization
 - Bug fixes and stability improvements
 - User interface refinements
@@ -169,12 +199,12 @@ interface DesignState {
   windows: Window[];
   stairs: Stair[];
   rooms: Room[];
-  
+
   // 3D enhancements
   materials: Material[];
   lighting: LightingConfig;
   camera: CameraState;
-  
+
   // UI state
   selectedElementId: string | null;
   viewMode: '2d' | '3d' | 'hybrid';
@@ -225,21 +255,25 @@ interface Door {
 ## 🧪 Testing Strategy
 
 ### Unit Testing
+
 - Target: 90% code coverage for new 3D components
 - Framework: Jest with custom Three.js mocks
 - Automation: Run on every commit with CI/CD
 
 ### Integration Testing
+
 - Target: 100% coverage of 3D feature workflows
 - Framework: React Testing Library with WebGL mocks
 - Automation: Run on pull requests and releases
 
 ### Performance Testing
+
 - Target: Frame rate metrics on representative hardware
 - Framework: Custom performance monitoring tools
 - Automation: Automated benchmarks on deployment
 
 ### User Acceptance Testing
+
 - Target: Professional architects and existing users
 - Method: Moderated usability sessions
 - Timeline: 2 weeks before release
@@ -247,18 +281,21 @@ interface Door {
 ## 🎯 Success Metrics
 
 ### Performance Targets
+
 - Frame Rate: 60 FPS on desktop, 30 FPS on tablets
 - Load Time: 3D mode activation under 2 seconds
 - Memory Usage: Under 500MB for typical house models
 - Export Speed: High-quality images under 10 seconds
 
 ### User Experience Metrics
+
 - Adoption Rate: 60%+ of users try 3D features within first session
 - Task Completion: No decrease from current 2D workflow speeds
 - Error Rate: Under 5% for 3D-specific operations
 - User Satisfaction: Maintain 85%+ satisfaction scores
 
 ### Technical Quality Metrics
+
 - Test Coverage: 90%+ for 3D-specific code
 - Browser Support: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
 - Accessibility: WCAG 2.1 AA compliance maintained
@@ -267,12 +304,14 @@ interface Door {
 ## 🚀 Deployment Strategy
 
 ### Development Workflow
+
 1. Feature branches for each implementation phase
 2. Pull requests with code review
 3. Automated testing on every commit
 4. Continuous integration deployment
 
 ### Release Process
+
 1. Alpha release for internal testing
 2. Beta release for selected users
 3. Production release with full documentation
@@ -281,12 +320,14 @@ interface Door {
 ## 📚 Documentation Plan
 
 ### Technical Documentation
+
 - Component API documentation
 - State management guide
 - 3D rendering architecture
 - Performance optimization guide
 
 ### User Documentation
+
 - Getting started guide
 - Tutorial for basic 3D operations
 - Advanced features documentation

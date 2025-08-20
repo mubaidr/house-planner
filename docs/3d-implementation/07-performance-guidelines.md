@@ -1,4 +1,3 @@
-
 # Performance Guidelines
 
 > **Comprehensive performance optimization strategies and monitoring guidelines for 3D House Planner implementation**
@@ -10,6 +9,7 @@
 **As of August 2025, all performance optimizations and monitoring will be layered on and extend [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
 
 ### Performance Adaptation:
+
 - All optimization strategies below are to be interpreted as customizations, extensions, or integrations with the base project.
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
@@ -155,7 +155,9 @@ export class TextureAtlasSystem {
     canvas.height = 2048;
     const ctx = canvas.getContext('2d')!;
 
-    let x = 0, y = 0, rowHeight = 0;
+    let x = 0,
+      y = 0,
+      rowHeight = 0;
 
     for (const config of materialConfigs) {
       const image = await this.loadImage(config.diffuseMap);
@@ -203,10 +205,7 @@ export class TextureCompressionSystem {
     originalTexture: Texture,
     format: 'DXT1' | 'DXT5' | 'ETC1' | 'ASTC'
   ): Promise<CompressedTexture> {
-    const compressedData = await this.compressTextureData(
-      originalTexture.image,
-      format
-    );
+    const compressedData = await this.compressTextureData(originalTexture.image, format);
 
     const compressedTexture = new CompressedTexture(
       compressedData.mipmaps,
@@ -223,7 +222,7 @@ export class TextureCompressionSystem {
     format: string
   ): Promise<CompressedTextureData> {
     // Use web workers for compression to avoid blocking main thread
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const worker = new Worker('/workers/textureCompression.worker.js');
 
       worker.postMessage({
@@ -231,7 +230,7 @@ export class TextureCompressionSystem {
         format: format,
       });
 
-      worker.onmessage = (event) => {
+      worker.onmessage = event => {
         resolve(event.data);
         worker.terminate();
       };
@@ -253,10 +252,7 @@ export class CullingSystem {
   private cameraMatrix = new Matrix4();
 
   updateFrustum(camera: Camera) {
-    this.cameraMatrix.multiplyMatrices(
-      camera.projectionMatrix,
-      camera.matrixWorldInverse
-    );
+    this.cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     this.frustum.setFromProjectionMatrix(this.cameraMatrix);
   }
 
@@ -313,10 +309,7 @@ export class OcclusionCullingSystem {
     this.gl.endQuery(this.gl.ANY_SAMPLES_PASSED);
 
     // Check result (may be delayed by GPU)
-    const available = this.gl.getQueryParameter(
-      query,
-      this.gl.QUERY_RESULT_AVAILABLE
-    );
+    const available = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT_AVAILABLE);
 
     if (available) {
       const result = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT);
@@ -443,7 +436,7 @@ export class ObjectPool<T> {
 // Usage example
 const meshPool = new ObjectPool<Mesh>(
   () => new Mesh(),
-  (mesh) => {
+  mesh => {
     mesh.position.set(0, 0, 0);
     mesh.rotation.set(0, 0, 0);
     mesh.scale.set(1, 1, 1);
@@ -471,9 +464,7 @@ export class PerformanceMonitor {
     this.stats.showPanel(0); // FPS panel
 
     // Add custom memory panel
-    this.memoryPanel = this.stats.addPanel(
-      new Stats.Panel('MB', '#ff8', '#221')
-    );
+    this.memoryPanel = this.stats.addPanel(new Stats.Panel('MB', '#ff8', '#221'));
 
     document.body.appendChild(this.stats.dom);
   }
@@ -504,8 +495,8 @@ export class PerformanceMonitor {
   }
 
   getPerformanceMetrics(): PerformanceMetrics {
-    const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0)
-                        / this.frameTimeHistory.length;
+    const avgFrameTime =
+      this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length;
 
     return {
       fps: Math.round(1000 / avgFrameTime),
@@ -547,11 +538,7 @@ export class PerformanceAlertSystem {
         type: 'low-fps',
         severity: 'warning',
         message: `FPS dropped to ${metrics.fps}`,
-        suggestions: [
-          'Reduce quality settings',
-          'Enable LOD system',
-          'Reduce scene complexity'
-        ]
+        suggestions: ['Reduce quality settings', 'Enable LOD system', 'Reduce scene complexity'],
       });
     }
 
@@ -565,8 +552,8 @@ export class PerformanceAlertSystem {
         suggestions: [
           'Dispose unused textures',
           'Reduce texture resolution',
-          'Enable texture compression'
-        ]
+          'Enable texture compression',
+        ],
       });
     }
   }
@@ -627,8 +614,7 @@ export class AdaptiveQualitySystem {
 
   private getAverageFPS(): number {
     const recentMetrics = this.performanceHistory.slice(-10);
-    return recentMetrics.reduce((sum, metrics) => sum + metrics.fps, 0)
-           / recentMetrics.length;
+    return recentMetrics.reduce((sum, metrics) => sum + metrics.fps, 0) / recentMetrics.length;
   }
 
   private determineOptimalQuality(avgFPS: number): QualityLevel {
@@ -736,7 +722,7 @@ export class ProductionMonitor {
 
   private setupPerformanceObserver() {
     if ('PerformanceObserver' in window) {
-      const observer = new PerformanceObserver((list) => {
+      const observer = new PerformanceObserver(list => {
         const entries = list.getEntries();
 
         entries.forEach(entry => {

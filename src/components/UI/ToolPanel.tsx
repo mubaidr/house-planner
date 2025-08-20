@@ -15,7 +15,7 @@ export function ToolPanel() {
       end: { x: Math.random() * 10 - 5, y: 0, z: Math.random() * 10 - 5 },
       height: 2.5 + Math.random() * 1,
       thickness: 0.2 + Math.random() * 0.1,
-      type: 'load-bearing'
+      type: 'load-bearing',
     });
   };
 
@@ -32,7 +32,7 @@ export function ToolPanel() {
         swingDirection: 'left',
         isOpen: false,
         openAngle: 0,
-        openOffset: 0
+        openOffset: 0,
       });
     } else {
       alert('Please add a wall first');
@@ -48,7 +48,7 @@ export function ToolPanel() {
         width: 1.2 + Math.random() * 0.3,
         height: 1.5 + Math.random() * 0.3,
         thickness: 0.05 + Math.random() * 0.05,
-        type: 'double'
+        type: 'double',
       });
     } else {
       alert('Please add a wall first');
@@ -64,7 +64,7 @@ export function ToolPanel() {
       stepHeight: 0.15,
       stepDepth: 0.3,
       width: 1.2,
-      type: 'straight'
+      type: 'straight',
     });
   };
 
@@ -73,7 +73,7 @@ export function ToolPanel() {
     if (walls.length > 0) {
       addRoom({
         wallIds: walls.slice(0, Math.min(4, walls.length)).map(w => w.id),
-        name: `Room ${Date.now()}`
+        name: `Room ${Date.now()}`,
       });
     } else {
       alert('Please add walls first');
@@ -92,37 +92,37 @@ export function ToolPanel() {
     <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg">
       <h2 className="text-lg font-bold mb-2">Tools</h2>
       <div className="space-y-2">
-        <button 
+        <button
           onClick={handleAddWall}
           className="w-full px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
         >
           Add Wall
         </button>
-        <button 
+        <button
           onClick={handleAddDoor}
           className="w-full px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
         >
           Add Door
         </button>
-        <button 
+        <button
           onClick={handleAddWindow}
           className="w-full px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
         >
           Add Window
         </button>
-        <button 
+        <button
           onClick={handleAddStair}
           className="w-full px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
         >
           Add Stairs
         </button>
-        <button 
+        <button
           onClick={handleAddRoom}
           className="w-full px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
         >
           Add Room
         </button>
-        <button 
+        <button
           onClick={handleClearAll}
           className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
         >

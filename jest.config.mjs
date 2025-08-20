@@ -12,10 +12,13 @@ export default {
     },
   },
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', {
-      useESM: true,
-      tsconfig: 'tsconfig.test.json',
-    }],
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: 'tsconfig.test.json',
+      },
+    ],
   },
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
@@ -33,7 +36,7 @@ export default {
   coverageReporters: ['text', 'lcov', 'html'],
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(konva|react-konva|three|@react-three|@use-gesture)/)'
+    'node_modules/(?!(konva|react-konva|three|@react-three|@use-gesture)/)',
   ],
   moduleDirectories: ['node_modules', '<rootDir>/'],
   testTimeout: 10000,

@@ -1,4 +1,3 @@
-
 # Deployment Guide
 
 > **Comprehensive deployment guide for 3D House Planner with production-ready configuration, monitoring, and maintenance procedures**
@@ -10,6 +9,7 @@
 **As of August 2025, all deployment steps and procedures will be layered on and extend [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
 
 ### Deployment Adaptation:
+
 - All deployment steps below are to be interpreted as customizations, extensions, or integrations with the base project.
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
@@ -29,6 +29,7 @@ This guide provides step-by-step instructions for deploying the 3D House Planner
 ### Minimum System Requirements
 
 **Production Server**:
+
 - **CPU**: 4 cores minimum, 8 cores recommended
 - **RAM**: 8GB minimum, 16GB recommended
 - **Storage**: 50GB SSD minimum, 100GB recommended
@@ -36,12 +37,14 @@ This guide provides step-by-step instructions for deploying the 3D House Planner
 - **SSL**: Valid TLS certificate required
 
 **CDN Requirements**:
+
 - Global edge locations for static asset delivery
 - WebGL-optimized content delivery
 - Brotli/Gzip compression support
 - Cache-Control header customization
 
 **Database (if applicable)**:
+
 - Redis for session management and caching
 - PostgreSQL for user data and saved designs
 - Regular automated backups
@@ -185,18 +188,18 @@ services:
       - NODE_ENV=production
       - PORT=3000
     ports:
-      - "3000:3000"
+      - '3000:3000'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.houseplanner.rule=Host(`houseplanner.com`)"
-      - "traefik.http.routers.houseplanner.tls=true"
-      - "traefik.http.routers.houseplanner.tls.certresolver=letsencrypt"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.houseplanner.rule=Host(`houseplanner.com`)'
+      - 'traefik.http.routers.houseplanner.tls=true'
+      - 'traefik.http.routers.houseplanner.tls.certresolver=letsencrypt'
 
   redis:
     image: redis:7-alpine
@@ -205,7 +208,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 30s
       timeout: 5s
       retries: 3
@@ -214,8 +217,8 @@ services:
     image: nginx:alpine
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
@@ -548,7 +551,7 @@ export class ProductionMonitoring {
   private setupErrorTracking() {
     // Sentry configuration
     Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
+      dsn: import.meta.env.VITE_SENTRY_DSN,
       environment: process.env.NODE_ENV,
       beforeSend: (event, hint) => {
         // Filter out known non-critical errors
@@ -575,8 +578,8 @@ export class ProductionMonitoring {
   private setupPerformanceMonitoring() {
     // Performance observer for 3D metrics
     if ('PerformanceObserver' in window) {
-      const observer = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry) => {
+      const observer = new PerformanceObserver(list => {
+        list.getEntries().forEach(entry => {
           if (entry.entryType === 'measure') {
             this.trackMetric('performance.measure', entry.duration, {
               name: entry.name,
@@ -655,10 +658,7 @@ interface HealthCheck {
   uptime: number;
 }
 
-export default async function health(
-  req: NextApiRequest,
-  res: NextApiResponse<HealthCheck>
-) {
+export default async function health(req: NextApiRequest, res: NextApiResponse<HealthCheck>) {
   const startTime = Date.now();
 
   const checks = {
@@ -674,7 +674,7 @@ export default async function health(
   const response: HealthCheck = {
     status,
     timestamp: new Date().toISOString(),
-  version: import.meta.env.VITE_APP_VERSION || 'unknown',
+    version: import.meta.env.VITE_APP_VERSION || 'unknown',
     checks,
     uptime: process.uptime(),
   };
@@ -892,7 +892,7 @@ const securityConfig = {
   },
   development: {
     // Relaxed security for development
-  }
+  },
 };
 ```
 

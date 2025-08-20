@@ -5,13 +5,20 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
-// Flat config for Vite + React 19 + TypeScript + Prettier
 export default [
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  prettierConfig,
+  // Global ignores
   {
-    files: ['**/*.{ts,tsx,js,jsx}', '*.mjs'],
+    ignores: ['dist/**', 'build/**', 'node_modules/**', '*.min.js', '*.bundle.js'],
+  },
+  // JavaScript recommended rules
+  js.configs.recommended,
+  // TypeScript recommended rules
+  ...tseslint.configs.recommended,
+  // Prettier rules
+  prettierConfig,
+  // React and React Hooks rules for source files only
+  {
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -44,15 +51,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-    },
-    // Ignore dist folder and build artifacts
-    ignores: ['dist/**', 'build/**', 'node_modules/**'],
-  },
-  {
-    // Special configuration for test files
-    files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      'no-case-declarations': 'warn',
     },
   },
 ];

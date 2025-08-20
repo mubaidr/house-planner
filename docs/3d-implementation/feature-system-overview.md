@@ -179,9 +179,9 @@ Features communicate through a shared event system and normalized data structure
 ```typescript
 // Shared events between features
 type FeatureEvent =
-  | { type: 'floorplan:wall_created', wall: Wall }
-  | { type: 'room:product_placed', product: Product, room: string }
-  | { type: 'product:configuration_changed', product: Product, config: Configuration };
+  | { type: 'floorplan:wall_created'; wall: Wall }
+  | { type: 'room:product_placed'; product: Product; room: string }
+  | { type: 'product:configuration_changed'; product: Product; config: Configuration };
 
 // Normalized data structures
 interface SharedState {
@@ -200,7 +200,7 @@ Each feature maintains its own state while synchronizing through shared data:
 - **Room Configuration** → Update lighting and material preview in 3D
 - **Product Configuration** → Update dimensions and materials in room context
 
-*Note: All editing operations work directly in 3D space with top-down orthographic view providing precision for drawing and placement tasks.*
+_Note: All editing operations work directly in 3D space with top-down orthographic view providing precision for drawing and placement tasks._
 
 ---
 
@@ -208,11 +208,11 @@ Each feature maintains its own state while synchronizing through shared data:
 
 ### Feature-to-Document Mapping
 
-| Feature Area              | Primary Documents                          | Supporting Documents                                    |
-| ------------------------- | ------------------------------------------ | ------------------------------------------------------- |
-| **FloorPlan Design**      | 06-requirements-specification.md (FR-FP-*) | 03-architecture-design.md, 07-performance-guidelines.md |
-| **Room Configuration**    | 06-requirements-specification.md (FR-RC-*) | 04-ux-design-strategy.md, 08-api-specifications.md      |
-| **Product Configuration** | 06-requirements-specification.md (FR-PC-*) | 02-technology-assessment.md, 09-testing-strategy.md     |
+| Feature Area              | Primary Documents                           | Supporting Documents                                    |
+| ------------------------- | ------------------------------------------- | ------------------------------------------------------- |
+| **FloorPlan Design**      | 06-requirements-specification.md (FR-FP-\*) | 03-architecture-design.md, 07-performance-guidelines.md |
+| **Room Configuration**    | 06-requirements-specification.md (FR-RC-\*) | 04-ux-design-strategy.md, 08-api-specifications.md      |
+| **Product Configuration** | 06-requirements-specification.md (FR-PC-\*) | 02-technology-assessment.md, 09-testing-strategy.md     |
 
 ### Implementation Phases
 
@@ -260,4 +260,4 @@ Each feature maintains its own state while synchronizing through shared data:
 
 ---
 
-*This feature system overview provides the foundation for building a user-centered, maintainable, and scalable 3D house planning application.*
+_This feature system overview provides the foundation for building a user-centered, maintainable, and scalable 3D house planning application._

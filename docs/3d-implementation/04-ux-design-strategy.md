@@ -10,9 +10,9 @@
 
 ### UX Adaptation:
 
--   All UX strategies below are to be interpreted as customizations, extensions, or integrations with the base project.
--   Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
--   Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
+- All UX strategies below are to be interpreted as customizations, extensions, or integrations with the base project.
+- Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
+- Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
 
 ---
 
@@ -35,10 +35,10 @@ This document outlines the user experience design strategy for integrating 3D ca
 
 ### User-Centered Design Goals
 
--   **Non-technical users** can create a valid house plan with rooms, doors, windows, and a roof within 10 minutes.
--   **All existing workflows** remain unchanged in 2D mode
--   **3D enhancements** add value without complexity overhead
--   **Professional users** gain advanced capabilities when needed
+- **Non-technical users** can create a valid house plan with rooms, doors, windows, and a roof within 10 minutes.
+- **All existing workflows** remain unchanged in 2D mode
+- **3D enhancements** add value without complexity overhead
+- **Professional users** gain advanced capabilities when needed
 
 ---
 
@@ -48,54 +48,54 @@ This document outlines the user experience design strategy for integrating 3D ca
 
 **Background**
 
--   Name: Sarah Chen, Interior Design Consultant
--   Age: 42, runs small design business
--   Technical level: Basic computer skills
--   Current tool: Uses 2D House Planner for client estimates
+- Name: Sarah Chen, Interior Design Consultant
+- Age: 42, runs small design business
+- Technical level: Basic computer skills
+- Current tool: Uses 2D House Planner for client estimates
 
 **Goals**
 
--   Create impressive client presentations
--   Accurate measurements for cost estimation
--   Quick design iterations during client meetings
--   Professional-looking outputs for proposals
+- Create impressive client presentations
+- Accurate measurements for cost estimation
+- Quick design iterations during client meetings
+- Professional-looking outputs for proposals
 
 **Pain Points**
 
--   Clients struggle to visualize 2D plans
--   Explaining spatial relationships takes time
--   Competition uses 3D tools but they're too complex
--   Needs results quickly without learning curve
+- Clients struggle to visualize 2D plans
+- Explaining spatial relationships takes time
+- Competition uses 3D tools but they're too complex
+- Needs results quickly without learning curve
 
 **3D Mode Success Criteria**
 
--   Can show 3D view to clients within first session
--   No decrease in design speed or accuracy
--   Enhanced client satisfaction and sales conversion
--   Maintains professional output quality
+- Can show 3D view to clients within first session
+- No decrease in design speed or accuracy
+- Enhanced client satisfaction and sales conversion
+- Maintains professional output quality
 
 ### Secondary User Persona: Technical Professional
 
 **Background**
 
--   Name: Marcus Rodriguez, Architect
--   Age: 35, works with building contractors
--   Technical level: Advanced CAD experience
--   Current need: Collaboration tool for non-technical clients
+- Name: Marcus Rodriguez, Architect
+- Age: 35, works with building contractors
+- Technical level: Advanced CAD experience
+- Current need: Collaboration tool for non-technical clients
 
 **Goals**
 
--   Bridge communication gap with clients
--   Quick concept visualization
--   Integration with professional CAD workflows
--   Accurate technical drawings
+- Bridge communication gap with clients
+- Quick concept visualization
+- Integration with professional CAD workflows
+- Accurate technical drawings
 
 **3D Mode Success Criteria**
 
--   Advanced 3D features available when needed
--   Export compatibility with professional tools
--   Precise measurements and technical accuracy
--   Customizable interface for power users
+- Advanced 3D features available when needed
+- Export compatibility with professional tools
+- Precise measurements and technical accuracy
+- Customizable interface for power users
 
 ---
 
@@ -129,26 +129,26 @@ This document outlines the user experience design strategy for integrating 3D ca
 
 **2D Mode (Default)**
 
--   This is the primary mode for floor plan creation.
--   Familiar Konva canvas interface
--   All existing tools work unchanged
--   3D toggle button visible but subtle
--   Smooth transition to 3D available
+- This is the primary mode for floor plan creation.
+- Familiar Konva canvas interface
+- All existing tools work unchanged
+- 3D toggle button visible but subtle
+- Smooth transition to 3D available
 
 **3D Mode**
 
--   This mode is primarily for visualization, material application, and camera work.
--   React Three Fiber canvas replaces 2D
--   3D camera controls overlay
--   Enhanced property panels for 3D materials
--   Quick preset views (Plan, Front, Isometric)
+- This mode is primarily for visualization, material application, and camera work.
+- React Three Fiber canvas replaces 2D
+- 3D camera controls overlay
+- Enhanced property panels for 3D materials
+- Quick preset views (Plan, Front, Isometric)
 
 **Hybrid Mode (Advanced)**
 
--   Split screen 2D and 3D views
--   Synchronized selection and editing
--   Real-time updates between views
--   Professional workflow optimization
+- Split screen 2D and 3D views
+- Synchronized selection and editing
+- Real-time updates between views
+- Professional workflow optimization
 
 ### Navigation Design
 
@@ -173,42 +173,42 @@ This document outlines the user experience design strategy for integrating 3D ca
 
 **Progressive Enhancement**
 
--   **Level 1**: Default to top-down plan view. Click preset buttons for fixed 3D views.
--   **Level 2**: Mouse orbit controls with visual feedback
--   **Level 3**: Advanced navigation (fly-through, first-person)
+- **Level 1**: Default to top-down plan view. Click preset buttons for fixed 3D views.
+- **Level 2**: Mouse orbit controls with visual feedback
+- **Level 3**: Advanced navigation (fly-through, first-person)
 
 #### View Preset System
 
 ```typescript
 const VIEW_PRESETS = {
   plan: {
-    name: "Plan View",
-    description: "Top-down architectural view",
-    icon: "🏠",
+    name: 'Plan View',
+    description: 'Top-down architectural view',
+    icon: '🏠',
     camera: { position: [0, 50, 0], target: [0, 0, 0] },
-    transition: "smooth"
+    transition: 'smooth',
   },
   front: {
-    name: "Front View",
-    description: "Front elevation view",
-    icon: "📐",
+    name: 'Front View',
+    description: 'Front elevation view',
+    icon: '📐',
     camera: { position: [0, 10, 30], target: [0, 10, 0] },
-    transition: "smooth"
+    transition: 'smooth',
   },
   isometric: {
-    name: "3D View",
-    description: "Three-dimensional perspective",
-    icon: "📦",
+    name: '3D View',
+    description: 'Three-dimensional perspective',
+    icon: '📦',
     camera: { position: [20, 15, 20], target: [0, 5, 0] },
-    transition: "smooth"
+    transition: 'smooth',
   },
   walkthrough: {
-    name: "Walk-through",
-    description: "Interior perspective view",
-    icon: "🚶",
+    name: 'Walk-through',
+    description: 'Interior perspective view',
+    icon: '🚶',
     camera: { position: [0, 7, 0], target: [10, 7, 0] },
-    transition: "smooth"
-  }
+    transition: 'smooth',
+  },
 };
 ```
 
@@ -247,31 +247,31 @@ const VIEW_PRESETS = {
 
 **3D Camera Tool**
 
--   Quick access to view presets
--   Custom camera position saving
--   Animation between views
--   Screenshot capture from any angle
+- Quick access to view presets
+- Custom camera position saving
+- Animation between views
+- Screenshot capture from any angle
 
 **Lighting Tool**
 
--   Simple sun position control
--   Time-of-day simulation
--   Shadow visualization
--   Ambient lighting adjustment
+- Simple sun position control
+- Time-of-day simulation
+- Shadow visualization
+- Ambient lighting adjustment
 
 **Section Tool**
 
--   Cut-through views of the building
--   Adjustable cutting plane
--   Interior space visualization
--   Technical drawing generation
+- Cut-through views of the building
+- Adjustable cutting plane
+- Interior space visualization
+- Technical drawing generation
 
 **Roof Tool**
 
--   Simple interface to add a roof to a valid house footprint.
--   Presets for flat, gable, and hip roofs.
--   Sliders for adjusting pitch and overhang.
--   Material selection from a roof-specific library.
+- Simple interface to add a roof to a valid house footprint.
+- Presets for flat, gable, and hip roofs.
+- Sliders for adjusting pitch and overhang.
+- Material selection from a roof-specific library.
 
 ---
 
@@ -331,22 +331,22 @@ const KEYBOARD_SHORTCUTS_3D = {
   '5': 'Switch to Walk-through',
 
   // Navigation
-  'W': 'Move camera forward',
-  'S': 'Move camera backward',
-  'A': 'Move camera left',
-  'D': 'Move camera right',
-  'Q': 'Move camera up',
-  'E': 'Move camera down',
+  W: 'Move camera forward',
+  S: 'Move camera backward',
+  A: 'Move camera left',
+  D: 'Move camera right',
+  Q: 'Move camera up',
+  E: 'Move camera down',
 
   // Tools
-  'M': 'Toggle material visibility',
-  'L': 'Toggle lighting controls',
-  'G': 'Toggle grid visibility',
-  'H': 'Toggle element handles',
+  M: 'Toggle material visibility',
+  L: 'Toggle lighting controls',
+  G: 'Toggle grid visibility',
+  H: 'Toggle element handles',
 
   // Mode switching
-  'Tab': 'Toggle 2D/3D mode',
-  'Space': 'Reset camera to default view'
+  Tab: 'Toggle 2D/3D mode',
+  Space: 'Reset camera to default view',
 };
 ```
 
@@ -358,24 +358,24 @@ const KEYBOARD_SHORTCUTS_3D = {
 
 **Primary Interface (Desktop 1920x1080+)**
 
--   Full 3D canvas with all controls
--   Multi-panel layout with properties
--   Professional-grade tools and exports
--   Advanced keyboard shortcuts
+- Full 3D canvas with all controls
+- Multi-panel layout with properties
+- Professional-grade tools and exports
+- Advanced keyboard shortcuts
 
 **Secondary Interface (Desktop 1366x768)**
 
--   Simplified 3D controls
--   Collapsible panels for screen space
--   Essential tools prominently displayed
--   Responsive typography and spacing
+- Simplified 3D controls
+- Collapsible panels for screen space
+- Essential tools prominently displayed
+- Responsive typography and spacing
 
 **Touch Support (Tablets 1024px+)**
 
--   Touch-friendly 3D navigation
--   Gesture-based camera controls
--   Larger touch targets for 3D elements
--   Simplified tool palette
+- Touch-friendly 3D navigation
+- Gesture-based camera controls
+- Larger touch targets for 3D elements
+- Simplified tool palette
 
 ### Accessibility Integration
 
@@ -383,35 +383,35 @@ const KEYBOARD_SHORTCUTS_3D = {
 
 **Color and Contrast**
 
--   Maintain WCAG AA compliance in 3D mode
--   High contrast selection indicators
--   Color-blind friendly element highlighting
--   Customizable UI theme support
+- Maintain WCAG AA compliance in 3D mode
+- High contrast selection indicators
+- Color-blind friendly element highlighting
+- Customizable UI theme support
 
 **Visual Feedback**
 
--   Clear focus indicators for 3D elements
--   Audio feedback for 3D navigation
--   Screen reader support for 3D element properties
--   Alternative text descriptions for 3D scenes
+- Clear focus indicators for 3D elements
+- Audio feedback for 3D navigation
+- Screen reader support for 3D element properties
+- Alternative text descriptions for 3D scenes
 
 #### Motor Accessibility
 
 **Alternative Navigation**
 
--   Keyboard-only 3D navigation mode
--   Customizable key bindings
--   Voice control integration points
--   Single-hand operation support
+- Keyboard-only 3D navigation mode
+- Customizable key bindings
+- Voice control integration points
+- Single-hand operation support
 
 #### Cognitive Accessibility
 
 **Simplified Modes**
 
--   Beginner mode with guided workflows
--   Contextual help for 3D concepts
--   Visual tutorials for 3D navigation
--   Progressive complexity introduction
+- Beginner mode with guided workflows
+- Contextual help for 3D concepts
+- Visual tutorials for 3D navigation
+- Progressive complexity introduction
 
 ---
 
@@ -464,26 +464,26 @@ const CONTEXTUAL_HELP = {
   firstTimeIn3D: {
     trigger: 'mode-switch-to-3d',
     content: 'Welcome to 3D mode! Your design is now three-dimensional.',
-    actions: ['Take Tour', 'Start Exploring', 'Back to 2D']
+    actions: ['Take Tour', 'Start Exploring', 'Back to 2D'],
   },
 
   cameraConfusion: {
     trigger: 'rapid-camera-movement',
     content: 'Lost your view? Click the [Plan] button to reset.',
-    actions: ['Reset View', 'Show Controls']
+    actions: ['Reset View', 'Show Controls'],
   },
 
   invalidPlacement: {
     trigger: 'placement-constraint-violation',
     content: 'Doors and windows must be placed inside a wall. Please try again.',
-    actions: ['Show Valid Areas', 'Got It']
+    actions: ['Show Valid Areas', 'Got It'],
   },
 
   materialDiscovery: {
     trigger: 'hover-material-3d',
     content: 'Materials now show realistic textures and lighting!',
-    actions: ['Learn More', 'Got It']
-  }
+    actions: ['Learn More', 'Got It'],
+  },
 };
 ```
 
@@ -533,7 +533,7 @@ const saveCustomView = (name: string) => {
     camera: getCurrentCameraState(),
     lighting: getCurrentLighting(),
     rendering: getCurrentRenderSettings(),
-    notes: getUserNotes()
+    notes: getUserNotes(),
   };
 
   addToViewPresets(view);
@@ -548,17 +548,17 @@ const saveCustomView = (name: string) => {
 
 **Task Completion Metrics**
 
--   Time to complete first 3D view (target: <30 seconds)
--   Success rate for basic navigation (target: >90%)
--   Error recovery time (target: <10 seconds)
--   Feature discovery rate (target: >70% within 5 minutes)
+- Time to complete first 3D view (target: <30 seconds)
+- Success rate for basic navigation (target: >90%)
+- Error recovery time (target: <10 seconds)
+- Feature discovery rate (target: >70% within 5 minutes)
 
 **User Satisfaction Metrics**
 
--   System Usability Scale (SUS) score (target: >80)
--   Task Load Index for 3D operations (target: <40)
--   User preference rating 2D vs 3D (target: balanced usage)
--   Client presentation effectiveness (target: >85% positive feedback)
+- System Usability Scale (SUS) score (target: >80)
+- Task Load Index for 3D operations (target: <40)
+- User preference rating 2D vs 3D (target: balanced usage)
+- Client presentation effectiveness (target: >85% positive feedback)
 
 ### Testing Scenarios
 
@@ -590,26 +590,26 @@ Success: User generates high-quality 3D export in under 2 minutes
 
 **Week 1-2: Baseline Testing**
 
--   Test current 2D usability with target users
--   Establish performance benchmarks
--   Document existing user mental models
+- Test current 2D usability with target users
+- Establish performance benchmarks
+- Document existing user mental models
 
 **Week 3-4: Initial 3D Prototype**
 
--   Test basic 3D navigation with 5-7 users
--   Identify major usability issues
--   Refine camera controls and view presets
+- Test basic 3D navigation with 5-7 users
+- Identify major usability issues
+- Refine camera controls and view presets
 
 **Week 5-6: Enhanced Feature Testing**
 
--   Test material system and lighting controls
--   Validate onboarding flow effectiveness
--   Measure task completion times
+- Test material system and lighting controls
+- Validate onboarding flow effectiveness
+- Measure task completion times
 
 **Week 7-8: Professional User Testing**
 
--   Test advanced features with power users
--   Validate export quality and workflow integration
--   Final usability score measurement
+- Test advanced features with power users
+- Validate export quality and workflow integration
+- Final usability score measurement
 
 This comprehensive UX design strategy ensures that the 3D enhancement adds significant value while maintaining the excellent usability that makes the current 2D House Planner successful with non-technical users.

@@ -104,38 +104,38 @@ export interface DesignActions {
   addWall: (wall: Omit<Wall, 'id'>) => void;
   updateWall: (id: string, updates: Partial<Wall>) => void;
   removeWall: (id: string) => void;
-  
+
   // Door actions
   addDoor: (door: Omit<Door, 'id'>) => void;
   updateDoor: (id: string, updates: Partial<Door>) => void;
   removeDoor: (id: string) => void;
-  
+
   // Window actions
   addWindow: (window: Omit<Window, 'id'>) => void;
   updateWindow: (id: string, updates: Partial<Window>) => void;
   removeWindow: (id: string) => void;
-  
+
   // Stair actions
   addStair: (stair: Omit<Stair, 'id'>) => void;
   updateStair: (id: string, updates: Partial<Stair>) => void;
   removeStair: (id: string) => void;
-  
+
   // Room actions
   addRoom: (room: Omit<Room, 'id'>) => void;
   updateRoom: (id: string, updates: Partial<Room>) => void;
   removeRoom: (id: string) => void;
-  
+
   // Roof actions
   addRoof: (roof: Omit<Roof, 'id'>) => void;
   updateRoof: (id: string, updates: Partial<Roof>) => void;
   removeRoof: (id: string) => void;
-  
+
   // Selection actions
   selectElement: (id: string | null, type: DesignState['selectedElementType']) => void;
-  
+
   // View mode actions
   setViewMode: (mode: DesignState['viewMode']) => void;
-  
+
   // Material actions
   addMaterial: (material: Omit<Material, 'id'>) => void;
   updateMaterial: (id: string, updates: Partial<Material>) => void;
@@ -152,146 +152,217 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       rooms: [],
       roofs: [],
       materials: [
-        { id: 'wall-default', name: 'Default Wall', color: '#cccccc', roughness: 0.8, metalness: 0.1, opacity: 1 },
-        { id: 'door-wood', name: 'Wood Door', color: '#8B4513', roughness: 0.7, metalness: 0.2, opacity: 1 },
-        { id: 'window-glass', name: 'Glass Window', color: '#87CEEB', roughness: 0.1, metalness: 0.0, opacity: 0.3 },
-        { id: 'floor-wood', name: 'Wood Floor', color: '#DEB887', roughness: 0.6, metalness: 0.1, opacity: 1 },
-        { id: 'ceiling-white', name: 'White Ceiling', color: '#F5F5F5', roughness: 0.9, metalness: 0.0, opacity: 1 },
-        { id: 'stair-wood', name: 'Wood Stairs', color: '#8B4513', roughness: 0.7, metalness: 0.2, opacity: 1 },
-        { id: 'roof-red', name: 'Red Roof', color: '#8B0000', roughness: 0.8, metalness: 0.1, opacity: 1 },
+        {
+          id: 'wall-default',
+          name: 'Default Wall',
+          color: '#cccccc',
+          roughness: 0.8,
+          metalness: 0.1,
+          opacity: 1,
+        },
+        {
+          id: 'door-wood',
+          name: 'Wood Door',
+          color: '#8B4513',
+          roughness: 0.7,
+          metalness: 0.2,
+          opacity: 1,
+        },
+        {
+          id: 'window-glass',
+          name: 'Glass Window',
+          color: '#87CEEB',
+          roughness: 0.1,
+          metalness: 0.0,
+          opacity: 0.3,
+        },
+        {
+          id: 'floor-wood',
+          name: 'Wood Floor',
+          color: '#DEB887',
+          roughness: 0.6,
+          metalness: 0.1,
+          opacity: 1,
+        },
+        {
+          id: 'ceiling-white',
+          name: 'White Ceiling',
+          color: '#F5F5F5',
+          roughness: 0.9,
+          metalness: 0.0,
+          opacity: 1,
+        },
+        {
+          id: 'stair-wood',
+          name: 'Wood Stairs',
+          color: '#8B4513',
+          roughness: 0.7,
+          metalness: 0.2,
+          opacity: 1,
+        },
+        {
+          id: 'roof-red',
+          name: 'Red Roof',
+          color: '#8B0000',
+          roughness: 0.8,
+          metalness: 0.1,
+          opacity: 1,
+        },
       ],
       selectedElementId: null,
       selectedElementType: null,
       viewMode: '3d',
-      
+
       // Wall actions
-      addWall: (wall) => set((state) => {
-        const id = `wall-${Date.now()}`;
-        state.walls.push({ ...wall, id });
-      }),
-      
-      updateWall: (id, updates) => set((state) => {
-        const wallIndex = state.walls.findIndex(w => w.id === id);
-        if (wallIndex !== -1) {
-          state.walls[wallIndex] = { ...state.walls[wallIndex], ...updates };
-        }
-      }),
-      
-      removeWall: (id) => set((state) => {
-        state.walls = state.walls.filter(w => w.id !== id);
-        // Also remove any doors/windows attached to this wall
-        state.doors = state.doors.filter(d => d.wallId !== id);
-        state.windows = state.windows.filter(w => w.wallId !== id);
-      }),
-      
+      addWall: wall =>
+        set(state => {
+          const id = `wall-${Date.now()}`;
+          state.walls.push({ ...wall, id });
+        }),
+
+      updateWall: (id, updates) =>
+        set(state => {
+          const wallIndex = state.walls.findIndex(w => w.id === id);
+          if (wallIndex !== -1) {
+            state.walls[wallIndex] = { ...state.walls[wallIndex], ...updates };
+          }
+        }),
+
+      removeWall: id =>
+        set(state => {
+          state.walls = state.walls.filter(w => w.id !== id);
+          // Also remove any doors/windows attached to this wall
+          state.doors = state.doors.filter(d => d.wallId !== id);
+          state.windows = state.windows.filter(w => w.wallId !== id);
+        }),
+
       // Door actions
-      addDoor: (door) => set((state) => {
-        const id = `door-${Date.now()}`;
-        state.doors.push({ ...door, id, isOpen: false, openAngle: 0, openOffset: 0 });
-      }),
-      
-      updateDoor: (id, updates) => set((state) => {
-        const doorIndex = state.doors.findIndex(d => d.id === id);
-        if (doorIndex !== -1) {
-          state.doors[doorIndex] = { ...state.doors[doorIndex], ...updates };
-        }
-      }),
-      
-      removeDoor: (id) => set((state) => {
-        state.doors = state.doors.filter(d => d.id !== id);
-      }),
-      
+      addDoor: door =>
+        set(state => {
+          const id = `door-${Date.now()}`;
+          state.doors.push({ ...door, id, isOpen: false, openAngle: 0, openOffset: 0 });
+        }),
+
+      updateDoor: (id, updates) =>
+        set(state => {
+          const doorIndex = state.doors.findIndex(d => d.id === id);
+          if (doorIndex !== -1) {
+            state.doors[doorIndex] = { ...state.doors[doorIndex], ...updates };
+          }
+        }),
+
+      removeDoor: id =>
+        set(state => {
+          state.doors = state.doors.filter(d => d.id !== id);
+        }),
+
       // Window actions
-      addWindow: (window) => set((state) => {
-        const id = `window-${Date.now()}`;
-        state.windows.push({ ...window, id });
-      }),
-      
-      updateWindow: (id, updates) => set((state) => {
-        const windowIndex = state.windows.findIndex(w => w.id === id);
-        if (windowIndex !== -1) {
-          state.windows[windowIndex] = { ...state.windows[windowIndex], ...updates };
-        }
-      }),
-      
-      removeWindow: (id) => set((state) => {
-        state.windows = state.windows.filter(w => w.id !== id);
-      }),
-      
+      addWindow: window =>
+        set(state => {
+          const id = `window-${Date.now()}`;
+          state.windows.push({ ...window, id });
+        }),
+
+      updateWindow: (id, updates) =>
+        set(state => {
+          const windowIndex = state.windows.findIndex(w => w.id === id);
+          if (windowIndex !== -1) {
+            state.windows[windowIndex] = { ...state.windows[windowIndex], ...updates };
+          }
+        }),
+
+      removeWindow: id =>
+        set(state => {
+          state.windows = state.windows.filter(w => w.id !== id);
+        }),
+
       // Stair actions
-      addStair: (stair) => set((state) => {
-        const id = `stair-${Date.now()}`;
-        state.stairs.push({ ...stair, id });
-      }),
-      
-      updateStair: (id, updates) => set((state) => {
-        const stairIndex = state.stairs.findIndex(s => s.id === id);
-        if ( stairIndex !== -1) {
-          state.stairs[stairIndex] = { ...state.stairs[stairIndex], ...updates };
-        }
-      }),
-      
-      removeStair: (id) => set((state) => {
-        state.stairs = state.stairs.filter(s => s.id !== id);
-      }),
-      
+      addStair: stair =>
+        set(state => {
+          const id = `stair-${Date.now()}`;
+          state.stairs.push({ ...stair, id });
+        }),
+
+      updateStair: (id, updates) =>
+        set(state => {
+          const stairIndex = state.stairs.findIndex(s => s.id === id);
+          if (stairIndex !== -1) {
+            state.stairs[stairIndex] = { ...state.stairs[stairIndex], ...updates };
+          }
+        }),
+
+      removeStair: id =>
+        set(state => {
+          state.stairs = state.stairs.filter(s => s.id !== id);
+        }),
+
       // Room actions
-      addRoom: (room) => set((state) => {
-        const id = `room-${Date.now()}`;
-        state.rooms.push({ ...room, id });
-      }),
-      
-      updateRoom: (id, updates) => set((state) => {
-        const roomIndex = state.rooms.findIndex(r => r.id === id);
-        if (roomIndex !== -1) {
-          state.rooms[roomIndex] = { ...state.rooms[roomIndex], ...updates };
-        }
-      }),
-      
-      removeRoom: (id) => set((state) => {
-        state.rooms = state.rooms.filter(r => r.id !== id);
-      }),
-      
+      addRoom: room =>
+        set(state => {
+          const id = `room-${Date.now()}`;
+          state.rooms.push({ ...room, id });
+        }),
+
+      updateRoom: (id, updates) =>
+        set(state => {
+          const roomIndex = state.rooms.findIndex(r => r.id === id);
+          if (roomIndex !== -1) {
+            state.rooms[roomIndex] = { ...state.rooms[roomIndex], ...updates };
+          }
+        }),
+
+      removeRoom: id =>
+        set(state => {
+          state.rooms = state.rooms.filter(r => r.id !== id);
+        }),
+
       // Roof actions
-      addRoof: (roof) => set((state) => {
-        const id = `roof-${Date.now()}`;
-        state.roofs.push({ ...roof, id });
-      }),
-      
-      updateRoof: (id, updates) => set((state) => {
-        const roofIndex = state.roofs.findIndex(r => r.id === id);
-        if (roofIndex !== -1) {
-          state.roofs[roofIndex] = { ...state.roofs[roofIndex], ...updates };
-        }
-      }),
-      
-      removeRoof: (id) => set((state) => {
-        state.roofs = state.roofs.filter(r => r.id !== id);
-      }),
-      
+      addRoof: roof =>
+        set(state => {
+          const id = `roof-${Date.now()}`;
+          state.roofs.push({ ...roof, id });
+        }),
+
+      updateRoof: (id, updates) =>
+        set(state => {
+          const roofIndex = state.roofs.findIndex(r => r.id === id);
+          if (roofIndex !== -1) {
+            state.roofs[roofIndex] = { ...state.roofs[roofIndex], ...updates };
+          }
+        }),
+
+      removeRoof: id =>
+        set(state => {
+          state.roofs = state.roofs.filter(r => r.id !== id);
+        }),
+
       // Selection actions
-      selectElement: (id, type) => set((state) => {
-        state.selectedElementId = id;
-        state.selectedElementType = type;
-      }),
-      
+      selectElement: (id, type) =>
+        set(state => {
+          state.selectedElementId = id;
+          state.selectedElementType = type;
+        }),
+
       // View mode actions
-      setViewMode: (mode) => set((state) => {
-        state.viewMode = mode;
-      }),
-      
+      setViewMode: mode =>
+        set(state => {
+          state.viewMode = mode;
+        }),
+
       // Material actions
-      addMaterial: (material) => set((state) => {
-        const id = `material-${Date.now()}`;
-        state.materials.push({ ...material, id });
-      }),
-      
-      updateMaterial: (id, updates) => set((state) => {
-        const materialIndex = state.materials.findIndex(m => m.id === id);
-        if (materialIndex !== -1) {
-          state.materials[materialIndex] = { ...state.materials[materialIndex], ...updates };
-        }
-      }),
+      addMaterial: material =>
+        set(state => {
+          const id = `material-${Date.now()}`;
+          state.materials.push({ ...material, id });
+        }),
+
+      updateMaterial: (id, updates) =>
+        set(state => {
+          const materialIndex = state.materials.findIndex(m => m.id === id);
+          if (materialIndex !== -1) {
+            state.materials[materialIndex] = { ...state.materials[materialIndex], ...updates };
+          }
+        }),
     }))
   )
 );

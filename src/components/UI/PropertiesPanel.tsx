@@ -1,5 +1,5 @@
+import type { Door, Wall, Window } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
-import type { Wall, Door, Window } from '@/stores/designStore';
 
 export function PropertiesPanel() {
   const selectedElementId = useDesignStore(state => state.selectedElementId);
@@ -7,7 +7,7 @@ export function PropertiesPanel() {
   const { walls, doors, windows } = useDesignStore(state => ({
     walls: state.walls,
     doors: state.doors,
-    windows: state.windows
+    windows: state.windows,
   })) as { walls: Wall[]; doors: Door[]; windows: Window[] };
   const updateWall = useDesignStore(state => state.updateWall);
   const updateDoor = useDesignStore(state => state.updateDoor);
@@ -16,7 +16,7 @@ export function PropertiesPanel() {
   // Get the selected element
   const selectedElement = (() => {
     if (!selectedElementId || !selectedElementType) return null;
-    
+
     switch (selectedElementType) {
       case 'wall':
         return walls.find(w => w.id === selectedElementId);
@@ -43,36 +43,33 @@ export function PropertiesPanel() {
   return (
     <div className="absolute bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg w-80">
       <h2 className="text-lg font-bold mb-2">
-        {selectedElementType ? selectedElementType.charAt(0).toUpperCase() + selectedElementType.slice(1) : ''} Properties
+        {selectedElementType
+          ? selectedElementType.charAt(0).toUpperCase() + selectedElementType.slice(1)
+          : ''}{' '}
+        Properties
       </h2>
-      
+
       {selectedElementType === 'wall' && selectedElement && (
-        <WallProperties 
-          wall={selectedElement as Wall} 
-          onUpdate={updateWall}
-        />
+        <WallProperties wall={selectedElement as Wall} onUpdate={updateWall} />
       )}
-      
+
       {selectedElementType === 'door' && selectedElement && (
-        <DoorProperties 
-          door={selectedElement as Door} 
-          onUpdate={updateDoor}
-        />
+        <DoorProperties door={selectedElement as Door} onUpdate={updateDoor} />
       )}
-      
+
       {selectedElementType === 'window' && selectedElement && (
-        <WindowProperties 
-          window={selectedElement as Window} 
-          onUpdate={updateWindow}
-        />
+        <WindowProperties window={selectedElement as Window} onUpdate={updateWindow} />
       )}
     </div>
   );
 }
 
 // Wall properties component
-function WallProperties({ wall, onUpdate }: { 
-  wall: Wall; 
+function WallProperties({
+  wall,
+  onUpdate,
+}: {
+  wall: Wall;
   onUpdate: (id: string, updates: Partial<Wall>) => void;
 }) {
   const handleChange = (field: string, value: any) => {
@@ -87,27 +84,27 @@ function WallProperties({ wall, onUpdate }: {
           type="number"
           step="0.1"
           value={wall.height}
-          onChange={(e) => handleChange('height', parseFloat(e.target.value))}
+          onChange={e => handleChange('height', parseFloat(e.target.value))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Thickness (m)</label>
         <input
           type="number"
           step="0.01"
           value={wall.thickness}
-          onChange={(e) => handleChange('thickness', parseFloat(e.target.value))}
+          onChange={e => handleChange('thickness', parseFloat(e.target.value))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Type</label>
         <select
           value={wall.type}
-          onChange={(e) => handleChange('type', e.target.value as any)}
+          onChange={e => handleChange('type', e.target.value as any)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="load-bearing">Load Bearing</option>
@@ -119,8 +116,11 @@ function WallProperties({ wall, onUpdate }: {
 }
 
 // Door properties component
-function DoorProperties({ door, onUpdate }: { 
-  door: Door; 
+function DoorProperties({
+  door,
+  onUpdate,
+}: {
+  door: Door;
   onUpdate: (id: string, updates: Partial<Door>) => void;
 }) {
   const handleChange = (field: string, value: any) => {
@@ -139,27 +139,27 @@ function DoorProperties({ door, onUpdate }: {
           type="number"
           step="0.1"
           value={door.width}
-          onChange={(e) => handleChange('width', parseFloat(e.target.value))}
+          onChange={e => handleChange('width', parseFloat(e.target.value))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Height (m)</label>
         <input
           type="number"
           step="0.1"
           value={door.height}
-          onChange={(e) => handleChange('height', parseFloat(e.target.value))}
+          onChange={e => handleChange('height', parseFloat(e.target.value))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Type</label>
         <select
           value={door.type}
-          onChange={(e) => handleChange('type', e.target.value as any)}
+          onChange={e => handleChange('type', e.target.value as any)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="hinged">Hinged</option>
@@ -168,12 +168,12 @@ function DoorProperties({ door, onUpdate }: {
           <option value="revolving">Revolving</option>
         </select>
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Swing Direction</label>
         <select
           value={door.swingDirection}
-          onChange={(e) => handleChange('swingDirection', e.target.value as any)}
+          onChange={e => handleChange('swingDirection', e.target.value as any)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="left">Left</option>
@@ -181,21 +181,19 @@ function DoorProperties({ door, onUpdate }: {
           <option value="both">Both</option>
         </select>
       </div>
-      
+
       <div className="flex items-center">
         <label className="block text-sm font-medium text-gray-700 mr-2">Open</label>
         <button
           onClick={handleToggleOpen}
           className={`px-3 py-1 rounded transition ${
-            door.isOpen 
-              ? 'bg-green-500 text-white' 
-              : 'bg-gray-200 hover:bg-gray-300'
+            door.isOpen ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
           }`}
         >
           {door.isOpen ? 'Open' : 'Closed'}
         </button>
       </div>
-      
+
       {door.type === 'hinged' && door.isOpen && (
         <div>
           <label className="block text-sm font-medium text-gray-700">Open Angle (°)</label>
@@ -204,13 +202,13 @@ function DoorProperties({ door, onUpdate }: {
             min="0"
             max="90"
             value={door.openAngle}
-            onChange={(e) => handleChange('openAngle', parseInt(e.target.value))}
+            onChange={e => handleChange('openAngle', parseInt(e.target.value))}
             className="mt-1 block w-full"
           />
           <div className="text-right text-sm text-gray-500">{door.openAngle}°</div>
         </div>
       )}
-      
+
       {door.type === 'sliding' && door.isOpen && (
         <div>
           <label className="block text-sm font-medium text-gray-700">Open Offset</label>
@@ -219,10 +217,12 @@ function DoorProperties({ door, onUpdate }: {
             min="0"
             max="100"
             value={door.openOffset * 100}
-            onChange={(e) => handleChange('openOffset', parseInt(e.target.value) / 100)}
+            onChange={e => handleChange('openOffset', parseInt(e.target.value) / 100)}
             className="mt-1 block w-full"
           />
-          <div className="text-right text-sm text-gray-500">{Math.round(door.openOffset * 100)}%</div>
+          <div className="text-right text-sm text-gray-500">
+            {Math.round(door.openOffset * 100)}%
+          </div>
         </div>
       )}
     </div>
@@ -230,8 +230,11 @@ function DoorProperties({ door, onUpdate }: {
 }
 
 // Window properties component
-function WindowProperties({ window, onUpdate }: { 
-  window: Window; 
+function WindowProperties({
+  window,
+  onUpdate,
+}: {
+  window: Window;
   onUpdate: (id: string, updates: Partial<Window>) => void;
 }) {
   const handleChange = (field: string, value: any) => {
@@ -246,27 +249,27 @@ function WindowProperties({ window, onUpdate }: {
           type="number"
           step="0.1"
           value={window.width}
-          onChange={(e) => handleChange('width', parseFloat(e.target.value))}
+          onChange={e => handleChange('width', parseFloat(e.target.value))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Height (m)</label>
         <input
           type="number"
           step="0.1"
           value={window.height}
-          onChange={(e) => handleChange('height', parseFloat(e.target.value))}
+          onChange={e => handleChange('height', parseFloat(e.target.value))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Type</label>
         <select
           value={window.type}
-          onChange={(e) => handleChange('type', e.target.value as any)}
+          onChange={e => handleChange('type', e.target.value as any)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
           <option value="single">Single</option>

@@ -1,5 +1,5 @@
-import { useThree, useFrame } from '@react-three/fiber';
-import { useState, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useRef, useState } from 'react';
 import * as THREE from 'three';
 
 export function CameraControls() {

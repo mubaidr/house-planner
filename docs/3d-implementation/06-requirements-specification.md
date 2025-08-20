@@ -9,6 +9,7 @@
 **As of August 2025, all 3D requirements will be implemented as extensions or integrations with [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
 
 ### Implementation Strategy:
+
 - All requirements below are to be interpreted as customizations, extensions, or integrations with the base project.
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
@@ -322,7 +323,7 @@ FR-RC-003.2: Building Flow Analysis
 
 ## ⚙️ FEATURE AREA 3: Product Configuration
 
-*Advanced product customization with materials, dimensions, and style variants*
+_Advanced product customization with materials, dimensions, and style variants_
 
 ### FR-PC-001: Dynamic Product Dimensions
 
@@ -596,12 +597,14 @@ NFR-004.2: Data Integrity
 ## Test Coverage Requirements
 
 ### Unit Testing
+
 - **Target**: 90% code coverage for new 3D components
 - **Scope**: All 3D utility functions, hooks, and components
 - **Framework**: Jest with custom Three.js mocks
 - **Automation**: Run on every commit with CI/CD
 
 ### Integration Testing
+
 - **Target**: 100% coverage of 2D-3D integration points
 - **Scope**: Mode switching, data synchronization, export workflows
   - Placement constraints: doors/windows must be inside walls; roof requires valid envelope
@@ -610,12 +613,14 @@ NFR-004.2: Data Integrity
 - **Automation**: Run on pull requests and releases
 
 ### Performance Testing
+
 - **Target**: Frame rate metrics on representative hardware
 - **Scope**: Scene complexity, memory usage, load times
 - **Framework**: Custom performance monitoring tools
 - **Automation**: Automated benchmarks on deployment
 
 ### User Acceptance Testing
+
 - **Target**: Professional architects and existing users
 - **Scope**: Complete workflows from design to export
 - **Method**: Moderated usability sessions
@@ -628,6 +633,7 @@ NFR-004.2: Data Integrity
 ### Release Criteria
 
 **Must Have (P0)**
+
 - All functional requirements fully implemented
 - Performance targets met on target hardware
 - Zero regressions in existing 2D functionality
@@ -635,6 +641,7 @@ NFR-004.2: Data Integrity
 - Security review completed
 
 **Should Have (P1)**
+
 - Advanced material library
 - Animation and walkthrough features
 - Professional rendering presets
@@ -642,6 +649,7 @@ NFR-004.2: Data Integrity
 - Performance monitoring tools
 
 **Could Have (P2)**
+
 - VR/AR preview capabilities
 - Advanced lighting simulation
 - Collaborative 3D editing

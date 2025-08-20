@@ -9,6 +9,7 @@
 **As of August 2025, all implementation phases will be built on and extend [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
 
 ### Roadmap Adaptation:
+
 - All phases below are to be interpreted as customizations, extensions, or integrations with the base project.
 - Custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - Maintain compatibility and leverage the base's React/Three.js architecture for all new features.
@@ -72,6 +73,7 @@ Following the proven structure of threejs-3d-room-designer, development is organ
 ## Phase 1: Foundation & Setup (Weeks 1-2)
 
 ### Objectives
+
 - Establish 3D technology stack
 - Create basic 3D scene infrastructure
 - Implement view mode switching
@@ -81,7 +83,9 @@ Following the proven structure of threejs-3d-room-designer, development is organ
 ### Deliverables
 
 #### Week 1: Environment Setup & Core Constraints
+
 **Day 1-2: Dependency Installation & Configuration**
+
 ```bash
 # Install 3D dependencies
 npm install @react-three/fiber @react-three/drei @react-three/postprocessing
@@ -92,6 +96,7 @@ npm install three leva @types/three
 ```
 
 **Day 3-4: Basic 3D Scene & Constraint Hook**
+
 ```typescript
 // src/components/Canvas3D/Scene3D.tsx
 export function Scene3D() {
@@ -117,6 +122,7 @@ export function useConstraints() {
 ```
 
 **Day 5: View Mode Toggle**
+
 ```typescript
 // src/components/UI/ViewModeSwitch.tsx
 export function ViewModeSwitch() {
@@ -142,7 +148,9 @@ export function ViewModeSwitch() {
 ```
 
 #### Week 2: State Management & Integration
+
 **Day 6-8: Enhanced Zustand Store**
+
 ```typescript
 // src/stores/scene3DStore.ts
 interface Scene3DState {
@@ -159,19 +167,20 @@ interface Scene3DState {
   quality: 'low' | 'medium' | 'high';
 }
 
-export const useScene3DStore = create<Scene3DState>((set) => ({
+export const useScene3DStore = create<Scene3DState>(set => ({
   isEnabled: false,
   camera: { position: [0, 10, 10], target: [0, 0, 0], fov: 75 },
   lighting: { ambient: 0.4, directional: 0.6 },
   quality: 'medium',
 
   enableScene3D: () => set({ isEnabled: true }),
-  updateCamera: (camera) => set({ camera }),
-  setQuality: (quality) => set({ quality }),
+  updateCamera: camera => set({ camera }),
+  setQuality: quality => set({ quality }),
 }));
 ```
 
 **Day 9-10: Testing Setup**
+
 ```typescript
 // __tests__/components/Canvas3D/Scene3D.test.tsx
 import { render, screen } from '@testing-library/react';
@@ -193,6 +202,7 @@ describe('Scene3D', () => {
 ```
 
 ### Success Criteria
+
 - [ ] 3D scene renders successfully in browser
 - [ ] View mode toggle switches between 2D and 3D
 - [ ] No performance degradation in 2D mode
@@ -204,6 +214,7 @@ describe('Scene3D', () => {
 ## Phase 2: Core 3D Elements (Weeks 3-5)
 
 ### Objectives
+
 - Convert 2D elements to 3D representations
 - Implement basic 3D geometry generation
 - Establish material system foundation
@@ -212,6 +223,7 @@ describe('Scene3D', () => {
 ### Week 3: Wall System
 
 **Day 11-13: Wall 3D Conversion**
+
 ```typescript
 // src/components/Canvas3D/Elements/Wall3D.tsx
 interface Wall3DProps {
@@ -259,6 +271,7 @@ export function Wall3D({ wall, isSelected, onSelect }: Wall3DProps) {
 ```
 
 **Day 14-15: Multi-Wall Rendering**
+
 ```typescript
 // src/components/Canvas3D/Elements/WallSystem3D.tsx
 export function WallSystem3D() {
@@ -283,6 +296,7 @@ export function WallSystem3D() {
 ### Week 4: Doors and Windows
 
 **Day 16-18: Door 3D Implementation**
+
 ```typescript
 // src/components/Canvas3D/Elements/Door3D.tsx
 export function Door3D({ door, wall, isSelected, onSelect }: Door3DProps) {
@@ -341,6 +355,7 @@ export function Door3D({ door, wall, isSelected, onSelect }: Door3DProps) {
 ```
 
 **Day 19-20: Window 3D Implementation**
+
 ```typescript
 // src/components/Canvas3D/Elements/Window3D.tsx
 export function Window3D({ window, wall, isSelected, onSelect }: Window3DProps) {
@@ -369,6 +384,7 @@ export function Window3D({ window, wall, isSelected, onSelect }: Window3DProps) 
 ### Week 5: Room System
 
 **Day 21-23: Room 3D Generation**
+
 ```typescript
 // src/utils/3d/roomGeometry.ts
 export function generateRoomGeometry(room: Room): {
@@ -399,6 +415,7 @@ export function generateRoomGeometry(room: Room): {
 ```
 
 **Day 24-25: Room 3D Component**
+
 ```typescript
 // src/components/Canvas3D/Elements/Room3D.tsx
 export function Room3D({ room, isSelected, onSelect }: Room3DProps) {
@@ -444,6 +461,7 @@ export function Room3D({ room, isSelected, onSelect }: Room3DProps) {
 ```
 
 ### Success Criteria
+
 - [ ] All walls render correctly in 3D with proper positioning
 - [ ] Doors and windows appear at correct positions on walls
 - [ ] Rooms generate floor and ceiling geometries
@@ -456,6 +474,7 @@ export function Room3D({ room, isSelected, onSelect }: Room3DProps) {
 ## Phase 3: Roof System & Advanced Interaction (Weeks 6-7)
 
 ### Objectives
+
 - Implement procedural roof generation
 - Add professional camera controls
 - Create 3D measurement tools
@@ -464,6 +483,7 @@ export function Room3D({ room, isSelected, onSelect }: Room3DProps) {
 ### Week 6: Roof System
 
 **Day 26-28: Roof Generation Logic**
+
 ```typescript
 // src/utils/3d/roofGeometry.ts
 export function generateRoofGeometry(footprint: Point[], type: 'gable' | 'hip', pitch: number) {
@@ -482,6 +502,7 @@ export function Roof3D({ roof }: RoofProps) {
 ```
 
 **Day 29-30: Roof Tool UI**
+
 ```typescript
 // src/components/UI/RoofPanel.tsx
 export function RoofPanel() {
@@ -493,18 +514,21 @@ export function RoofPanel() {
 ### Week 7: Camera & Measurement Tools
 
 **Day 31-33: Camera Controls Enhancement**
+
 ```typescript
 // src/components/Canvas3D/Camera/CameraControls.tsx
 // ... (as before, with presets)
 ```
 
 **Day 34-35: 3D Measurement System**
+
 ```typescript
 // src/components/Canvas3D/Tools/MeasureTool3D.tsx
 // ... (as before)
 ```
 
 ### Success Criteria
+
 - [ ] Roofs generate correctly on valid house footprints.
 - [ ] Smooth camera animations between view presets
 - [ ] Intuitive orbit controls with proper constraints
@@ -516,6 +540,7 @@ export function RoofPanel() {
 ## Phase 4: Materials & Lighting (Weeks 8-9)
 
 ### Objectives
+
 - Implement physically-based rendering (PBR) materials with element-specific libraries.
 - Create realistic lighting system with shadows
 - Add environmental effects and atmosphere
@@ -524,6 +549,7 @@ export function RoofPanel() {
 ### Week 8: Material System
 
 **Day 36-38: PBR Material Implementation**
+
 ```typescript
 // src/utils/3d/materialSystem.ts
 export class Material3DSystem {
@@ -592,6 +618,7 @@ export class Material3DSystem {
 ```
 
 **Day 39-40: Material Application System**
+
 ```typescript
 // src/components/Canvas3D/Materials/MaterialRenderer3D.tsx
 export function MaterialRenderer3D({ element }: { element: Element3D }) {
@@ -620,6 +647,7 @@ export function MaterialRenderer3D({ element }: { element: Element3D }) {
 ### Week 9: Lighting & Environment
 
 **Day 41-43: Advanced Lighting System**
+
 ```typescript
 // src/components/Canvas3D/Lighting/SceneLighting.tsx
 export function SceneLighting({ config }: { config: LightingConfig }) {
@@ -668,6 +696,7 @@ export function SceneLighting({ config }: { config: LightingConfig }) {
 ```
 
 **Day 44-45: Shadow System & Optimization**
+
 ```typescript
 // src/hooks/3d/useShadowOptimization.ts
 export function useShadowOptimization() {
@@ -693,14 +722,15 @@ export function useShadowOptimization() {
   }, [gl]);
 
   return {
-    enableShadows: () => gl.shadowMap.enabled = true,
-    disableShadows: () => gl.shadowMap.enabled = false,
-    updateShadows: () => gl.shadowMap.needsUpdate = true,
+    enableShadows: () => (gl.shadowMap.enabled = true),
+    disableShadows: () => (gl.shadowMap.enabled = false),
+    updateShadows: () => (gl.shadowMap.needsUpdate = true),
   };
 }
 ```
 
 ### Success Criteria
+
 - [ ] Realistic material rendering with PBR workflow
 - [ ] Dynamic lighting with accurate shadows
 - [ ] Environmental reflections and atmosphere
@@ -712,6 +742,7 @@ export function useShadowOptimization() {
 ## Phase 5: Export & Professional Features (Weeks 10-11)
 
 ### Objectives
+
 - Implement 3D model export capabilities
 - Create high-quality rendering system
 - Add professional drawing generation
@@ -720,6 +751,7 @@ export function useShadowOptimization() {
 ### Week 10: Export System
 
 **Day 46-48: 3D Model Export**
+
 ```typescript
 // src/utils/3d/export3D.ts
 export class Export3DSystem {
@@ -729,9 +761,9 @@ export class Export3DSystem {
     return new Promise((resolve, reject) => {
       exporter.parse(
         scene,
-        (gltf) => {
+        gltf => {
           const blob = new Blob([JSON.stringify(gltf)], {
-            type: 'application/json'
+            type: 'application/json',
           });
           resolve(blob);
         },
@@ -756,8 +788,8 @@ export class Export3DSystem {
     width: number = 1920,
     height: number = 1080
   ): Promise<Blob> {
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
+    return new Promise(resolve => {
+      canvas.toBlob(blob => {
         resolve(blob!);
       }, 'image/png');
     });
@@ -766,6 +798,7 @@ export class Export3DSystem {
 ```
 
 **Day 49-50: High-Quality Rendering**
+
 ```typescript
 // src/components/Canvas3D/Export/HighQualityRenderer.tsx
 export function HighQualityRenderer({ onRenderComplete }: {
@@ -810,6 +843,7 @@ export function HighQualityRenderer({ onRenderComplete }: {
 ### Week 11: Integration & Polish
 
 **Day 51-53: Export UI Integration**
+
 ```typescript
 // src/components/Export/Export3DDialog.tsx
 export function Export3DDialog({ isOpen, onClose }: {
@@ -902,6 +936,7 @@ export function Export3DDialog({ isOpen, onClose }: {
 ```
 
 **Day 54-55: Performance Optimization & Final Polish**
+
 ```typescript
 // src/hooks/3d/usePerformanceMonitor.ts
 export function usePerformanceMonitor() {
@@ -939,6 +974,7 @@ export function usePerformanceMonitor() {
 ```
 
 ### Success Criteria
+
 - [ ] Export 3D models in GLTF and OBJ formats
 - [ ] Generate 4K high-quality renderings
 - [ ] PDF exports include 3D perspective views
@@ -950,6 +986,7 @@ export function usePerformanceMonitor() {
 ## Phase 6: Testing & Optimization (Week 12)
 
 ### Objectives
+
 - Comprehensive testing across all 3D features
 - Performance optimization and bug fixes
 - User acceptance testing
@@ -958,6 +995,7 @@ export function usePerformanceMonitor() {
 ### Final Week: Quality Assurance
 
 **Day 56-57: Automated Testing**
+
 ```typescript
 // __tests__/integration/3d-workflow.test.tsx
 describe('3D Workflow Integration', () => {
@@ -992,6 +1030,7 @@ describe('3D Workflow Integration', () => {
 ```
 
 **Day 58-59: Performance Testing & Optimization**
+
 ```typescript
 // src/utils/3d/performanceOptimizer.ts
 export class PerformanceOptimizer {
@@ -1045,12 +1084,14 @@ export class PerformanceOptimizer {
 ```
 
 **Day 60: Documentation & Deployment**
+
 - Complete user documentation
 - Create developer setup guide
 - Prepare deployment configuration
 - Final code review and optimization
 
 ### Success Criteria
+
 - [ ] All automated tests pass
 - [ ] Performance targets met on target devices
 - [ ] User acceptance testing completed successfully
@@ -1062,18 +1103,21 @@ export class PerformanceOptimizer {
 ## 📊 Success Metrics & KPIs
 
 ### Performance Targets
+
 - **Frame Rate**: 60 FPS on desktop, 30 FPS on tablets
 - **Load Time**: 3D mode activation under 2 seconds
 - **Memory Usage**: Under 500MB for typical house models
 - **Export Speed**: High-quality images under 10 seconds
 
 ### User Experience Metrics
+
 - **Adoption Rate**: 60%+ of users try 3D mode within first session
 - **Task Completion**: No decrease from current 2D workflow speeds
 - **Error Rate**: Under 5% for 3D-specific operations
 - **User Satisfaction**: Maintain 85%+ satisfaction scores
 
 ### Technical Quality Metrics
+
 - **Test Coverage**: 90%+ for 3D-specific code
 - **Browser Support**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
 - **Accessibility**: WCAG 2.1 AA compliance maintained

@@ -79,38 +79,33 @@ This document outlines a comprehensive testing strategy to ensure the 3D House P
 // jest.config.js
 module.exports = {
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js',
-    '<rootDir>/jest.3d.setup.js'
-  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/jest.3d.setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^three$': '<rootDir>/__mocks__/three.js',
-    '^@react-three/fiber$': '<rootDir>/__mocks__/react-three-fiber.js'
+    '^@react-three/fiber$': '<rootDir>/__mocks__/react-three-fiber.js',
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(three|@react-three)/)'
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(three|@react-three)/)'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{ts,tsx}',
-    '!src/**/__tests__/**'
+    '!src/**/__tests__/**',
   ],
   coverageThreshold: {
     global: {
       branches: 80,
       functions: 85,
       lines: 85,
-      statements: 85
+      statements: 85,
     },
     './src/components/Canvas3D/': {
       branches: 90,
       functions: 95,
       lines: 95,
-      statements: 95
-    }
-  }
+      statements: 95,
+    },
+  },
 };
 ```
 
@@ -154,7 +149,9 @@ export const PerspectiveCamera = jest.fn(() => ({
 }));
 
 export const Vector3 = jest.fn((x = 0, y = 0, z = 0) => ({
-  x, y, z,
+  x,
+  y,
+  z,
   add: jest.fn(),
   sub: jest.fn(),
   multiply: jest.fn(),
@@ -324,7 +321,11 @@ describe('useScene3D Hook', () => {
 
 ```typescript
 // __tests__/utils/3d/geometryUtils.test.ts
-import { generateWallGeometry, generateRoomGeometry, generateRoofGeometry } from '@/utils/3d/geometryUtils';
+import {
+  generateWallGeometry,
+  generateRoomGeometry,
+  generateRoofGeometry,
+} from '@/utils/3d/geometryUtils';
 import { Wall, Room, Roof } from '@/types';
 
 describe('3D Geometry Utils', () => {
@@ -713,16 +714,18 @@ describe('Frame Rate Performance', () => {
         thickness: 0.2,
         height: 3,
       })),
-      rooms: [{
-        id: 'room-1',
-        points: [
-          { x: 0, y: 0 },
-          { x: 20, y: 0 },
-          { x: 20, y: 15 },
-          { x: 0, y: 15 },
-        ],
-        area: 300,
-      }],
+      rooms: [
+        {
+          id: 'room-1',
+          points: [
+            { x: 0, y: 0 },
+            { x: 20, y: 0 },
+            { x: 20, y: 15 },
+            { x: 0, y: 15 },
+          ],
+          area: 300,
+        },
+      ],
     };
 
     await sceneManager.initialize({
@@ -826,11 +829,17 @@ describe('Memory Management', () => {
 
       // Add some geometry
       await sceneManager.syncFromDesign({
-        walls: [{
-          id: `wall-${i}`,
-          startX: 0, startY: 0, endX: 10, endY: 0,
-          thickness: 0.2, height: 3
-        }],
+        walls: [
+          {
+            id: `wall-${i}`,
+            startX: 0,
+            startY: 0,
+            endX: 10,
+            endY: 0,
+            thickness: 0.2,
+            height: 3,
+          },
+        ],
       });
 
       await sceneManager.destroy();
@@ -872,9 +881,11 @@ describe('Memory Management', () => {
 // __tests__/compatibility/browserSupport.test.ts
 describe('Browser Compatibility', () => {
   const mockUserAgents = {
-    chrome: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    chrome:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     firefox: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
-    safari: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
+    safari:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
     edge: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59',
   };
 
@@ -1171,27 +1182,22 @@ module.exports = {
       branches: 85,
       functions: 90,
       lines: 90,
-      statements: 90
+      statements: 90,
     },
     './src/components/Canvas3D/': {
       branches: 90,
       functions: 95,
       lines: 95,
-      statements: 95
+      statements: 95,
     },
     './src/utils/3d/': {
       branches: 85,
       functions: 90,
       lines: 90,
-      statements: 90
-    }
+      statements: 90,
+    },
   },
-  coverageReporters: [
-    'text',
-    'lcov',
-    'html',
-    'json-summary'
-  ]
+  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
 };
 ```
 

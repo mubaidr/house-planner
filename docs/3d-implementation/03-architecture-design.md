@@ -30,7 +30,6 @@ This document outlines the technical architecture for implementing 3D capabiliti
 
 ---
 
-
 ## 🏗️ Feature-Based Architecture (Extending threejs-3d-room-designer)
 
 ### Core Feature Areas
@@ -90,7 +89,6 @@ Building upon the threejs-3d-room-designer foundation, our architecture is organ
 
 ---
 
-
 ## 📁 Project Structure Enhancement (Extending threejs-3d-room-designer)
 
 ### Directory Structure
@@ -134,7 +132,6 @@ src/
 ```
 
 ---
-
 
 ## 🎯 Core Component Architecture (Extending base components)
 
@@ -271,7 +268,6 @@ export function ElementRenderer3D({
 
 ---
 
-
 ## 🗃️ Enhanced Data Models (Extending base models)
 
 ### 3D-Enhanced Element Types
@@ -284,13 +280,13 @@ export interface Wall3D extends Wall {
   // Existing 2D properties preserved
 
   // 3D enhancements
-  baseElevation: number;           // Z position (floor level)
-  topElevation: number;            // Z position (ceiling level)
+  baseElevation: number; // Z position (floor level)
+  topElevation: number; // Z position (ceiling level)
 
   // 3D geometry properties
   geometry3D: {
-    segments: number;              // Geometry detail level
-    chamfer?: number;              // Corner rounding
+    segments: number; // Geometry detail level
+    chamfer?: number; // Corner rounding
     texture?: {
       scale: { u: number; v: number };
       offset: { u: number; v: number };
@@ -366,7 +362,6 @@ export interface Scene3DConfig {
 
 ---
 
-
 ## 🔄 State Management Enhancement (Extending base state)
 
 ### Enhanced Design Store
@@ -423,34 +418,37 @@ export const useDesignStore = create<EnhancedDesignState & EnhancedDesignActions
       walls3D: new Map(),
       materials3D: new Map(),
 
-      setViewMode: (mode) => set((state) => {
-        state.viewMode = mode;
-        if (mode === '3d' && !state.scene3D.initialized) {
-          // Initialize 3D scene on first use
-          state.scene3D = initializeScene3D(state);
-        }
-      }),
+      setViewMode: mode =>
+        set(state => {
+          state.viewMode = mode;
+          if (mode === '3d' && !state.scene3D.initialized) {
+            // Initialize 3D scene on first use
+            state.scene3D = initializeScene3D(state);
+          }
+        }),
 
-      update3DProperties: (elementId, properties) => set((state) => {
-        const element = findElementById(state, elementId);
-        if (element) {
-          element.properties3D = { ...element.properties3D, ...properties };
-        }
-      }),
+      update3DProperties: (elementId, properties) =>
+        set(state => {
+          const element = findElementById(state, elementId);
+          if (element) {
+            element.properties3D = { ...element.properties3D, ...properties };
+          }
+        }),
 
       // Auto-sync 2D changes to 3D
-      updateWall: (id, updates) => set((state) => {
-        // Update 2D properties
-        const wallIndex = state.walls.findIndex(w => w.id === id);
-        if (wallIndex >= 0) {
-          state.walls[wallIndex] = { ...state.walls[wallIndex], ...updates };
+      updateWall: (id, updates) =>
+        set(state => {
+          // Update 2D properties
+          const wallIndex = state.walls.findIndex(w => w.id === id);
+          if (wallIndex >= 0) {
+            state.walls[wallIndex] = { ...state.walls[wallIndex], ...updates };
 
-          // Sync to 3D if in 3D mode
-          if (state.viewMode !== '2d') {
-            syncWallTo3D(state, id);
+            // Sync to 3D if in 3D mode
+            if (state.viewMode !== '2d') {
+              syncWallTo3D(state, id);
+            }
           }
-        }
-      }),
+        }),
     }))
   )
 );
@@ -487,33 +485,35 @@ export const useScene3DStore = create<Scene3DState & Scene3DActions>()(
     performance: { fps: 60, memoryUsage: 0, triangleCount: 0 },
     navigation: { isAnimating: false, history: [] },
 
-    updateConfig: (newConfig) => set((state) => {
-      state.config = { ...state.config, ...newConfig };
-    }),
+    updateConfig: newConfig =>
+      set(state => {
+        state.config = { ...state.config, ...newConfig };
+      }),
 
-    setQuality: (quality) => set((state) => {
-      state.config.rendering.quality = quality;
-      // Adjust other settings based on quality
-      if (quality === 'low') {
-        state.config.rendering.shadows = false;
-        state.config.rendering.postProcessing = false;
-      }
-    }),
+    setQuality: quality =>
+      set(state => {
+        state.config.rendering.quality = quality;
+        // Adjust other settings based on quality
+        if (quality === 'low') {
+          state.config.rendering.shadows = false;
+          state.config.rendering.postProcessing = false;
+        }
+      }),
 
-    navigateToPreset: (preset, animate = true) => set((state) => {
-      const presetConfig = CAMERA_PRESETS[preset];
-      if (presetConfig) {
-        state.navigation.isAnimating = animate;
-        state.navigation.currentPreset = preset;
-        state.config.camera = { ...state.config.camera, ...presetConfig };
-      }
-    }),
+    navigateToPreset: (preset, animate = true) =>
+      set(state => {
+        const presetConfig = CAMERA_PRESETS[preset];
+        if (presetConfig) {
+          state.navigation.isAnimating = animate;
+          state.navigation.currentPreset = preset;
+          state.config.camera = { ...state.config.camera, ...presetConfig };
+        }
+      }),
   }))
 );
 ```
 
 ---
-
 
 ## 🔧 Utility Systems (Custom utilities layered on base)
 
@@ -524,14 +524,10 @@ export const useScene3DStore = create<Scene3DState & Scene3DActions>()(
 export class Transform2DTo3D {
   static convertWall(wall2D: Wall): Wall3D {
     const length = Math.sqrt(
-      Math.pow(wall2D.endX - wall2D.startX, 2) +
-      Math.pow(wall2D.endY - wall2D.startY, 2)
+      Math.pow(wall2D.endX - wall2D.startX, 2) + Math.pow(wall2D.endY - wall2D.startY, 2)
     );
 
-    const angle = Math.atan2(
-      wall2D.endY - wall2D.startY,
-      wall2D.endX - wall2D.startX
-    );
+    const angle = Math.atan2(wall2D.endY - wall2D.startY, wall2D.endX - wall2D.startX);
 
     return {
       ...wall2D,
@@ -634,7 +630,6 @@ export class GeometryGenerator {
 
 ---
 
-
 ## 🎨 Material System Enhancement (Extending base material system)
 
 ### 3D Material Management
@@ -695,7 +690,6 @@ export class Material3DManager {
 ```
 
 ---
-
 
 ## 🚀 Performance Architecture (Extending base optimizations)
 
@@ -762,7 +756,6 @@ export function AdaptiveQualityRenderer({ element, cameraPosition }: {
   );
 }
 ```
-
 
 ---
 

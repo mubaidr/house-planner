@@ -5,6 +5,7 @@
 This is a React 19 + Vite + TypeScript application implementing a 3D architectural planning tool using React Three Fiber. The project follows a progressive enhancement approach, building 3D capabilities on top of a solid React foundation.
 
 ### Core Tech Stack
+
 - **Framework**: React 19 with Vite (not Next.js despite README references)
 - **3D**: React Three Fiber + Three.js + @react-three/drei ecosystem
 - **State**: Zustand with Immer middleware for immutable updates
@@ -14,7 +15,9 @@ This is a React 19 + Vite + TypeScript application implementing a 3D architectur
 ## Key Architectural Patterns
 
 ### 1. Zustand Store with Immer
+
 The central `designStore.ts` uses Zustand with Immer for state management:
+
 ```typescript
 // Always use the store's actions, never mutate state directly
 const { addWall, updateWall, selectElement } = useDesignStore();
@@ -24,14 +27,18 @@ const { walls, doors, selection, scene3D } = useDesignStore();
 ```
 
 ### 2. Element ID Generation
+
 Use the ID utilities in `src/utils/id.ts` for consistent element identification:
+
 ```typescript
 import { generateWallId, generateDoorId, generateId } from '@/utils/id';
 const newWallId = generateWallId(); // Format: wall-{timestamp}-{random}
 ```
 
 ### 3. 3D Component Structure
+
 3D components follow this pattern in `src/components/Canvas3D/`:
+
 - **Scene3D.tsx**: Main canvas container with React Three Fiber
 - **Elements/**: Individual 3D elements (Wall3D, Door3D, etc.)
 - **Camera/**: Camera controls and presets
@@ -39,7 +46,9 @@ const newWallId = generateWallId(); // Format: wall-{timestamp}-{random}
 - **Physics/**: Optional physics integration with Rapier
 
 ### 4. TypeScript Integration
+
 Strict TypeScript with comprehensive type definitions in `src/types/index.ts`:
+
 - All elements have both 2D properties and optional `properties3D`
 - Camera states, materials, and scene configuration are fully typed
 - Use the `ElementType` union for type-safe element handling
@@ -47,6 +56,7 @@ Strict TypeScript with comprehensive type definitions in `src/types/index.ts`:
 ## Development Workflows
 
 ### Essential Commands
+
 ```bash
 npm run dev          # Start Vite dev server (port 3001)
 npm run build        # Production build
@@ -57,12 +67,14 @@ npm run type-check   # TypeScript validation
 ```
 
 ### Testing Strategy
+
 - Unit tests for utilities and store actions in `src/__tests__/`
 - React component testing with `@testing-library/react`
 - 3D components use mocked Three.js objects in tests
 - ID utilities have comprehensive test coverage demonstrating the expected patterns
 
 ### File Organization
+
 ```
 src/
 ├── components/Canvas3D/    # All 3D React Three Fiber components
@@ -76,19 +88,23 @@ src/
 ## 3D Implementation Specifics
 
 ### Scene Configuration
+
 The `scene3D` state object controls all 3D rendering:
+
 - `camera`: Position, target, FOV, zoom
 - `lighting`: Ambient, directional, shadows
 - `renderSettings`: Quality, effects, wireframe
 - `environment`: Background, grid, ground plane
 
 ### Element Rendering
+
 - Each architectural element (wall, door, etc.) has a corresponding 3D component
 - Use `useMemo` for expensive geometry calculations
 - Follow the selection/hover pattern from `Wall3D.tsx`
 - Materials are managed centrally in the store and resolved by ID
 
 ### Camera Controls
+
 - Multiple camera presets (perspective, top, isometric, etc.)
 - Use `CameraControls` or `EnhancedCameraControls` components
 - Camera state syncs with the Zustand store for persistence
@@ -96,21 +112,25 @@ The `scene3D` state object controls all 3D rendering:
 ## Project-Specific Conventions
 
 ### State Management
+
 - Always use store actions, never direct state mutation
 - Element updates use partial objects: `updateWall(id, { height: 3.5 })`
 - Selection state is centralized: `selectElement(id, 'wall')`
 
 ### Component Props
+
 - 3D elements receive the full element object plus `onSelect` callback
 - UI components use controlled state patterns with store integration
 - Event handlers follow the pattern: `onElementSelect(id, type)`
 
 ### Material System
+
 - Materials have `color` (hex string) and `properties` (PBR values)
 - Default materials are provided in the store initialization
 - Material resolution happens in 3D components, not in the store
 
 ### Performance Patterns
+
 - Geometry calculations are memoized in 3D components
 - Use `Suspense` boundaries around 3D scenes
 - Physics simulation is optional and can be disabled
@@ -119,17 +139,20 @@ The `scene3D` state object controls all 3D rendering:
 ## Integration Points
 
 ### React Three Fiber Integration
+
 - Canvas configuration in `Scene3D.tsx` matches store settings
 - All 3D components are wrapped in R3F context
 - Use `@react-three/drei` helpers for common functionality
 
 ### External Dependencies
+
 - `@react-three/rapier` for optional physics simulation
 - `@use-gesture/react` for gesture handling in 3D space
 - `file-saver` and `jszip` for export functionality
 - `pdfmake` for generating architectural documents
 
 ### Cross-Component Communication
+
 - Selection state flows through the store, not prop drilling
 - Camera changes trigger store updates for persistence
 - 3D scene changes update the `scene3D` configuration object

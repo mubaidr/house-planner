@@ -1,4 +1,3 @@
-
 # 3D Technology Assessment
 
 > **Comprehensive evaluation of 3D libraries and technology choices for the House Planner application**
@@ -10,6 +9,7 @@
 **As of August 2025, the 3D House Planner implementation will be based on [CodeHole7/threejs-3d-room-designer](https://github.com/CodeHole7/threejs-3d-room-designer), a React-bundled Three.js room planner and product configurator.**
 
 ### Key Technology Features of the New Base:
+
 - React-bundled Three.js architecture
 - 2D/3D floorplan editing, product placement/configuration
 - Model morph/material/style configuration
@@ -17,6 +17,7 @@
 - Built-in product configurator and room editing
 
 ### Customization & Extension Strategy:
+
 - All custom features (multi-floor, advanced export, material system, accessibility, etc.) will be layered on top using the extensibility points provided by the base project.
 - Existing React/Zustand patterns (now using Vite, not Next.js) will be adapted to integrate with the base.
 - Technology choices below are now interpreted as extensions or integrations with threejs-3d-room-designer.
@@ -33,13 +34,13 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
 
 ### **Evaluated Libraries**
 
-| Library                | Score | React Integration | Learning Curve    | Performance | Ecosystem | Architectural Focus |
-| ---------------------- | ----- | ----------------- | ----------------- | ----------- | --------- | ------------------- |
-| **React Three Fiber**  | ⭐⭐⭐⭐⭐ | Native            | Moderate          | Excellent   | Extensive | ✅ Perfect           |
-| **Babylon.js**         | ⭐⭐⭐⭐  | Good wrappers     | Beginner-friendly | Excellent   | Growing   | ✅ Good              |
-| **A-Frame**            | ⭐⭐⭐   | Limited           | Very Easy         | Good        | Moderate  | ❌ VR-focused        |
-| **PlayCanvas**         | ⭐⭐    | External          | Moderate          | Good        | Limited   | ❌ Game-focused      |
-| **Three.js (vanilla)** | ⭐⭐⭐   | Manual            | Steep             | Excellent   | Extensive | ✅ Possible          |
+| Library                | Score      | React Integration | Learning Curve    | Performance | Ecosystem | Architectural Focus |
+| ---------------------- | ---------- | ----------------- | ----------------- | ----------- | --------- | ------------------- |
+| **React Three Fiber**  | ⭐⭐⭐⭐⭐ | Native            | Moderate          | Excellent   | Extensive | ✅ Perfect          |
+| **Babylon.js**         | ⭐⭐⭐⭐   | Good wrappers     | Beginner-friendly | Excellent   | Growing   | ✅ Good             |
+| **A-Frame**            | ⭐⭐⭐     | Limited           | Very Easy         | Good        | Moderate  | ❌ VR-focused       |
+| **PlayCanvas**         | ⭐⭐       | External          | Moderate          | Good        | Limited   | ❌ Game-focused     |
+| **Three.js (vanilla)** | ⭐⭐⭐     | Manual            | Steep             | Excellent   | Extensive | ✅ Possible         |
 
 ### **Selection Criteria Weights**
 
@@ -69,6 +70,7 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
 ### **Component Breakdown**
 
 #### **@react-three/fiber (R3F)**
+
 - **Purpose**: React renderer for Three.js
 - **Benefits**:
   - Native React component model for 3D scenes
@@ -77,6 +79,7 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
   - Hot reloading support for development
 
 #### **@react-three/drei**
+
 - **Purpose**: Essential helpers and abstractions
 - **Key Components**:
   - `<OrbitControls>`: Camera navigation
@@ -86,6 +89,7 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
   - `<Loader>`: Asset loading management
 
 #### **@react-three/postprocessing**
+
 - **Purpose**: Visual effects and rendering enhancement
 - **Features**:
   - Shadow mapping for realistic lighting
@@ -94,6 +98,7 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
   - Anti-aliasing and tone mapping
 
 #### **Three.js Core**
+
 - **Purpose**: Low-level 3D engine
 - **Capabilities**:
   - WebGL rendering pipeline
@@ -102,6 +107,7 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
   - Import/export for 3D models
 
 #### **Leva**
+
 - **Purpose**: Development and user controls
 - **Applications**:
   - Debug panels during development
@@ -116,11 +122,11 @@ After evaluating multiple 3D web technologies, **React Three Fiber + Three.js ec
 
 | Current System             | R3F Integration             | Compatibility Score |
 | -------------------------- | --------------------------- | ------------------- |
-| **Vite**                   | Lightning-fast dev/build    | ⭐⭐⭐⭐⭐               |
-| **React 19**               | Built for React patterns    | ⭐⭐⭐⭐⭐               |
-| **TypeScript**             | Full type definitions       | ⭐⭐⭐⭐⭐               |
-| **Zustand**                | R3F uses Zustand internally | ⭐⭐⭐⭐⭐               |
-| **Component Architecture** | Matches renderer pattern    | ⭐⭐⭐⭐⭐               |
+| **Vite**                   | Lightning-fast dev/build    | ⭐⭐⭐⭐⭐          |
+| **React 19**               | Built for React patterns    | ⭐⭐⭐⭐⭐          |
+| **TypeScript**             | Full type definitions       | ⭐⭐⭐⭐⭐          |
+| **Zustand**                | R3F uses Zustand internally | ⭐⭐⭐⭐⭐          |
+| **Component Architecture** | Matches renderer pattern    | ⭐⭐⭐⭐⭐          |
 
 ### **State Management Integration**
 
@@ -158,12 +164,14 @@ function Wall3D({ id }: { id: string }) {
 ### **Performance Characteristics**
 
 **Rendering Performance**
+
 - **Frame Rate**: 60 FPS target achievable on modern hardware
 - **Memory Usage**: Efficient with proper component lifecycle management
 - **Load Times**: Lazy loading and code splitting maintain fast startup
 - **Scalability**: Handles complex architectural models with LOD optimization
 
 **Development Performance**
+
 - **Hot Reloading**: Instant updates during development
 - **Bundle Size**: Tree-shaking eliminates unused Three.js components
 - **Build Times**: No significant impact on existing build pipeline
@@ -175,6 +183,7 @@ function Wall3D({ id }: { id: string }) {
 ### **CAD-Style Precision**
 
 **Coordinate System**
+
 ```typescript
 // Precise coordinate handling for architectural accuracy
 interface Position3D {
@@ -193,6 +202,7 @@ const measureDistance = (point1: Position3D, point2: Position3D): number => {
 ```
 
 **Professional Visualization**
+
 - **Orthographic Views**: Maintain technical drawing accuracy
 - **Material Visualization**: PBR materials for realistic previews
 - **Lighting Accuracy**: Shadow studies for architectural analysis
@@ -201,6 +211,7 @@ const measureDistance = (point1: Position3D, point2: Position3D): number => {
 ### **User Experience Advantages**
 
 **Familiar React Patterns**
+
 ```typescript
 // 3D components follow existing patterns
 function House3D() {
@@ -226,6 +237,7 @@ function House3D() {
 ```
 
 **Progressive Enhancement**
+
 - Start with basic 3D shapes
 - Add materials and textures incrementally
 - Introduce advanced lighting and effects
@@ -238,12 +250,14 @@ function House3D() {
 ### **Babylon.js Assessment**
 
 **Strengths**
+
 - All-in-one engine with built-in GUI, physics, and materials
 - Excellent beginner-friendly documentation
 - Microsoft backing ensures long-term support
 - WebXR and WebGPU first-class support
 
 **Weaknesses for Our Use Case**
+
 - Larger bundle size (can be overkill for architectural visualization)
 - Less React-native integration patterns
 - Different state management approach conflicts with Zustand
@@ -254,12 +268,14 @@ function House3D() {
 ### **A-Frame Assessment**
 
 **Strengths**
+
 - Extremely beginner-friendly HTML-based approach
 - Built on Three.js foundation
 - Excellent for VR experiences
 - Declarative syntax similar to HTML
 
 **Weaknesses for Our Use Case**
+
 - VR-focused rather than CAD-focused
 - Limited flexibility for custom architectural tools
 - Less control over rendering pipeline
@@ -270,12 +286,14 @@ function House3D() {
 ### **Vanilla Three.js Assessment**
 
 **Strengths**
+
 - Maximum control and flexibility
 - Smallest possible bundle size
 - Direct access to all Three.js features
 - No abstraction layer performance overhead
 
 **Weaknesses for Our Use Case**
+
 - Manual integration with React lifecycle
 - More complex state management integration
 - Higher development and maintenance overhead
@@ -290,6 +308,7 @@ function House3D() {
 ### **Migration Approach**
 
 **Phase 1: Foundation Setup**
+
 ```bash
 # Install core dependencies
 npm install @react-three/fiber @react-three/drei three
@@ -309,6 +328,7 @@ export default {
 ```
 
 **Phase 2: Component Integration**
+
 ```typescript
 // Add 3D canvas alongside existing 2D canvas
 function DesignCanvas() {
@@ -336,6 +356,7 @@ function DesignCanvas() {
 ### **Performance Optimization Strategy**
 
 **Rendering Optimization**
+
 ```typescript
 // Instance rendering for repeated elements
 function WallInstances({ walls }: { walls: Wall[] }) {
@@ -363,6 +384,7 @@ function WallInstances({ walls }: { walls: Wall[] }) {
 ```
 
 **Memory Management**
+
 ```typescript
 // Proper cleanup for 3D resources
 function Material3D({ textureUrl }: { textureUrl: string }) {
@@ -383,17 +405,20 @@ function Material3D({ textureUrl }: { textureUrl: string }) {
 ## 📈 Success Metrics and Validation
 
 ### **Performance Benchmarks**
+
 - **Frame Rate**: Maintain 60 FPS with 100+ architectural elements
 - **Load Time**: 3D mode activation under 500ms
 - **Memory Usage**: Less than 200MB for typical house models
 - **Bundle Size**: Less than 2MB additional JavaScript
 
 ### **Development Metrics**
+
 - **Learning Curve**: Existing React developers productive within 1 week
 - **Code Reuse**: 80%+ of existing utilities and patterns applicable to 3D
 - **Maintenance**: No increase in bug report rates or support overhead
 
 ### **User Experience Validation**
+
 - **Adoption Rate**: 70%+ of users try 3D mode within first session
 - **Task Completion**: No decrease in task completion rates in 3D mode
 - **User Satisfaction**: Maintain current satisfaction scores while adding 3D value

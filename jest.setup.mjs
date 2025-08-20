@@ -1,264 +1,196 @@
-// jest.setup.js
-require('jest-canvas-mock');
-require('@testing-library/jest-dom');
+// Setup file for Jest tests using ES modules
+import '@testing-library/jest-dom/jest-globals';
 
-// Mock Three.js
-jest.mock('three', () => ({
-  Vector3: jest.fn().mockImplementation((x = 0, y = 0, z = 0) => ({
-    x,
-    y,
-    z,
-    clone: jest.fn().mockReturnValue({ x, y, z }),
-    copy: jest.fn(),
-    set: jest.fn(),
-    add: jest.fn(),
-    sub: jest.fn(),
-    multiply: jest.fn(),
-    divide: jest.fn(),
-    normalize: jest.fn().mockReturnValue({ x, y, z }),
-    length: jest.fn().mockReturnValue(Math.sqrt(x * x + y * y + z * z)),
-    distanceTo: jest.fn((other) => {
-      const dx = x - other.x;
-      const dy = y - other.y;
-      const dz = z - other.z;
-      return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }),
-    lerp: jest.fn((target, alpha) => ({
-      x: x + (target.x - x) * alpha,
-      y: y + (target.y - y) * alpha,
-      z: z + (target.z - z) * alpha
-    })),
-    cross: jest.fn((v) => ({
-      x: y * v.z - z * v.y,
-      y: z * v.x - x * v.z,
-      z: x * v.y - y * v.x
-    })),
-    dot: jest.fn((v) => x * v.x + y * v.y + z * v.z),
-  })),
-  Matrix4: jest.fn().mockImplementation(() => ({
-    lookAt: jest.fn(),
-    makeTranslation: jest.fn(),
-    makeRotationFromEuler: jest.fn(),
-    makeScale: jest.fn(),
-    multiply: jest.fn(),
-  })),
-  Box3: jest.fn().mockImplementation(() => ({
-    setFromObject: jest.fn(),
-    union: jest.fn(),
-    getCenter: jest.fn(),
-    getSize: jest.fn(),
-  })),
-  Object3D: jest.fn().mockImplementation(() => ({
-    position: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
-    scale: { x: 1, y: 1, z: 1 },
-    add: jest.fn(),
-    remove: jest.fn(),
-    traverse: jest.fn(),
-  })),
-  // Phase 2 Geometry Mocks
-  BoxGeometry: jest.fn().mockImplementation((width, height, depth) => ({
-    type: 'BoxGeometry',
-    parameters: { width, height, depth },
-    width,
-    height,
-    depth,
-    clone: jest.fn().mockReturnValue({
-      type: 'BoxGeometry',
-      parameters: { width, height, depth },
-      width,
-      height,
-      depth,
-    }),
-  })),
-  PlaneGeometry: jest.fn().mockImplementation((width, height) => ({
-    type: 'PlaneGeometry',
-    parameters: { width, height },
-    width,
-    height,
-    rotateX: jest.fn(),
-    clone: jest.fn().mockReturnValue({
-      type: 'PlaneGeometry',
-      parameters: { width, height },
-      width,
-      height,
-      rotateX: jest.fn(),
-    }),
-  })),
-  ExtrudeGeometry: jest.fn().mockImplementation((shapes, options) => ({
-    type: 'ExtrudeGeometry',
-    parameters: { shapes, options },
-    rotateX: jest.fn(),
-    clone: jest.fn().mockReturnValue({
-      type: 'ExtrudeGeometry',
-      parameters: { shapes, options },
-      rotateX: jest.fn(),
-    }),
-  })),
-  ShapeGeometry: jest.fn().mockImplementation((shapes) => ({
-    type: 'ShapeGeometry',
-    parameters: { shapes },
-    rotateX: jest.fn(),
-    clone: jest.fn().mockReturnValue({
-      type: 'ShapeGeometry',
-      parameters: { shapes },
-      rotateX: jest.fn(),
-    }),
-  })),
-  CylinderGeometry: jest.fn().mockImplementation((radiusTop, radiusBottom, height) => ({
-    type: 'CylinderGeometry',
-    parameters: { radiusTop, radiusBottom, height },
-    clone: jest.fn().mockReturnValue({
-      type: 'CylinderGeometry',
-      parameters: { radiusTop, radiusBottom, height },
-    }),
-  })),
-  Shape: jest.fn().mockImplementation(() => ({
-    moveTo: jest.fn(),
-    lineTo: jest.fn(),
-    closePath: jest.fn(),
-    holes: [],
-  })),
-  Path: jest.fn().mockImplementation(() => ({
-    moveTo: jest.fn(),
-    lineTo: jest.fn(),
-    closePath: jest.fn(),
-  })),
-  // Material Mocks
-  MeshStandardMaterial: jest.fn().mockImplementation((props) => ({
-    type: 'MeshStandardMaterial',
-    ...props,
-  })),
-  MeshPhysicalMaterial: jest.fn().mockImplementation((props) => ({
-    type: 'MeshPhysicalMaterial',
-    ...props,
-  })),
-  MeshBasicMaterial: jest.fn().mockImplementation((props) => ({
-    type: 'MeshBasicMaterial',
-    ...props,
-  })),
-}));
+// Mock canvas for Three.js
+import 'jest-canvas-mock';
 
-// Mock localStorage with actual implementation for tests
+// Mock DOM APIs not available in JSDOM
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // Deprecated
+    removeListener: jest.fn(), // Deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  value: jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  })),
+});
+
+// Mock requestAnimationFrame
+global.requestAnimationFrame = jest.fn().mockImplementation(callback => {
+  return setTimeout(callback, 0);
+});
+
+global.cancelAnimationFrame = jest.fn().mockImplementation(id => {
+  clearTimeout(id);
+});
+
+// Mock HTMLCanvasElement methods
+HTMLCanvasElement.prototype.getContext = jest.fn();
+HTMLCanvasElement.prototype.toDataURL = jest.fn();
+
+// Mock localStorage
 const localStorageMock = (() => {
   let store = {};
   return {
-    getItem: jest.fn((key) => store[key] || null),
-    setItem: jest.fn((key, value) => {
-      store[key] = value.toString();
-    }),
-    removeItem: jest.fn((key) => {
-      delete store[key];
-    }),
-    clear: jest.fn(() => {
-      store = {};
-    }),
-    get length() {
-      return Object.keys(store).length;
+    getItem(key) {
+      return store[key] || null;
     },
-    key: jest.fn((index) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
-    }),
+    setItem(key, value) {
+      store[key] = value.toString();
+    },
+    removeItem(key) {
+      delete store[key];
+    },
+    clear() {
+      store = {};
+    },
   };
 })();
 
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
-  writable: true,
 });
 
-// Also define it globally for Node.js environment
-global.localStorage = localStorageMock;
-
-// Mock canvas globally
-Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
-  value: jest.fn(() => ({
-    fillRect: jest.fn(),
-    strokeRect: jest.fn(),
-    fillText: jest.fn(),
-    measureText: jest.fn(() => ({ width: 0 })),
-    clearRect: jest.fn(),
-    beginPath: jest.fn(),
-    moveTo: jest.fn(),
-    lineTo: jest.fn(),
-    closePath: jest.fn(),
-    stroke: jest.fn(),
-    fill: jest.fn(),
-    save: jest.fn(),
-    restore: jest.fn(),
-    scale: jest.fn(),
-    translate: jest.fn(),
-    rotate: jest.fn(),
-    drawImage: jest.fn(),
-    createImageData: jest.fn(),
-    getImageData: jest.fn(),
-    putImageData: jest.fn(),
-    toDataURL: jest.fn(),
-  })),
+// Mock sessionStorage
+Object.defineProperty(window, 'sessionStorage', {
+  value: localStorageMock,
 });
 
-// Mock document methods
-global.document = {
-  ...global.document,
-  createElement: jest.fn(() => ({
-    getContext: jest.fn(() => ({
-      fillRect: jest.fn(),
-      strokeRect: jest.fn(),
-      fillText: jest.fn(),
-      measureText: jest.fn(() => ({ width: 0 })),
-      clearRect: jest.fn(),
-    })),
-    width: 800,
-    height: 600,
-    toDataURL: jest.fn(),
-  })),
+// Mock createImageBitmap
+global.createImageBitmap = jest.fn().mockResolvedValue({
+  close: jest.fn(),
+});
+
+// Mock Blob
+global.Blob = class Blob {
+  constructor(bits = [], options = {}) {
+    this.size = bits.length;
+    this.type = options.type || '';
+  }
 };
 
-// Mock window.URL
-global.URL = {
-  createObjectURL: jest.fn(() => 'mocked-url'),
-  revokeObjectURL: jest.fn(),
+// Mock File
+global.File = class File extends Blob {
+  constructor(bits, name, options = {}) {
+    super(bits, options);
+    this.name = name;
+  }
 };
+
+// Mock URL.createObjectURL
+URL.createObjectURL = jest.fn(() => 'mock-url');
+URL.revokeObjectURL = jest.fn();
 
 // Mock fetch
-global.fetch = jest.fn();
+global.fetch = jest.fn().mockResolvedValue({
+  ok: true,
+  json: jest.fn().mockResolvedValue({}),
+  text: jest.fn().mockResolvedValue(''),
+  blob: jest.fn().mockResolvedValue(new Blob()),
+});
 
-// Mock pdfMake
-jest.mock('pdfmake/build/pdfmake', () => ({
-  __esModule: true,
-  default: {
-    vfs: {},
-    createPdf: jest.fn(() => ({
-      download: jest.fn(),
-      getDataUrl: jest.fn((callback) => callback('data:application/pdf;base64,mock')),
-      getBase64: jest.fn((callback) => callback('mock-base64')),
-      getBuffer: jest.fn((callback) => callback(Buffer.from('mock-buffer'))),
-      open: jest.fn(),
-      print: jest.fn(),
-    })),
-  },
-}));
-
-jest.mock('pdfmake/build/vfs_fonts', () => ({
-  __esModule: true,
-  default: {
-    pdfMake: {
-      vfs: {
-        'Roboto-Regular.ttf': 'mock-font-data',
-        'Roboto-Medium.ttf': 'mock-font-data',
-        'Roboto-Italic.ttf': 'mock-font-data',
-        'Roboto-MediumItalic.ttf': 'mock-font-data',
-      },
-    },
-  },
-}));
-
-// Suppress console.warn for tests
-const originalConsoleWarn = console.warn;
-console.warn = (...args) => {
-  if (args[0] && args[0].includes && args[0].includes('componentWillReceiveProps')) {
-    return;
+// Mock AbortController
+global.AbortController = class AbortController {
+  constructor() {
+    this.signal = new AbortSignal();
   }
-  originalConsoleWarn(...args);
+  abort() {}
 };
+
+// Mock AbortSignal
+global.AbortSignal = class AbortSignal {
+  constructor() {
+    this.aborted = false;
+  }
+  static abort() {
+    return new AbortSignal();
+  }
+  static timeout(ms) {
+    return new AbortSignal();
+  }
+};
+
+// Mock HTMLImageElement
+global.HTMLImageElement = class HTMLImageElement {
+  constructor() {
+    this.naturalWidth = 0;
+    this.naturalHeight = 0;
+    this.complete = false;
+  }
+};
+
+// Mock HTMLVideoElement
+global.HTMLVideoElement = class HTMLVideoElement {
+  constructor() {
+    this.videoWidth = 0;
+    this.videoHeight = 0;
+  }
+};
+
+// Mock VideoFrame
+global.VideoFrame = class VideoFrame {
+  constructor() {}
+  close() {}
+};
+
+// Mock ImageBitmap
+global.ImageBitmap = class ImageBitmap {
+  constructor() {}
+  close() {}
+};
+
+// Mock OffscreenCanvas
+global.OffscreenCanvas = class OffscreenCanvas {
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+  }
+  getContext() {
+    return null;
+  }
+  transferToImageBitmap() {
+    return new ImageBitmap();
+  }
+};
+
+// Mock document methods
+Document.prototype.createElementNS = jest.fn((namespaceURI, qualifiedName) => {
+  if (qualifiedName === 'canvas') {
+    return new HTMLCanvasElement();
+  }
+  return document.createElement(qualifiedName);
+});
+
+// Mock console methods to reduce noise in tests
+console.warn = jest.fn();
+console.error = jest.fn();
+console.debug = jest.fn();
+console.info = jest.fn();
+console.log = jest.fn();
+
+// Mock performance API
+Object.defineProperty(global, 'performance', {
+  writable: true,
+  value: {
+    now: jest.fn().mockReturnValue(0),
+  },
+});
+
+// Mock devicePixelRatio
+Object.defineProperty(window, 'devicePixelRatio', {
+  writable: true,
+  value: 1,
+});

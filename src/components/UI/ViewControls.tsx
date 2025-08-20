@@ -11,9 +11,7 @@ export function ViewControls() {
         <button
           onClick={() => setViewMode('2d')}
           className={`px-4 py-2 rounded transition ${
-            viewMode === '2d' 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-200 hover:bg-gray-300'
+            viewMode === '2d' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
           }`}
         >
           2D
@@ -21,9 +19,7 @@ export function ViewControls() {
         <button
           onClick={() => setViewMode('3d')}
           className={`px-4 py-2 rounded transition ${
-            viewMode === '3d' 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-200 hover:bg-gray-300'
+            viewMode === '3d' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
           }`}
         >
           3D
@@ -31,9 +27,7 @@ export function ViewControls() {
         <button
           onClick={() => setViewMode('hybrid')}
           className={`px-4 py-2 rounded transition ${
-            viewMode === 'hybrid' 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-200 hover:bg-gray-300'
+            viewMode === 'hybrid' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
           }`}
         >
           Hybrid

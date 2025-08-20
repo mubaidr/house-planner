@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 import path from 'path';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -12,12 +12,7 @@ export default defineConfig({
   },
   // Three.js optimizations for better bundling and performance
   optimizeDeps: {
-    include: [
-      'three',
-      '@react-three/fiber',
-      '@react-three/drei',
-      '@react-three/postprocessing'
-    ],
+    include: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
   },
   build: {
     // Optimize for 3D assets and large bundles
@@ -25,8 +20,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'three': ['three'],
-          'r3f': ['@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+          three: ['three'],
+          r3f: ['@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
         },
       },
     },
