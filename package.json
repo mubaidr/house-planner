@@ -19,13 +19,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@react-three/drei": "^10.6.1",
+    "@react-three/drei": "^10.7.3",
     "@react-three/fiber": "^9.3.0",
     "@react-three/postprocessing": "^3.0.4",
     "@react-three/rapier": "^2.1.0",
     "@react-three/uikit": "^0.8.21",
     "@tailwindcss/typography": "^0.5.16",
-    "@tailwindcss/vite": "^4.1.11",
+    "@tailwindcss/vite": "^4.1.12",
     "@use-gesture/react": "^10.3.1",
     "daisyui": "^5.0.50",
     "file-saver": "^2.0.5",
@@ -35,23 +35,23 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-spring": "^10.0.1",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4.1.12",
     "three": "^0.179.1",
-    "zustand": "^5.0.7"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@jest/globals": "^30.0.5",
-    "@playwright/test": "^1.54.2",
+    "@playwright/test": "^1.55.0",
     "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24",
     "@types/pdfmake": "^0.2.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.178.1",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@types/three": "^0.179.0",
+    "@vitejs/plugin-react": "^5.0.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-prettier": "^10.1.8",
@@ -64,9 +64,9 @@
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.2.0",
-    "ts-jest": "^29.4.0",
+    "ts-jest": "^29.4.1",
     "typescript": "^5",
-    "typescript-eslint": "^8.38.0",
-    "vite": "^7.0.6"
+    "typescript-eslint": "^8.40.0",
+    "vite": "^7.1.3"
   }
 }
