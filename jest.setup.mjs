@@ -1,7 +1,8 @@
 // Setup file for Jest tests using ES modules
-import '@testing-library/jest-dom/jest-globals';
+// import '@testing-library/jest-dom/jest-globals';
 
 // Mock canvas for Three.js
+import '@testing-library/jest-dom/jest-globals';
 import 'jest-canvas-mock';
 
 // Mock DOM APIs not available in JSDOM

@@ -1,33 +1,52 @@
+import { useMemo } from 'react';
 import type { Door, Wall, Window } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
 
 export function PropertiesPanel() {
-  const selectedElementId = useDesignStore(state => state.selectedElementId);
-  const selectedElementType = useDesignStore(state => state.selectedElementType);
-  const { walls, doors, windows } = useDesignStore(state => ({
-    walls: state.walls,
-    doors: state.doors,
-    windows: state.windows,
-  })) as { walls: Wall[]; doors: Door[]; windows: Window[] };
+  // Use a selector that returns the specific element to avoid re-renders when unrelated elements change
+  const { selectedElement, selectedElementType } = useDesignStore(
+    state => {
+      if (!state.selectedElementId || !state.selectedElementType) {
+        return { selectedElement: null, selectedElementType: null };
+      }
+
+      let element = null;
+      switch (state.selectedElementType) {
+        case 'wall':
+          element = state.walls.find(w => w.id === state.selectedElementId);
+          break;
+        case 'door':
+          element = state.doors.find(d => d.id === state.selectedElementId);
+          break;
+        case 'window':
+          element = state.windows.find(w => w.id === state.selectedElementId);
+          break;
+        default:
+          element = null;
+      }
+
+      return {
+        selectedElement: element,
+        selectedElementType: state.selectedElementType
+      };
+    },
+    // Custom equality function to prevent unnecessary re-renders
+    (prev, next) => {
+      // If both elements are null, they're equal
+      if (!prev.selectedElement && !next.selectedElement) return true;
+      
+      // If one is null and the other isn't, they're not equal
+      if (!prev.selectedElement || !next.selectedElement) return false;
+      
+      // Compare the elements by reference (they should be the same object if nothing changed)
+      return prev.selectedElement === next.selectedElement && 
+             prev.selectedElementType === next.selectedElementType;
+    }
+  );
+
   const updateWall = useDesignStore(state => state.updateWall);
   const updateDoor = useDesignStore(state => state.updateDoor);
   const updateWindow = useDesignStore(state => state.updateWindow);
-
-  // Get the selected element
-  const selectedElement = (() => {
-    if (!selectedElementId || !selectedElementType) return null;
-
-    switch (selectedElementType) {
-      case 'wall':
-        return walls.find(w => w.id === selectedElementId);
-      case 'door':
-        return doors.find(d => d.id === selectedElementId);
-      case 'window':
-        return windows.find(w => w.id === selectedElementId);
-      default:
-        return null;
-    }
-  })();
 
   // If no element is selected, show a message
   if (!selectedElement) {

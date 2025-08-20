@@ -1,4 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
+import { ThreeEvent } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
 

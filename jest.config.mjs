@@ -1,18 +1,11 @@
 export default {
   preset: 'ts-jest/presets/default-esm',
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
-  globals: {
-    'ts-jest': {
-      useESM: true,
-      tsconfig: {
-        jsx: 'react-jsx',
-      },
-    },
-  },
+  
   transform: {
-    '^.+\\.tsx?$': [
+    '^.+\\.(ts|tsx|mjs)$': [
       'ts-jest',
       {
         useESM: true,
@@ -34,7 +27,10 @@ export default {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/.next/',
+  ],
   transformIgnorePatterns: [
     'node_modules/(?!(konva|react-konva|three|@react-three|@use-gesture)/)',
   ],

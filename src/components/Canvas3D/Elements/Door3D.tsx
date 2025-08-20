@@ -1,4 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
+import { ThreeEvent } from '@react-three/fiber';
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -57,30 +58,26 @@ export function Door3D({ doorId }: Door3DProps) {
     switch (door.type) {
       case 'hinged':
         // Rotate the entire door group for hinged doors
-        if (groupRef.current) {
-          // Determine rotation direction
-          const direction =
-            door.swingDirection === 'left' ? 1 : door.swingDirection === 'right' ? -1 : 1;
+        // Determine rotation direction
+        const direction =
+          door.swingDirection === 'left' ? 1 : door.swingDirection === 'right' ? -1 : 1;
 
-          // Apply rotation
-          groupRef.current.rotation.y = THREE.MathUtils.degToRad(
-            door.isOpen ? door.openAngle * direction : 0
-          );
-        }
+        // Apply rotation
+        groupRef.current.rotation.y = THREE.MathUtils.degToRad(
+          door.isOpen ? door.openAngle * direction : 0
+        );
         break;
 
       case 'sliding':
         // Move the door panel horizontally for sliding doors
-        if (panelRef.current) {
-          // Calculate slide offset based on open state
-          const maxOffset = door.width;
-          const currentOffset = door.isOpen ? door.openOffset * maxOffset : 0;
+        // Calculate slide offset based on open state
+        const maxOffset = door.width;
+        const currentOffset = door.isOpen ? door.openOffset * maxOffset : 0;
 
-          // Determine direction (left or right)
-          const direction = door.swingDirection === 'left' ? -1 : 1;
+        // Determine direction (left or right)
+        const slideDirection = door.swingDirection === 'left' ? -1 : 1;
 
-          panelRef.current.position.x = currentOffset * direction;
-        }
+        panelRef.current.position.x = currentOffset * slideDirection;
         break;
 
       default:

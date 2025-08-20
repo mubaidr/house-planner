@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { Door, Wall, Window } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
 import * as THREE from 'three';
@@ -5,17 +6,11 @@ import * as THREE from 'three';
 export function MeasurementTool3D() {
   const selectedElementId = useDesignStore(state => state.selectedElementId);
   const selectedElementType = useDesignStore(state => state.selectedElementType);
-  const { walls, doors, windows } = useDesignStore(state => ({
-    walls: state.walls,
-    doors: state.doors,
-    windows: state.windows,
-  })) as { walls: Wall[]; doors: Door[]; windows: Window[] };
+  const walls = useDesignStore(state => state.walls);
+  const doors = useDesignStore(state => state.doors);
+  const windows = useDesignStore(state => state.windows);
 
-  // For now, we'll just show a simple measurement if a wall is selected
-  // In a full implementation, this would be more sophisticated
-
-  // Get the selected element
-  const selectedElement = (() => {
+  const selectedElement = useMemo(() => {
     if (!selectedElementId || !selectedElementType) return null;
 
     switch (selectedElementType) {
@@ -28,7 +23,7 @@ export function MeasurementTool3D() {
       default:
         return null;
     }
-  })();
+  }, [selectedElementId, selectedElementType, walls, doors, windows]);
 
   // If no wall is selected, don't render
   if (!selectedElement || selectedElementType !== 'wall') return null;

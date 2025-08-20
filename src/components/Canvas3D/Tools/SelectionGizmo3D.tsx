@@ -1,31 +1,29 @@
+import { useMemo } from 'react';
 import type { Door, Wall, Window } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
+import { useGLTF } from '@react-three/drei';
+import { useSpring, animated } from '@react-spring/three';
+import { useGesture } from '@use-gesture/react';
+import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
+import { useBoundStore, Scene3DState } from '../../../stores/scene3DStore';
 
 export function SelectionGizmo3D() {
   const selectedElementId = useDesignStore(state => state.selectedElementId);
   const selectedElementType = useDesignStore(state => state.selectedElementType);
-  const { walls, doors, windows } = useDesignStore(state => ({
-    walls: state.walls,
-    doors: state.doors,
-    windows: state.windows,
-  })) as { walls: Wall[]; doors: Door[]; windows: Window[] };
+  const walls = useDesignStore(state => state.walls);
+  const doors = useDesignStore(state => state.doors);
+  const windows = useDesignStore(state => state.windows);
 
-  // Get the selected element
-  const selectedElement = (() => {
-    if (!selectedElementId || !selectedElementType) return null;
-
-    switch (selectedElementType) {
-      case 'wall':
-        return walls.find(w => w.id === selectedElementId);
-      case 'door':
-        return doors.find(d => d.id === selectedElementId);
-      case 'window':
-        return windows.find(w => w.id === selectedElementId);
-      default:
-        return null;
-    }
-  })();
+    const { selectedElement, elements } = useBoundStore(
+    useCallback(
+      (state: Scene3DState) => useMemo(() => ({
+        selectedElement: state.selectedElement,
+        elements: state.elements,
+      }), [state.selectedElement, state.elements]),
+      [],
+    ),
+  );
 
   // If no element is selected, don't render
   if (!selectedElement || !selectedElementType) return null;

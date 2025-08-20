@@ -1,4 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
+import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -76,16 +77,18 @@ export function Wall3D({ wallId }: Wall3DProps) {
   return (
     <group position={wallPosition} rotation={wallRotation} onClick={handleSelect}>
       {/* Wall mesh */}
-      <mesh geometry={wallGeometry} castShadow receiveShadow>
-        <meshStandardMaterial
-          color={isSelected ? '#3b82f6' : '#cccccc'}
-          roughness={0.8}
-          metalness={0.1}
-        />
-      </mesh>
+      {wallGeometry && (
+        <mesh geometry={wallGeometry} castShadow receiveShadow>
+          <meshStandardMaterial
+            color={isSelected ? '#3b82f6' : '#cccccc'}
+            roughness={0.8}
+            metalness={0.1}
+          />
+        </mesh>
+      )}
 
       {/* Selection highlight */}
-      {isSelected && (
+      {isSelected && wallGeometry && (
         <mesh geometry={wallGeometry}>
           <meshBasicMaterial color="#3b82f6" wireframe={true} transparent={true} opacity={0.5} />
         </mesh>
