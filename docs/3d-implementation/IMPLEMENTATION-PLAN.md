@@ -27,62 +27,86 @@ Based on the README, the foundation phase has been completed with:
 
 ## 📅 Implementation Phases
 
-### Phase 1: Foundation Setup (Completed)
+### Phase 1: Foundation Setup (Verified)
 
-✅ **Status**: Completed according to README
+✅ **Status**: Verified in repository
 
-**Deliverables**:
+**Deliverables (verified in codebase)**:
 
-- ✅ React Three Fiber + Three.js ecosystem integration
-- ✅ Basic 3D scene with lighting and camera controls
-- ✅ Orbit camera controls with customizable presets
-- ✅ Professional lighting setup
-- ✅ View mode switching (2D/3D/Hybrid)
-- ✅ Wall3D component with geometry generation
-- ✅ Room3D component with floor/ceiling rendering
-- ✅ Element selection and hover states
-- ✅ Material system with PBR properties
-- ✅ Comprehensive Zustand store with TypeScript
+- ✅ React Three Fiber + Three.js ecosystem integration (`src/components/Canvas3D/Scene3D.tsx`, `@react-three/fiber`, `@react-three/drei` usage)
+- ✅ Basic 3D scene with lighting and camera controls (`src/components/Canvas3D/Scene3D.tsx`, `src/components/Canvas3D/Lighting/SceneLighting.tsx`)
+- ✅ Orbit camera controls with customizable presets (`src/components/Canvas3D/Camera/CameraControls.tsx`, `CameraPresets.ts`)
+- ✅ Professional lighting setup (`src/components/Canvas3D/Lighting/SceneLighting.tsx`)
+- ✅ View mode switching (2D/3D/Hybrid) (state in `src/stores/designStore.ts`, used by `Scene3D.tsx`)
+- ✅ Wall3D component with geometry generation (`src/components/Canvas3D/Elements/Wall3D.tsx`)
+- ✅ Room3D component with floor/ceiling rendering (`src/components/Canvas3D/Elements/Room3D.tsx`)
+- ✅ Element selection and hover states (selection implemented via `selectElement` in `src/stores/designStore.ts` and used across 3D elements)
+- ✅ Material system with PBR properties (materials defined in `src/stores/designStore.ts`, `useMaterial3D` hook in `src/hooks/3d/useMaterial3D.ts`)
+- ✅ Comprehensive Zustand store with TypeScript (`src/stores/designStore.ts`)
 
-### Phase 2: Core 3D Elements (Completed)
+### Phase 2: Core 3D Elements (Partially Verified)
 
 **Objective**: Implement core architectural elements with enhanced 3D representations
 
+Below are items verified in the codebase and remaining gaps discovered during review.
+
 #### 2.1 Door System
 
-**Week 1: Door Implementation**
+#### Week 1: Door Implementation
 
-- ✅ Create Door3D component with frame and panel geometry
-- ✅ Implement wall-attached placement with precise positioning
-- ✅ Add opening animations (swing, slide)
-- ✅ Create door configuration panel (size, type, material)
+- ✅ Create `Door3D` component with frame and panel geometry (`src/components/Canvas3D/Elements/Door3D.tsx`)
+- ✅ Implement wall-attached placement with precise positioning (position math present in `Door3D`)
+- ✅ Add opening animations (hinged and sliding handled via useFrame in `Door3D`)
+- ⚠️ Partial: Door configuration panel (size, type, material) - UI panel components for door configuration are not present in `src/components/UI` (no dedicated `DoorConfig` or panel file found). Add as a follow-up.
 
 #### 2.2 Window System
 
-**Week 2: Window Implementation**
+#### Week 2: Window Implementation
 
-- ✅ Create Window3D component with frame and glass geometry
-- ✅ Implement wall-attached placement with precise positioning
-- ✅ Add glazing options (single, double, triple pane)
-- ✅ Create window configuration panel (size, type, material)
+- ✅ Create `Window3D` component with frame and glass geometry (`src/components/Canvas3D/Elements/Window3D.tsx`)
+- ✅ Implement wall-attached placement with precise positioning (position math present in `Window3D`)
+- ⚠️ Partial: Glazing options (single/double/triple) — `Window` type in store includes variants, but the component uses a single material; glazing-level logic/variants and a configuration panel are not implemented in UI.
+- ⚠️ Partial: Window configuration panel (size, type, material) - missing UI panel file.
 
 #### 2.3 Stair System
 
-**Week 3: Stair Implementation**
+#### Week 3: Stair Implementation
 
-- ✅ Create Stair3D component with steps and railings
-- ✅ Implement parametric stair generation (straight, L-shaped, U-shaped)
-- ✅ Add railings and handrails with customization options
-- ✅ Create stair configuration panel (type, dimensions, materials)
+- ✅ Create `Stair3D` component with steps and railings (`src/components/Canvas3D/Elements/Stair3D.tsx`)
+- ✅ Implement parametric stair generation for straight stairs (step loop present)
+- ⚠️ Partial: L-shaped, U-shaped, and spiral generation algorithms are not present in `Stair3D` (the `type` exists in the store but component creates straight steps only). Additional parametric generators needed for other types.
+- ⚠️ Partial: Stair configuration panel (type, dimensions, materials) - missing UI panel file.
 
 #### 2.4 Enhanced Wall System
 
-**Week 4: Wall Enhancements**
+#### Week 4: Wall Enhancements
 
-- ✅ Improve wall connections and corner handling
-- ✅ Add wall types (load-bearing, partition)
-- ✅ Implement wall openings management
-- ✅ Add wall material assignment
+- ✅ Improve wall connections and corner handling (Wall3D uses connected walls via `getConnectedWalls` helper)
+- ✅ Add wall types (load-bearing, partition) (type present in `Wall` store interface)
+- ✅ Implement wall openings management (Door3D/Window3D attach to walls and Wall3D geometry adjusts visually)
+- ✅ Add wall material assignment (materials supported via `materialId` and `useMaterial3D`)
+
+#### Evidence — key implementation files
+
+- `src/stores/designStore.ts` — store schemas and actions (walls, doors, windows, stairs, materials, selectElement)
+- `src/components/Canvas3D/Scene3D.tsx` — main canvas and rendering setup
+- `src/components/Canvas3D/Elements/Wall3D.tsx`
+- `src/components/Canvas3D/Elements/Door3D.tsx`
+- `src/components/Canvas3D/Elements/Window3D.tsx`
+- `src/components/Canvas3D/Elements/Stair3D.tsx`
+- `src/components/Canvas3D/Elements/ElementRenderer3D.tsx`
+
+#### Missing / Gaps (actionable)
+
+1. UI configuration panels for Doors, Windows, and Stairs:
+
+  Doors and Windows are covered by the existing `PropertiesPanel` (`src/components/UI/PropertiesPanel.tsx`) which exposes editable controls for width, height, type, material selectors, and door open state. No separate `DoorConfigPanel`/`WindowConfigPanel` is required unless a dedicated panel is preferred for UX reasons.
+
+  Stairs are not yet covered by `PropertiesPanel` — add `StairProperties` rendering (or a dedicated `StairConfigPanel`) to allow editing `steps`, `stepHeight`, `stepDepth`, `width`, `type`, `hasHandrail`, and `railingHeight`.
+2. `Stair3D` implements straight stair generation only; L-shaped, U-shaped, and spiral algorithms are TODO.
+3. `src/stores/viewStore.ts` was empty — a minimal view-store helper has been added to surface `viewMode` and `setViewMode` without changing existing `designStore` ownership. If more view-specific state is required later (camera presets, UI layout for view modes), expand this file.
+4. Documentation: update Phase 2 to reflect partial completion and list exact next tasks and owners.
+
 
 ### Phase 3: Tools & Interaction
 
@@ -90,7 +114,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 3.1 Wall Drawing Tool
 
-**Week 5: Drawing Tools**
+#### Week 5: Drawing Tools
 
 - Implement 3D wall drawing with snapping and constraints
 - Add grid snapping with customizable spacing
@@ -99,7 +123,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 3.2 Room Creation Tool
 
-**Week 6: Room Tools**
+#### Week 6: Room Tools
 
 - Implement room creation by wall selection
 - Add room type classification (bedroom, kitchen, etc.)
@@ -108,7 +132,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 3.3 Measurement Tools
 
-**Week 7: Measurement System**
+#### Week 7: Measurement System
 
 - Implement 3D measurement tools
 - Add distance, area, and volume calculations
@@ -117,7 +141,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 3.4 Element Manipulation
 
-**Week 8: Manipulation Tools**
+#### Week 8: Manipulation Tools
 
 - Add element manipulation handles (move, rotate, scale)
 - Implement constraint-based editing
@@ -130,7 +154,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 4.1 Advanced Material System
 
-**Week 9: Material Enhancement**
+#### Week 9: Material Enhancement
 
 - Implement texture loading and mapping
 - Add PBR material editor (roughness, metalness, normal maps)
@@ -139,7 +163,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 4.2 Lighting System
 
-**Week 10: Lighting Enhancement**
+#### Week 10: Lighting Enhancement
 
 - Implement lighting environment presets
 - Add time-of-day simulation
@@ -148,7 +172,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 4.3 Post-Processing Effects
 
-**Week 11: Visual Effects**
+#### Week 11: Visual Effects
 
 - Implement post-processing effects (bloom, depth of field)
 - Add anti-aliasing options
@@ -161,7 +185,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 5.1 Export System
 
-**Week 12: Export Implementation**
+#### Week 12: Export Implementation
 
 - Implement 3D model export (glTF, OBJ)
 - Add high-resolution rendering
@@ -170,7 +194,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 5.2 Advanced Features
 
-**Week 13: Professional Tools**
+#### Week 13: Professional Tools
 
 - Add multi-floor support with vertical navigation
 - Implement roof generation system
@@ -179,7 +203,7 @@ Based on the README, the foundation phase has been completed with:
 
 #### 5.3 Polish & Optimization
 
-**Week 14: Final Polish**
+#### Week 14: Final Polish
 
 - Performance optimization
 - Bug fixes and stability improvements

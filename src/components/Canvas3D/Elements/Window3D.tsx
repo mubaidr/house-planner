@@ -1,4 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
+import { RectAreaLight } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
@@ -82,6 +83,15 @@ export function Window3D({ windowId }: Window3DProps) {
           opacity={0.3}
         />
       </mesh>
+
+      <RectAreaLight
+        width={windowElement.width}
+        height={windowElement.height}
+        intensity={5}
+        color={"#FFFFFF"}
+        position={[0, windowElement.height / 2, 0.1]}
+        rotation={[0, Math.PI, 0]}
+      />
 
       {/* Selection highlight */}
       {isSelected && (

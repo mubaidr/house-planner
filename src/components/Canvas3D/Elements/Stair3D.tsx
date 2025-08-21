@@ -2,6 +2,7 @@ import { useDesignStore } from '@/stores/designStore';
 import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { generateStraightStairs, generateLShapedStairs, generateUShapedStairs } from '@/utils/3d/geometry3D';
 
 interface Stair3DProps {
   stairId: string;
@@ -36,35 +37,31 @@ export function Stair3D({ stairId }: Stair3DProps) {
     return new THREE.Euler(0, angle, 0);
   }, [stair]);
 
-  // Create individual steps
+  // Create individual steps using generators
   const steps = useMemo(() => {
-    if (!stair) return { geometries: [], positions: [] };
-    const stepGeometries: THREE.BufferGeometry[] = [];
-    const stepPositions: THREE.Vector3[] = [];
+    if (!stair) return { geometries: [], positions: [], rotations: [] };
 
-    // Calculate stair length
-    const length = Math.sqrt(
-      Math.pow(stair.end.x - stair.start.x, 2) + Math.pow(stair.end.z - stair.start.z, 2)
-    );
-
-    // Create steps
-    for (let i = 0; i < stair.steps; i++) {
-      // Create geometry for each step
-      const geometry = new THREE.BoxGeometry(stair.stepDepth, stair.stepHeight, stair.width);
-      stepGeometries.push(geometry);
-
-      // Position each step
-      const x = (i + 0.5) * stair.stepDepth - length / 2;
-      const y = (i + 0.5) * stair.stepHeight;
-      const z = 0;
-
-      stepPositions.push(new THREE.Vector3(x, y, z));
+    // Choose generator based on stair.type
+    let transforms = generateStraightStairs(stair.steps, stair.stepDepth, stair.stepHeight, stair.width);
+    if (stair.type === 'l-shaped') {
+      transforms = generateLShapedStairs(stair.steps, stair.stepDepth, stair.stepHeight, stair.width);
+    } else if (stair.type === 'u-shaped') {
+      transforms = generateUShapedStairs(stair.steps, stair.stepDepth, stair.stepHeight, stair.width);
     }
 
-    // Store geometries for cleanup
-    geometriesRef.current = stepGeometries;
+    const stepGeometries: THREE.BufferGeometry[] = [];
+    const stepPositions: THREE.Vector3[] = [];
+    const stepRotations: number[] = [];
 
-    return { geometries: stepGeometries, positions: stepPositions };
+    transforms.forEach(t => {
+      const geometry = new THREE.BoxGeometry(stair.stepDepth, stair.stepHeight, stair.width);
+      stepGeometries.push(geometry);
+      geometriesRef.current.push(geometry);
+      stepPositions.push(new THREE.Vector3(t.position.x, t.position.y, t.position.z));
+      stepRotations.push(t.rotationY);
+    });
+
+    return { geometries: stepGeometries, positions: stepPositions, rotations: stepRotations };
   }, [stair]);
 
   // Create railing if needed
@@ -107,6 +104,7 @@ export function Stair3D({ stairId }: Stair3DProps) {
           key={index}
           geometry={geometry}
           position={steps.positions[index]}
+          rotation={[0, steps.rotations[index], 0]}
           castShadow
           receiveShadow
         >

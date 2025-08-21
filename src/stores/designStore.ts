@@ -84,6 +84,11 @@ export interface Material {
   roughness: number;
   metalness: number;
   opacity: number;
+  map?: string;
+  normalMap?: string;
+  roughnessMap?: string;
+  metalnessMap?: string;
+  aoMap?: string;
 }
 
 export interface DesignState {
@@ -139,6 +144,9 @@ export interface DesignActions {
   // Material actions
   addMaterial: (material: Omit<Material, 'id'>) => void;
   updateMaterial: (id: string, updates: Partial<Material>) => void;
+
+  // Helper functions
+  getConnectedWalls: (wallId: string) => { start: Wall[]; end: Wall[] };
 }
 
 export const useDesignStore = create<DesignState & DesignActions>()(
@@ -363,6 +371,23 @@ export const useDesignStore = create<DesignState & DesignActions>()(
             state.materials[materialIndex] = { ...state.materials[materialIndex], ...updates };
           }
         }),
+
+      // Helper functions
+      getConnectedWalls: wallId => {
+        const { walls } = _get();
+        const wall = walls.find(w => w.id === wallId);
+        if (!wall) return { start: [], end: [] };
+
+        const connectedAtStart = walls.filter(
+          w => w.id !== wallId && (w.start.x === wall.start.x && w.start.z === wall.start.z || w.end.x === wall.start.x && w.end.z === wall.start.z)
+        );
+
+        const connectedAtEnd = walls.filter(
+          w => w.id !== wallId && (w.start.x === wall.end.x && w.start.z === wall.end.z || w.end.x === wall.end.x && w.end.z === wall.end.z)
+        );
+
+        return { start: connectedAtStart, end: connectedAtEnd };
+      },
     }))
   )
 );

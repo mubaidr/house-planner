@@ -1,52 +1,41 @@
 import { useMemo } from 'react';
-import type { Door, Wall, Window } from '@/stores/designStore';
+import type { Door, Wall, Window, Stair } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
+import { DoorConfigPanel } from './DoorConfigPanel';
+import { WindowConfigPanel } from './WindowConfigPanel';
+import { StairConfigPanel } from './StairConfigPanel';
 
 export function PropertiesPanel() {
   // Use a selector that returns the specific element to avoid re-renders when unrelated elements change
-  const { selectedElement, selectedElementType } = useDesignStore(
-    state => {
-      if (!state.selectedElementId || !state.selectedElementType) {
-        return { selectedElement: null, selectedElementType: null };
-      }
+  // Simpler selector: read selected ID/type then resolve the concrete element.
+  const selectedElementId = useDesignStore(state => state.selectedElementId);
+  const selectedElementType = useDesignStore(state => state.selectedElementType);
 
-      let element = null;
-      switch (state.selectedElementType) {
-        case 'wall':
-          element = state.walls.find(w => w.id === state.selectedElementId);
-          break;
-        case 'door':
-          element = state.doors.find(d => d.id === state.selectedElementId);
-          break;
-        case 'window':
-          element = state.windows.find(w => w.id === state.selectedElementId);
-          break;
-        default:
-          element = null;
-      }
-
-      return {
-        selectedElement: element,
-        selectedElementType: state.selectedElementType
-      };
-    },
-    // Custom equality function to prevent unnecessary re-renders
-    (prev, next) => {
-      // If both elements are null, they're equal
-      if (!prev.selectedElement && !next.selectedElement) return true;
-      
-      // If one is null and the other isn't, they're not equal
-      if (!prev.selectedElement || !next.selectedElement) return false;
-      
-      // Compare the elements by reference (they should be the same object if nothing changed)
-      return prev.selectedElement === next.selectedElement && 
-             prev.selectedElementType === next.selectedElementType;
+  let selectedElement: Wall | Door | Window | Stair | null = null;
+  if (selectedElementId && selectedElementType) {
+    const state = useDesignStore.getState();
+    switch (selectedElementType) {
+      case 'wall':
+        selectedElement = state.walls.find(w => w.id === selectedElementId) || null;
+        break;
+      case 'door':
+        selectedElement = state.doors.find(d => d.id === selectedElementId) || null;
+        break;
+      case 'window':
+        selectedElement = state.windows.find(w => w.id === selectedElementId) || null;
+        break;
+      case 'stair':
+        selectedElement = state.stairs.find(s => s.id === selectedElementId) || null;
+        break;
+      default:
+        selectedElement = null;
     }
-  );
+  }
 
   const updateWall = useDesignStore(state => state.updateWall);
   const updateDoor = useDesignStore(state => state.updateDoor);
   const updateWindow = useDesignStore(state => state.updateWindow);
+  const updateStair = useDesignStore(state => state.updateStair);
 
   // If no element is selected, show a message
   if (!selectedElement) {
@@ -73,11 +62,15 @@ export function PropertiesPanel() {
       )}
 
       {selectedElementType === 'door' && selectedElement && (
-        <DoorProperties door={selectedElement as Door} onUpdate={updateDoor} />
+        <DoorConfigPanel door={selectedElement as Door} onUpdate={updateDoor} />
       )}
 
       {selectedElementType === 'window' && selectedElement && (
-        <WindowProperties window={selectedElement as Window} onUpdate={updateWindow} />
+        <WindowConfigPanel window={selectedElement as Window} onUpdate={updateWindow} />
+      )}
+
+      {selectedElementType === 'stair' && selectedElement && (
+        <StairConfigPanel stair={selectedElement as Stair} onUpdate={updateStair} />
       )}
     </div>
   );
@@ -134,171 +127,4 @@ function WallProperties({
   );
 }
 
-// Door properties component
-function DoorProperties({
-  door,
-  onUpdate,
-}: {
-  door: Door;
-  onUpdate: (id: string, updates: Partial<Door>) => void;
-}) {
-  const handleChange = <K extends keyof Door>(field: K, value: Door[K]) => {
-    onUpdate(door.id, { [field]: value });
-  };
-
-  const handleToggleOpen = () => {
-    onUpdate(door.id, { isOpen: !door.isOpen });
-  };
-
-  return (
-    <div className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Width (m)</label>
-        <input
-          type="number"
-          step="0.1"
-          value={door.width}
-          onChange={e => handleChange('width', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Height (m)</label>
-        <input
-          type="number"
-          step="0.1"
-          value={door.height}
-          onChange={e => handleChange('height', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Type</label>
-        <select
-          value={door.type}
-          onChange={e => handleChange('type', e.target.value as Door['type'])}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        >
-          <option value="hinged">Hinged</option>
-          <option value="sliding">Sliding</option>
-          <option value="folding">Folding</option>
-          <option value="revolving">Revolving</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Swing Direction</label>
-        <select
-          value={door.swingDirection}
-          onChange={e => handleChange('swingDirection', e.target.value as Door['swingDirection'])}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        >
-          <option value="left">Left</option>
-          <option value="right">Right</option>
-          <option value="both">Both</option>
-        </select>
-      </div>
-
-      <div className="flex items-center">
-        <label className="block text-sm font-medium text-gray-700 mr-2">Open</label>
-        <button
-          onClick={handleToggleOpen}
-          className={`px-3 py-1 rounded transition ${
-            door.isOpen ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
-          }`}
-        >
-          {door.isOpen ? 'Open' : 'Closed'}
-        </button>
-      </div>
-
-      {door.type === 'hinged' && door.isOpen && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Open Angle (°)</label>
-          <input
-            type="range"
-            min="0"
-            max="90"
-            value={door.openAngle}
-            onChange={e => handleChange('openAngle', parseInt(e.target.value))}
-            className="mt-1 block w-full"
-          />
-          <div className="text-right text-sm text-gray-500">{door.openAngle}°</div>
-        </div>
-      )}
-
-      {door.type === 'sliding' && door.isOpen && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Open Offset</label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={door.openOffset * 100}
-            onChange={e => handleChange('openOffset', parseInt(e.target.value) / 100)}
-            className="mt-1 block w-full"
-          />
-          <div className="text-right text-sm text-gray-500">
-            {Math.round(door.openOffset * 100)}%
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Window properties component
-function WindowProperties({
-  window,
-  onUpdate,
-}: {
-  window: Window;
-  onUpdate: (id: string, updates: Partial<Window>) => void;
-}) {
-  const handleChange = <K extends keyof Window>(field: K, value: Window[K]) => {
-    onUpdate(window.id, { [field]: value });
-  };
-
-  return (
-    <div className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Width (m)</label>
-        <input
-          type="number"
-          step="0.1"
-          value={window.width}
-          onChange={e => handleChange('width', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Height (m)</label>
-        <input
-          type="number"
-          step="0.1"
-          value={window.height}
-          onChange={e => handleChange('height', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Type</label>
-        <select
-          value={window.type}
-          onChange={e => handleChange('type', e.target.value as Window['type'])}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        >
-          <option value="single">Single</option>
-          <option value="double">Double</option>
-          <option value="triple">Triple</option>
-          <option value="awning">Awning</option>
-          <option value="casement">Casement</option>
-          <option value="slider">Slider</option>
-        </select>
-      </div>
-    </div>
-  );
-}
+// Removed local DoorProperties/WindowProperties in favor of dedicated panels

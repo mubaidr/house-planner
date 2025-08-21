@@ -1,4 +1,5 @@
-import { useDesignStore } from '@/stores/designStore';
+import { useDesignStore, Wall } from '@/stores/designStore';
+import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
 import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -8,11 +9,16 @@ interface Wall3DProps {
 }
 
 export function Wall3D({ wallId }: Wall3DProps) {
-  const wall = useDesignStore(state => state.walls.find(w => w.id === wallId));
-  const selectedElementId = useDesignStore(state => state.selectedElementId);
-  const selectElement = useDesignStore(state => state.selectElement);
+  const { wall, connectedWalls, selectedElementId, selectElement } = useDesignStore(state => ({
+    wall: state.walls.find(w => w.id === wallId),
+    connectedWalls: state.getConnectedWalls(wallId),
+    selectedElementId: state.selectedElementId,
+    selectElement: state.selectElement,
+  }));
 
   const geometryRef = useRef<THREE.BufferGeometry | null>(null);
+
+  
 
   // Clean up geometry on unmount
   useEffect(() => {
@@ -23,44 +29,57 @@ export function Wall3D({ wallId }: Wall3DProps) {
     };
   }, []);
 
-  // Calculate wall geometry
-  const wallGeometry = useMemo(() => {
-    if (!wall) return null;
-    // Calculate wall length
-    const length = Math.sqrt(
-      Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
-    );
+  const { geometry, position, rotation } = useMemo(() => {
+    if (!wall) return { geometry: null, position: new THREE.Vector3(), rotation: new THREE.Euler() };
 
-    // Create geometry
+    let start = new THREE.Vector3(wall.start.x, wall.start.y, wall.start.z);
+    let end = new THREE.Vector3(wall.end.x, wall.end.y, wall.end.z);
+
+    // To simplify, we assume walls are on the XZ plane (y is up)
+    const wallDir = new THREE.Vector2(end.x - start.x, end.z - start.z).normalize();
+
+    // Adjust start point
+    if (connectedWalls.start.length === 1) {
+      const otherWall = connectedWalls.start[0];
+      const otherDir = new THREE.Vector2(otherWall.end.x - otherWall.start.x, otherWall.end.z - otherWall.start.z).normalize();
+      const angle = wallDir.angle() - otherDir.angle();
+
+      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) { // Not a straight line
+        const offset = wall.thickness / 2 / Math.tan(Math.PI - Math.abs(angle));
+        start.x += wallDir.x * offset;
+        start.z += wallDir.y * offset;
+      }
+    }
+
+    // Adjust end point
+    if (connectedWalls.end.length === 1) {
+      const otherWall = connectedWalls.end[0];
+      const otherDir = new THREE.Vector2(otherWall.end.x - otherWall.start.x, otherWall.end.z - otherWall.start.z).normalize();
+      const angle = wallDir.angle() - otherDir.angle();
+
+      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) { // Not a straight line
+        const offset = wall.thickness / 2 / Math.tan(Math.PI - Math.abs(angle));
+        end.x -= wallDir.x * offset;
+        end.z -= wallDir.y * offset;
+      }
+    }
+
+    const length = start.distanceTo(end);
     const geometry = new THREE.BoxGeometry(length, wall.height, wall.thickness);
-
-    // Center the geometry at origin for easier positioning
-    geometry.translate(0, 0, 0); // Already centered by default
-
-    // Store for cleanup
+    geometry.translate(0, 0, 0);
     geometryRef.current = geometry;
 
-    return geometry;
-  }, [wall]);
-
-  // Calculate wall position
-  const wallPosition = useMemo(() => {
-    if (!wall) return new THREE.Vector3();
-    // Position at the center of the wall
-    return new THREE.Vector3(
-      (wall.start.x + wall.end.x) / 2,
+    const position = new THREE.Vector3(
+      (start.x + end.x) / 2,
       wall.height / 2,
-      (wall.start.z + wall.end.z) / 2
+      (start.z + end.z) / 2
     );
-  }, [wall]);
 
-  // Calculate wall rotation
-  const wallRotation = useMemo(() => {
-    if (!wall) return new THREE.Euler();
-    const angle = Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x);
+    const rotation = new THREE.Euler(0, -Math.atan2(end.z - start.z, end.x - start.x), 0);
 
-    return new THREE.Euler(0, angle, 0);
-  }, [wall]);
+    return { geometry, position, rotation };
+
+  }, [wall, connectedWalls]);
 
   // If wall doesn't exist, don't render
   if (!wall) return null;
@@ -74,22 +93,23 @@ export function Wall3D({ wallId }: Wall3DProps) {
   // Check if wall is selected
   const isSelected = selectedElementId === wallId;
 
+  const materialProps = useMaterial3D(wall?.materialId);
+
   return (
-    <group position={wallPosition} rotation={wallRotation} onClick={handleSelect}>
+    <group position={position} rotation={rotation} onClick={handleSelect}>
       {/* Wall mesh */}
-      {wallGeometry && (
-        <mesh geometry={wallGeometry} castShadow receiveShadow>
+      {geometry && (
+        <mesh geometry={geometry} castShadow receiveShadow>
           <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : '#cccccc'}
-            roughness={0.8}
-            metalness={0.1}
+            {...materialProps}
+            color={isSelected ? '#3b82f6' : materialProps.color || '#cccccc'}
           />
         </mesh>
       )}
 
       {/* Selection highlight */}
-      {isSelected && wallGeometry && (
-        <mesh geometry={wallGeometry}>
+      {isSelected && geometry && (
+        <mesh geometry={geometry}>
           <meshBasicMaterial color="#3b82f6" wireframe={true} transparent={true} opacity={0.5} />
         </mesh>
       )}

@@ -1,4 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
+import { RectAreaLight } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
@@ -111,6 +112,17 @@ export function Door3D({ doorId }: Door3DProps) {
         <boxGeometry args={[door.width, door.height, door.thickness]} />
         <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.2} />
       </mesh>
+
+      {door.isOpen && (
+        <RectAreaLight
+          width={door.width}
+          height={door.height}
+          intensity={2}
+          color={"#FFFFFF"}
+          position={[0, door.height / 2, 0.1]}
+          rotation={[0, Math.PI, 0]}
+        />
+      )}
 
       {/* Selection highlight */}
       {isSelected && (

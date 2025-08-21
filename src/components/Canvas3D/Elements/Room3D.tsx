@@ -1,4 +1,5 @@
-import { useDesignStore } from '@/stores/designStore';
+import { useDesignStore, Wall } from '@/stores/designStore';
+import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
 import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -12,6 +13,9 @@ export function Room3D({ roomId }: Room3DProps) {
   const walls = useDesignStore(state => state.walls);
   const selectedElementId = useDesignStore(state => state.selectedElementId);
   const selectElement = useDesignStore(state => state.selectElement);
+
+  const floorMaterialProps = useMaterial3D(room?.floorMaterialId);
+  const ceilingMaterialProps = useMaterial3D(room?.ceilingMaterialId);
 
   const geometryRef = useRef<THREE.BufferGeometry | null>(null);
 
@@ -32,112 +36,55 @@ export function Room3D({ roomId }: Room3DProps) {
       .filter((wall): wall is NonNullable<typeof wall> => wall !== undefined);
   }, [room, walls]);
 
-  // Calculate room floor geometry using actual wall connections
   const floorGeometry = useMemo(() => {
-    if (roomWalls.length === 0) return null;
+    if (roomWalls.length < 3) return null;
 
-    // Create points array for the floor shape by connecting walls
-    const _points: THREE.Vector2[] = [];
+    // Wall tracing algorithm to order the vertices
+    const orderedWalls: Wall[] = [];
+    let currentWall = roomWalls[0];
+    const remainingWalls = [...roomWalls.slice(1)];
 
-    // For connected walls, we need to trace the perimeter
-    // For now, we'll create a simplified approach that works for rectangular rooms
-    if (roomWalls.length >= 3) {
-      // Collect all unique corner points
-      const corners: THREE.Vector2[] = [];
+    orderedWalls.push(currentWall);
 
-      roomWalls.forEach(wall => {
-        // Add start and end points
-        corners.push(new THREE.Vector2(wall.start.x, wall.start.z));
-        corners.push(new THREE.Vector2(wall.end.x, wall.end.z));
-      });
-
-      // Remove duplicate points (with small tolerance)
-      const uniqueCorners: THREE.Vector2[] = [];
-      const tolerance = 0.001;
-
-      corners.forEach(corner => {
-        const isDuplicate = uniqueCorners.some(
-          existing =>
-            Math.abs(existing.x - corner.x) < tolerance &&
-            Math.abs(existing.y - corner.y) < tolerance
-        );
-
-        if (!isDuplicate) {
-          uniqueCorners.push(corner);
+    while (remainingWalls.length > 0) {
+      const currentEndpoint = currentWall.end;
+      let foundNext = false;
+      for (let i = 0; i < remainingWalls.length; i++) {
+        const nextWall = remainingWalls[i];
+        if (nextWall.start.x === currentEndpoint.x && nextWall.start.z === currentEndpoint.z) {
+          orderedWalls.push(nextWall);
+          currentWall = nextWall;
+          remainingWalls.splice(i, 1);
+          foundNext = true;
+          break;
+        } else if (nextWall.end.x === currentEndpoint.x && nextWall.end.z === currentEndpoint.z) {
+          // Reverse the wall direction and add it
+          const reversedWall = { ...nextWall, start: nextWall.end, end: nextWall.start };
+          orderedWalls.push(reversedWall);
+          currentWall = reversedWall;
+          remainingWalls.splice(i, 1);
+          foundNext = true;
+          break;
         }
-      });
-
-      // Sort points to form a proper polygon (simplified approach)
-      if (uniqueCorners.length >= 3) {
-        // Find centroid
-        let cx = 0,
-          cz = 0;
-        uniqueCorners.forEach(p => {
-          cx += p.x;
-          cz += p.y;
-        });
-        cx /= uniqueCorners.length;
-        cz /= uniqueCorners.length;
-
-        // Sort points by angle from centroid
-        uniqueCorners.sort((a, b) => {
-          const angleA = Math.atan2(a.y - cz, a.x - cx);
-          const angleB = Math.atan2(b.y - cz, b.x - cx);
-          return angleA - angleB;
-        });
-
-        // Create shape
-        const shape = new THREE.Shape();
-        shape.moveTo(uniqueCorners[0].x, uniqueCorners[0].y);
-
-        for (let i = 1; i < uniqueCorners.length; i++) {
-          shape.lineTo(uniqueCorners[i].x, uniqueCorners[i].y);
-        }
-
-        shape.closePath();
-
-        const geometry = new THREE.ShapeGeometry(shape);
-
-        // Store for cleanup
-        geometryRef.current = geometry;
-
-        return geometry;
+      }
+      if (!foundNext) {
+        // Could not find a closed loop, return null
+        return null;
       }
     }
 
-    // Fallback to rectangle for 4 walls
-    if (roomWalls.length === 4) {
-      // Find min/max coordinates
-      let minX = Infinity,
-        minZ = Infinity;
-      let maxX = -Infinity,
-        maxZ = -Infinity;
+    const points = orderedWalls.map(w => new THREE.Vector2(w.start.x, w.start.z));
+    const shape = new THREE.Shape(points);
+    const geometry = new THREE.ShapeGeometry(shape);
+    geometryRef.current = geometry;
 
-      roomWalls.forEach(wall => {
-        minX = Math.min(minX, wall.start.x, wall.end.x);
-        minZ = Math.min(minZ, wall.start.z, wall.end.z);
-        maxX = Math.max(maxX, wall.start.x, wall.end.x);
-        maxZ = Math.max(maxZ, wall.start.z, wall.end.z);
-      });
-
-      // Create shape
-      const shape = new THREE.Shape();
-      shape.moveTo(minX, minZ);
-      shape.lineTo(maxX, minZ);
-      shape.lineTo(maxX, maxZ);
-      shape.lineTo(minX, maxZ);
-      shape.closePath();
-
-      const geometry = new THREE.ShapeGeometry(shape);
-
-      // Store for cleanup
-      geometryRef.current = geometry;
-
-      return geometry;
-    }
-
-    return null;
+    return geometry;
   }, [roomWalls]);
+
+  const ceilingGeometry = useMemo(() => {
+    if (!floorGeometry) return null;
+    return floorGeometry.clone();
+  }, [floorGeometry]);
 
   // If room doesn't exist, don't render
   if (!room) return null;
@@ -151,6 +98,8 @@ export function Room3D({ roomId }: Room3DProps) {
   // Check if room is selected
   const isSelected = selectedElementId === roomId;
 
+  const roomHeight = roomWalls.length > 0 ? roomWalls[0].height : 0;
+
   return (
     <group onClick={handleSelect}>
       {/* Room floor */}
@@ -161,9 +110,22 @@ export function Room3D({ roomId }: Room3DProps) {
           rotation={[-Math.PI / 2, 0, 0]} // Rotate to horizontal
         >
           <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : '#DEB887'}
-            roughness={0.6}
-            metalness={0.1}
+            {...floorMaterialProps}
+            color={isSelected ? '#3b82f6' : floorMaterialProps.color || '#DEB887'}
+          />
+        </mesh>
+      )}
+
+      {/* Room ceiling */}
+      {ceilingGeometry && (
+        <mesh
+          geometry={ceilingGeometry}
+          position={[0, roomHeight, 0]}
+          rotation={[-Math.PI / 2, 0, 0]} // Rotate to horizontal
+        >
+          <meshStandardMaterial
+            {...ceilingMaterialProps}
+            color={ceilingMaterialProps.color || '#F5F5F5'}
           />
         </mesh>
       )}
