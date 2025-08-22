@@ -1,8 +1,12 @@
 import { useDesignStore } from '@/stores/designStore';
+import {
+  generateLShapedStairs,
+  generateStraightStairs,
+  generateUShapedStairs,
+} from '@/utils/3d/geometry3D';
 import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { generateStraightStairs, generateLShapedStairs, generateUShapedStairs } from '@/utils/3d/geometry3D';
 
 interface Stair3DProps {
   stairId: string;
@@ -17,8 +21,9 @@ export function Stair3D({ stairId }: Stair3DProps) {
 
   // Clean up geometries on unmount
   useEffect(() => {
+    const geometries = geometriesRef.current;
     return () => {
-      geometriesRef.current.forEach(geometry => {
+      geometries.forEach(geometry => {
         geometry.dispose();
       });
     };
@@ -42,11 +47,26 @@ export function Stair3D({ stairId }: Stair3DProps) {
     if (!stair) return { geometries: [], positions: [], rotations: [] };
 
     // Choose generator based on stair.type
-    let transforms = generateStraightStairs(stair.steps, stair.stepDepth, stair.stepHeight, stair.width);
+    let transforms = generateStraightStairs(
+      stair.steps,
+      stair.stepDepth,
+      stair.stepHeight,
+      stair.width
+    );
     if (stair.type === 'l-shaped') {
-      transforms = generateLShapedStairs(stair.steps, stair.stepDepth, stair.stepHeight, stair.width);
+      transforms = generateLShapedStairs(
+        stair.steps,
+        stair.stepDepth,
+        stair.stepHeight,
+        stair.width
+      );
     } else if (stair.type === 'u-shaped') {
-      transforms = generateUShapedStairs(stair.steps, stair.stepDepth, stair.stepHeight, stair.width);
+      transforms = generateUShapedStairs(
+        stair.steps,
+        stair.stepDepth,
+        stair.stepHeight,
+        stair.width
+      );
     }
 
     const stepGeometries: THREE.BufferGeometry[] = [];

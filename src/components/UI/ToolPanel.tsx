@@ -7,6 +7,8 @@ export function ToolPanel() {
   const addStair = useDesignStore(state => state.addStair);
   const addRoom = useDesignStore(state => state.addRoom);
   const walls = useDesignStore(state => state.walls);
+  const activeTool = useDesignStore(state => state.activeTool);
+  const setActiveTool = useDesignStore(state => state.setActiveTool);
 
   const handleAddWall = () => {
     // Add a random wall for testing
@@ -88,15 +90,39 @@ export function ToolPanel() {
     }
   };
 
+  const handleWallTool = () => {
+    setActiveTool(activeTool === 'wall' ? null : 'wall');
+  };
+
+  const handleRoomTool = () => {
+    setActiveTool(activeTool === 'room' ? null : 'room');
+  };
+
   return (
     <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg">
       <h2 className="text-lg font-bold mb-2">Tools</h2>
       <div className="space-y-2">
         <button
+          onClick={handleWallTool}
+          className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+            activeTool === 'wall' ? 'bg-blue-700' : 'bg-blue-500'
+          }`}
+        >
+          {activeTool === 'wall' ? 'Drawing Wall (Click to Cancel)' : 'Draw Wall'}
+        </button>
+        <button
+          onClick={handleRoomTool}
+          className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+            activeTool === 'room' ? 'bg-purple-700' : 'bg-purple-500'
+          }`}
+        >
+          {activeTool === 'room' ? 'Creating Room (Click to Cancel)' : 'Create Room'}
+        </button>
+        <button
           onClick={handleAddWall}
           className="w-full px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
         >
-          Add Wall
+          Add Wall (Random)
         </button>
         <button
           onClick={handleAddDoor}
@@ -120,7 +146,7 @@ export function ToolPanel() {
           onClick={handleAddRoom}
           className="w-full px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
         >
-          Add Room
+          Add Room (Random)
         </button>
         <button
           onClick={handleClearAll}

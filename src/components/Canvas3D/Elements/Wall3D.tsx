@@ -1,5 +1,5 @@
-import { useDesignStore, Wall } from '@/stores/designStore';
 import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
+import { useDesignStore } from '@/stores/designStore';
 import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -16,9 +16,9 @@ export function Wall3D({ wallId }: Wall3DProps) {
     selectElement: state.selectElement,
   }));
 
-  const geometryRef = useRef<THREE.BufferGeometry | null>(null);
+  const materialProps = useMaterial3D(wall?.materialId);
 
-  
+  const geometryRef = useRef<THREE.BufferGeometry | null>(null);
 
   // Clean up geometry on unmount
   useEffect(() => {
@@ -30,10 +30,11 @@ export function Wall3D({ wallId }: Wall3DProps) {
   }, []);
 
   const { geometry, position, rotation } = useMemo(() => {
-    if (!wall) return { geometry: null, position: new THREE.Vector3(), rotation: new THREE.Euler() };
+    if (!wall)
+      return { geometry: null, position: new THREE.Vector3(), rotation: new THREE.Euler() };
 
-    let start = new THREE.Vector3(wall.start.x, wall.start.y, wall.start.z);
-    let end = new THREE.Vector3(wall.end.x, wall.end.y, wall.end.z);
+    const start = new THREE.Vector3(wall.start.x, wall.start.y, wall.start.z);
+    const end = new THREE.Vector3(wall.end.x, wall.end.y, wall.end.z);
 
     // To simplify, we assume walls are on the XZ plane (y is up)
     const wallDir = new THREE.Vector2(end.x - start.x, end.z - start.z).normalize();
@@ -41,10 +42,14 @@ export function Wall3D({ wallId }: Wall3DProps) {
     // Adjust start point
     if (connectedWalls.start.length === 1) {
       const otherWall = connectedWalls.start[0];
-      const otherDir = new THREE.Vector2(otherWall.end.x - otherWall.start.x, otherWall.end.z - otherWall.start.z).normalize();
+      const otherDir = new THREE.Vector2(
+        otherWall.end.x - otherWall.start.x,
+        otherWall.end.z - otherWall.start.z
+      ).normalize();
       const angle = wallDir.angle() - otherDir.angle();
 
-      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) { // Not a straight line
+      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) {
+        // Not a straight line
         const offset = wall.thickness / 2 / Math.tan(Math.PI - Math.abs(angle));
         start.x += wallDir.x * offset;
         start.z += wallDir.y * offset;
@@ -54,10 +59,14 @@ export function Wall3D({ wallId }: Wall3DProps) {
     // Adjust end point
     if (connectedWalls.end.length === 1) {
       const otherWall = connectedWalls.end[0];
-      const otherDir = new THREE.Vector2(otherWall.end.x - otherWall.start.x, otherWall.end.z - otherWall.start.z).normalize();
+      const otherDir = new THREE.Vector2(
+        otherWall.end.x - otherWall.start.x,
+        otherWall.end.z - otherWall.start.z
+      ).normalize();
       const angle = wallDir.angle() - otherDir.angle();
 
-      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) { // Not a straight line
+      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) {
+        // Not a straight line
         const offset = wall.thickness / 2 / Math.tan(Math.PI - Math.abs(angle));
         end.x -= wallDir.x * offset;
         end.z -= wallDir.y * offset;
@@ -78,7 +87,6 @@ export function Wall3D({ wallId }: Wall3DProps) {
     const rotation = new THREE.Euler(0, -Math.atan2(end.z - start.z, end.x - start.x), 0);
 
     return { geometry, position, rotation };
-
   }, [wall, connectedWalls]);
 
   // If wall doesn't exist, don't render
@@ -92,8 +100,6 @@ export function Wall3D({ wallId }: Wall3DProps) {
 
   // Check if wall is selected
   const isSelected = selectedElementId === wallId;
-
-  const materialProps = useMaterial3D(wall?.materialId);
 
   return (
     <group position={position} rotation={rotation} onClick={handleSelect}>

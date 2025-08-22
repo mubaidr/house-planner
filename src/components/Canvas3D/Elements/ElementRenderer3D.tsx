@@ -1,6 +1,9 @@
 import { useDesignStore } from '@/stores/designStore';
+import { ElementManipulationTool3D } from '../Tools/ElementManipulationTool3D';
 import { MeasurementTool3D } from '../Tools/MeasurementTool3D';
+import { RoomCreationTool3D } from '../Tools/RoomCreationTool3D';
 import { SelectionGizmo3D } from '../Tools/SelectionGizmo3D';
+import { WallDrawingTool3D } from '../Tools/WallDrawingTool3D';
 import { Door3D } from './Door3D';
 import { Roof3D } from './Roof3D';
 import { Room3D } from './Room3D';
@@ -15,6 +18,9 @@ export function ElementRenderer3D() {
   const stairs = useDesignStore(state => state.stairs);
   const rooms = useDesignStore(state => state.rooms);
   const roofs = useDesignStore(state => state.roofs);
+  const activeTool = useDesignStore(state => state.activeTool);
+  const setActiveTool = useDesignStore(state => state.setActiveTool);
+  const selectedElementId = useDesignStore(state => state.selectedElementId);
 
   return (
     <group name="architectural-elements">
@@ -59,6 +65,21 @@ export function ElementRenderer3D() {
           <Roof3D key={roof.id} roofId={roof.id} />
         ))}
       </group>
+
+      {/* Wall drawing tool */}
+      <WallDrawingTool3D
+        isActive={activeTool === 'wall'}
+        onDeactivate={() => setActiveTool(null)}
+      />
+
+      {/* Room creation tool */}
+      <RoomCreationTool3D
+        isActive={activeTool === 'room'}
+        onDeactivate={() => setActiveTool(null)}
+      />
+
+      {/* Element manipulation tool */}
+      <ElementManipulationTool3D isActive={!!selectedElementId && activeTool === null} />
 
       {/* Selection gizmo */}
       <SelectionGizmo3D />

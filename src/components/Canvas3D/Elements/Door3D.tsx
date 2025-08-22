@@ -1,7 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
-import { RectAreaLight } from '@react-three/drei';
-import { ThreeEvent } from '@react-three/fiber';
-import { useFrame } from '@react-three/fiber';
+import { ThreeEvent, useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -57,7 +55,7 @@ export function Door3D({ doorId }: Door3DProps) {
     if (!door || !groupRef.current || !panelRef.current) return;
 
     switch (door.type) {
-      case 'hinged':
+      case 'hinged': {
         // Rotate the entire door group for hinged doors
         // Determine rotation direction
         const direction =
@@ -68,8 +66,9 @@ export function Door3D({ doorId }: Door3DProps) {
           door.isOpen ? door.openAngle * direction : 0
         );
         break;
+      }
 
-      case 'sliding':
+      case 'sliding': {
         // Move the door panel horizontally for sliding doors
         // Calculate slide offset based on open state
         const maxOffset = door.width;
@@ -80,6 +79,7 @@ export function Door3D({ doorId }: Door3DProps) {
 
         panelRef.current.position.x = currentOffset * slideDirection;
         break;
+      }
 
       default:
         // For other door types, no animation for now
@@ -113,16 +113,13 @@ export function Door3D({ doorId }: Door3DProps) {
         <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.2} />
       </mesh>
 
-      {door.isOpen && (
-        <RectAreaLight
-          width={door.width}
-          height={door.height}
-          intensity={2}
-          color={"#FFFFFF"}
-          position={[0, door.height / 2, 0.1]}
-          rotation={[0, Math.PI, 0]}
-        />
-      )}
+      {door.isOpen &&
+        (() => {
+          const rect = new THREE.RectAreaLight('#FFFFFF', 2, door.width, door.height);
+          rect.position.set(0, door.height / 2, 0.1);
+          rect.rotation.set(0, Math.PI, 0);
+          return <primitive object={rect} />;
+        })()}
 
       {/* Selection highlight */}
       {isSelected && (

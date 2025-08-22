@@ -102,6 +102,7 @@ export interface DesignState {
   selectedElementId: string | null;
   selectedElementType: 'wall' | 'door' | 'window' | 'room' | 'stair' | 'roof' | null;
   viewMode: '2d' | '3d' | 'hybrid';
+  activeTool: 'select' | 'wall' | 'door' | 'window' | 'room' | null;
 }
 
 export interface DesignActions {
@@ -140,6 +141,9 @@ export interface DesignActions {
 
   // View mode actions
   setViewMode: (mode: DesignState['viewMode']) => void;
+
+  // Tool actions
+  setActiveTool: (tool: DesignState['activeTool']) => void;
 
   // Material actions
   addMaterial: (material: Omit<Material, 'id'>) => void;
@@ -220,6 +224,7 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       selectedElementId: null,
       selectedElementType: null,
       viewMode: '3d',
+      activeTool: null,
 
       // Wall actions
       addWall: wall =>
@@ -357,6 +362,12 @@ export const useDesignStore = create<DesignState & DesignActions>()(
           state.viewMode = mode;
         }),
 
+      // Tool actions
+      setActiveTool: tool =>
+        set(state => {
+          state.activeTool = tool;
+        }),
+
       // Material actions
       addMaterial: material =>
         set(state => {
@@ -379,11 +390,17 @@ export const useDesignStore = create<DesignState & DesignActions>()(
         if (!wall) return { start: [], end: [] };
 
         const connectedAtStart = walls.filter(
-          w => w.id !== wallId && (w.start.x === wall.start.x && w.start.z === wall.start.z || w.end.x === wall.start.x && w.end.z === wall.start.z)
+          w =>
+            w.id !== wallId &&
+            ((w.start.x === wall.start.x && w.start.z === wall.start.z) ||
+              (w.end.x === wall.start.x && w.end.z === wall.start.z))
         );
 
         const connectedAtEnd = walls.filter(
-          w => w.id !== wallId && (w.start.x === wall.end.x && w.start.z === wall.end.z || w.end.x === wall.end.x && w.end.z === wall.end.z)
+          w =>
+            w.id !== wallId &&
+            ((w.start.x === wall.end.x && w.start.z === wall.end.z) ||
+              (w.end.x === wall.end.x && w.end.z === wall.end.z))
         );
 
         return { start: connectedAtStart, end: connectedAtEnd };

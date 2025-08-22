@@ -1,12 +1,6 @@
-import { useMemo } from 'react';
 import type { Door, Wall, Window } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
-import { useGLTF } from '@react-three/drei';
-import { useSpring, animated } from '@react-spring/three';
-import { useGesture } from '@use-gesture/react';
-import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
-import { useBoundStore, Scene3DState } from '../../../stores/scene3DStore';
 
 export function SelectionGizmo3D() {
   const selectedElementId = useDesignStore(state => state.selectedElementId);
@@ -15,18 +9,27 @@ export function SelectionGizmo3D() {
   const doors = useDesignStore(state => state.doors);
   const windows = useDesignStore(state => state.windows);
 
-    const { selectedElement, elements } = useBoundStore(
-    useCallback(
-      (state: Scene3DState) => useMemo(() => ({
-        selectedElement: state.selectedElement,
-        elements: state.elements,
-      }), [state.selectedElement, state.elements]),
-      [],
-    ),
-  );
-
   // If no element is selected, don't render
-  if (!selectedElement || !selectedElementType) return null;
+  if (!selectedElementId || !selectedElementType) return null;
+
+  // Find the selected element
+  let selectedElement = null;
+  switch (selectedElementType) {
+    case 'wall':
+      selectedElement = walls.find(w => w.id === selectedElementId);
+      break;
+    case 'door':
+      selectedElement = doors.find(d => d.id === selectedElementId);
+      break;
+    case 'window':
+      selectedElement = windows.find(w => w.id === selectedElementId);
+      break;
+    default:
+      selectedElement = null;
+  }
+
+  // If no element is found, don't render
+  if (!selectedElement) return null;
 
   // Calculate position for the gizmo
   let position = new THREE.Vector3(0, 0, 0);

@@ -1,5 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
-import { RectAreaLight } from '@react-three/drei';
+// RectAreaLight is created via three primitives when needed
 import { ThreeEvent } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
@@ -84,14 +84,17 @@ export function Window3D({ windowId }: Window3DProps) {
         />
       </mesh>
 
-      <RectAreaLight
-        width={windowElement.width}
-        height={windowElement.height}
-        intensity={5}
-        color={"#FFFFFF"}
-        position={[0, windowElement.height / 2, 0.1]}
-        rotation={[0, Math.PI, 0]}
-      />
+      {(() => {
+        const rect = new THREE.RectAreaLight(
+          '#FFFFFF',
+          5,
+          windowElement.width,
+          windowElement.height
+        );
+        rect.position.set(0, windowElement.height / 2, 0.1);
+        rect.rotation.set(0, Math.PI, 0);
+        return <primitive object={rect} />;
+      })()}
 
       {/* Selection highlight */}
       {isSelected && (

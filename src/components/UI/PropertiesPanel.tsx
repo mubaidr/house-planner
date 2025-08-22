@@ -1,9 +1,8 @@
-import { useMemo } from 'react';
-import type { Door, Wall, Window, Stair } from '@/stores/designStore';
+import type { Door, Stair, Wall, Window } from '@/stores/designStore';
 import { useDesignStore } from '@/stores/designStore';
 import { DoorConfigPanel } from './DoorConfigPanel';
-import { WindowConfigPanel } from './WindowConfigPanel';
 import { StairConfigPanel } from './StairConfigPanel';
+import { WindowConfigPanel } from './WindowConfigPanel';
 
 export function PropertiesPanel() {
   // Use a selector that returns the specific element to avoid re-renders when unrelated elements change
