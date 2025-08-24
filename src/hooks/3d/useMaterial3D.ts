@@ -2,6 +2,19 @@ import { useDesignStore } from '@/stores/designStore';
 import { useMemo } from 'react';
 import * as THREE from 'three';
 
+interface MaterialProps {
+  color: string;
+  roughness: number;
+  metalness: number;
+  opacity: number;
+  transparent: boolean;
+  map?: THREE.Texture;
+  normalMap?: THREE.Texture;
+  roughnessMap?: THREE.Texture;
+  metalnessMap?: THREE.Texture;
+  aoMap?: THREE.Texture;
+}
+
 export function useMaterial3D(materialId?: string) {
   const material = useDesignStore(state => state.materials.find(m => m.id === materialId));
 
@@ -10,7 +23,7 @@ export function useMaterial3D(materialId?: string) {
   const materialProps = useMemo(() => {
     if (!material) return {};
 
-    const props: any = {
+    const props: Partial<MaterialProps> = {
       color: material.color,
       roughness: material.roughness,
       metalness: material.metalness,

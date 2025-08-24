@@ -1,62 +1,108 @@
 import { useDesignStore } from '@/stores/designStore';
-import { Grid, OrbitControls } from '@react-three/drei';
+import { useLightingStore } from '@/stores/lightingStore';
+import { Grid, OrbitControls, Stats } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
+import { Suspense } from 'react';
+import { Canvas2D } from '../Canvas2D/Canvas2D';
 import { CameraControls } from './Camera/CameraControls';
 import { PostProcessing3D } from './Effects/PostProcessing3D';
 import { ElementRenderer3D } from './Elements/ElementRenderer3D';
 import { SceneLighting } from './Lighting/SceneLighting';
+import { ElementManipulationTool3D } from './Tools/ElementManipulationTool3D';
+import { MeasurementTool3D } from './Tools/MeasurementTool3D';
+import { RoomCreationTool3D } from './Tools/RoomCreationTool3D';
+import { SelectionGizmo3D } from './Tools/SelectionGizmo3D';
+import { WallDrawingTool3D } from './Tools/WallDrawingTool3D';
 
 export function Scene3D() {
   const viewMode = useDesignStore(state => state.viewMode);
+  const activeTool = useDesignStore(state => state.activeTool);
+  const setActiveTool = useDesignStore(state => state.setActiveTool);
+  const selectedElementId = useDesignStore(state => state.selectedElementId);
+
+  // Phase 4: Lighting and material system
+  const { currentConfig: lightingConfig, renderQuality, performanceMode } = useLightingStore();
 
   // Don't render in 2D mode
   if (viewMode === '2d') {
-    return (
-      <div className="flex items-center justify-center h-full bg-gray-100">
-        <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold mb-4">2D Mode</h2>
-          <p className="text-gray-600">Switch to 3D mode to view the 3D scene</p>
-        </div>
-      </div>
-    );
+    return <Canvas2D />;
   }
 
   return (
-    <Canvas camera={{ position: [0, 10, 10], fov: 75 }} shadows>
-      {/* Lighting */}
-      <SceneLighting />
+    <Canvas
+      camera={{ position: [0, 10, 10], fov: 75 }}
+      shadows={lightingConfig.directional.shadows}
+      gl={{
+        antialias: renderQuality.antiAliasing,
+        toneMapping: lightingConfig.postProcessing.toneMapping,
+        toneMappingExposure: lightingConfig.postProcessing.exposure,
+      }}
+      dpr={renderQuality.textureResolution === 'ultra' ? 2 : 1}
+    >
+      <Suspense fallback={null}>
+        {/* Performance monitoring */}
+        {performanceMode === 'auto' && <Stats />}
 
-      {/* Grid for reference */}
-      <Grid
-        position={[0, -0.01, 0]}
-        args={[20, 20]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="#6f6f6f"
-        sectionSize={5}
-        sectionThickness={1}
-        sectionColor="#9d4b4b"
-        fadeDistance={30}
-        fadeStrength={1}
-      />
+        {/* Phase 4: Enhanced lighting system */}
+        <SceneLighting config={lightingConfig} />
 
-      {/* Camera controls */}
-      <CameraControls />
+        {/* Grid for reference */}
+        <Grid
+          position={[0, -0.01, 0]}
+          args={[20, 20]}
+          cellSize={1}
+          cellThickness={0.5}
+          cellColor="#6f6f6f"
+          sectionSize={5}
+          sectionThickness={1}
+          sectionColor="#9d4b4b"
+          fadeDistance={30}
+          fadeStrength={1}
+        />
 
-      {/* Render all elements */}
-      <ElementRenderer3D />
+        {/* Camera controls */}
+        <CameraControls />
 
-      {/* Post-processing effects */}
-      <PostProcessing3D />
+        {/* Render all elements */}
+        <ElementRenderer3D />
 
-      {/* Camera controls */}
-      <OrbitControls
-        makeDefault
-        minPolarAngle={0}
-        maxPolarAngle={Math.PI / 2}
-        minDistance={5}
-        maxDistance={50}
-      />
+        {/* Interactive tools */}
+        {activeTool === 'wall' && (
+          <group key="wall-tool">
+            <WallDrawingTool3D isActive={true} onDeactivate={() => setActiveTool(null)} />
+          </group>
+        )}
+        {activeTool === 'room' && (
+          <group key="room-tool">
+            <RoomCreationTool3D isActive={true} onDeactivate={() => setActiveTool(null)} />
+          </group>
+        )}
+        {activeTool === 'measure' && (
+          <group key="measure-tool">
+            <MeasurementTool3D />
+          </group>
+        )}
+        {!!selectedElementId && activeTool === null && (
+          <group key="manipulation-tool">
+            <ElementManipulationTool3D isActive={true} />
+          </group>
+        )}
+
+        {/* Selection gizmo */}
+        <SelectionGizmo3D />
+
+        {/* Phase 4: Enhanced post-processing effects */}
+        <PostProcessing3D config={lightingConfig} enabled={renderQuality.postProcessing} />
+
+        {/* Camera controls */}
+        <OrbitControls
+          makeDefault
+          minPolarAngle={0}
+          maxPolarAngle={Math.PI / 2}
+          minDistance={5}
+          maxDistance={50}
+        />
+      </Suspense>
     </Canvas>
   );
 }

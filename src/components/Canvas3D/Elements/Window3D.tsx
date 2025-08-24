@@ -72,17 +72,26 @@ export function Window3D({ windowId }: Window3DProps) {
         <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.2} />
       </mesh>
 
-      {/* Window glass */}
-      <mesh position={[0, 0, 0.025]}>
-        <boxGeometry args={[windowElement.width, windowElement.height, windowElement.thickness]} />
-        <meshStandardMaterial
-          color="#87CEEB"
-          roughness={0.1}
-          metalness={0.0}
-          transparent={true}
-          opacity={0.3}
-        />
-      </mesh>
+      {/* Window glass - multiple panes based on glazing */}
+      {(() => {
+        const panes =
+          windowElement.glazing === 'single' ? 1 : windowElement.glazing === 'double' ? 2 : 3;
+        const paneThickness = windowElement.thickness / (panes + 1);
+        const spacing = windowElement.thickness / (panes + 1);
+
+        return Array.from({ length: panes }, (_, i) => (
+          <mesh key={i} position={[0, 0, (i - (panes - 1) / 2) * spacing]}>
+            <boxGeometry args={[windowElement.width, windowElement.height, paneThickness]} />
+            <meshStandardMaterial
+              color="#87CEEB"
+              roughness={0.1}
+              metalness={0.0}
+              transparent={true}
+              opacity={0.3}
+            />
+          </mesh>
+        ));
+      })()}
 
       {(() => {
         const rect = new THREE.RectAreaLight(

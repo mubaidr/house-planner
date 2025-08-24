@@ -1,6 +1,7 @@
 import { useDesignStore } from '@/stores/designStore';
 import {
   generateLShapedStairs,
+  generateSpiralStairs,
   generateStraightStairs,
   generateUShapedStairs,
 } from '@/utils/3d/geometry3D';
@@ -66,6 +67,14 @@ export function Stair3D({ stairId }: Stair3DProps) {
         stair.stepDepth,
         stair.stepHeight,
         stair.width
+      );
+    } else if (stair.type === 'spiral') {
+      transforms = generateSpiralStairs(
+        stair.steps,
+        stair.stepDepth,
+        stair.stepHeight,
+        stair.width,
+        stair.radius || 2
       );
     }
 

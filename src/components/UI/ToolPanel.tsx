@@ -1,4 +1,6 @@
 import { useDesignStore } from '@/stores/designStore';
+import { useState } from 'react';
+import { ExportDialog } from './ExportDialog';
 
 export function ToolPanel() {
   const addWall = useDesignStore(state => state.addWall);
@@ -9,6 +11,7 @@ export function ToolPanel() {
   const walls = useDesignStore(state => state.walls);
   const activeTool = useDesignStore(state => state.activeTool);
   const setActiveTool = useDesignStore(state => state.setActiveTool);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
   const handleAddWall = () => {
     // Add a random wall for testing
@@ -51,22 +54,24 @@ export function ToolPanel() {
         height: 1.5 + Math.random() * 0.3,
         thickness: 0.05 + Math.random() * 0.05,
         type: 'double',
+        glazing: 'double',
       });
     } else {
       alert('Please add a wall first');
     }
   };
 
-  const handleAddStair = () => {
+  const handleAddStair = (type: 'straight' | 'l-shaped' | 'u-shaped' | 'spiral' = 'straight') => {
     // Add a stair
     addStair({
       start: { x: Math.random() * 10 - 5, y: 0, z: Math.random() * 10 - 5 },
       end: { x: Math.random() * 10 - 5, y: 0, z: Math.random() * 10 - 5 },
-      steps: 10,
+      steps: 16,
       stepHeight: 0.15,
       stepDepth: 0.3,
       width: 1.2,
-      type: 'straight',
+      type: type,
+      radius: type === 'spiral' ? 2 : undefined,
     });
   };
 
@@ -82,11 +87,11 @@ export function ToolPanel() {
     }
   };
 
+  const clearAll = useDesignStore(state => state.clearAll);
+
   const handleClearAll = () => {
     if (confirm('Are you sure you want to clear all elements?')) {
-      // We would need to implement a clearAll action in the store
-      // For now, we'll just alert
-      alert('Clear all functionality would be implemented here');
+      clearAll();
     }
   };
 
@@ -98,63 +103,114 @@ export function ToolPanel() {
     setActiveTool(activeTool === 'room' ? null : 'room');
   };
 
+  const handleMeasureTool = () => {
+    setActiveTool(activeTool === 'measure' ? null : 'measure');
+  };
+
+  const handleSelectTool = () => {
+    setActiveTool(activeTool === 'select' ? null : 'select');
+  };
+
   return (
-    <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg">
-      <h2 className="text-lg font-bold mb-2">Tools</h2>
-      <div className="space-y-2">
-        <button
-          onClick={handleWallTool}
-          className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
-            activeTool === 'wall' ? 'bg-blue-700' : 'bg-blue-500'
-          }`}
-        >
-          {activeTool === 'wall' ? 'Drawing Wall (Click to Cancel)' : 'Draw Wall'}
-        </button>
-        <button
-          onClick={handleRoomTool}
-          className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
-            activeTool === 'room' ? 'bg-purple-700' : 'bg-purple-500'
-          }`}
-        >
-          {activeTool === 'room' ? 'Creating Room (Click to Cancel)' : 'Create Room'}
-        </button>
-        <button
-          onClick={handleAddWall}
-          className="w-full px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-        >
-          Add Wall (Random)
-        </button>
-        <button
-          onClick={handleAddDoor}
-          className="w-full px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
-        >
-          Add Door
-        </button>
-        <button
-          onClick={handleAddWindow}
-          className="w-full px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
-        >
-          Add Window
-        </button>
-        <button
-          onClick={handleAddStair}
-          className="w-full px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
-        >
-          Add Stairs
-        </button>
-        <button
-          onClick={handleAddRoom}
-          className="w-full px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
-        >
-          Add Room (Random)
-        </button>
-        <button
-          onClick={handleClearAll}
-          className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-        >
-          Clear All
-        </button>
+    <>
+      <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg">
+        <h2 className="text-lg font-bold mb-2">Tools</h2>
+        <div className="space-y-2">
+          <button
+            onClick={handleWallTool}
+            className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+              activeTool === 'wall' ? 'bg-blue-700' : 'bg-blue-500'
+            }`}
+          >
+            {activeTool === 'wall' ? 'Drawing Wall (Click to Cancel)' : 'Draw Wall'}
+          </button>
+          <button
+            onClick={handleRoomTool}
+            className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+              activeTool === 'room' ? 'bg-purple-700' : 'bg-purple-500'
+            }`}
+          >
+            {activeTool === 'room' ? 'Creating Room (Click to Cancel)' : 'Create Room'}
+          </button>
+          <button
+            onClick={handleSelectTool}
+            className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+              activeTool === 'select' ? 'bg-gray-700' : 'bg-gray-500'
+            }`}
+          >
+            {activeTool === 'select' ? 'Selection Mode (Click to Cancel)' : 'Select & Manipulate'}
+          </button>
+          <button
+            onClick={handleMeasureTool}
+            className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+              activeTool === 'measure' ? 'bg-teal-700' : 'bg-teal-500'
+            }`}
+          >
+            {activeTool === 'measure' ? 'Measuring (Click to Cancel)' : 'Measure Tool'}
+          </button>
+          <button
+            onClick={handleAddWall}
+            className="w-full px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          >
+            Add Wall (Random)
+          </button>
+          <button
+            onClick={handleAddDoor}
+            className="w-full px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+          >
+            Add Door
+          </button>
+          <button
+            onClick={handleAddWindow}
+            className="w-full px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+          >
+            Add Window
+          </button>
+          <button
+            onClick={() => handleAddStair('straight')}
+            className="w-full px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
+          >
+            Add Straight Stairs
+          </button>
+          <button
+            onClick={() => handleAddStair('l-shaped')}
+            className="w-full px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
+          >
+            Add L-Shaped Stairs
+          </button>
+          <button
+            onClick={() => handleAddStair('u-shaped')}
+            className="w-full px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
+          >
+            Add U-Shaped Stairs
+          </button>
+          <button
+            onClick={() => handleAddStair('spiral')}
+            className="w-full px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
+          >
+            Add Spiral Stairs
+          </button>
+          <button
+            onClick={handleAddRoom}
+            className="w-full px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
+          >
+            Add Room (Random)
+          </button>
+          <button
+            onClick={handleClearAll}
+            className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+          >
+            Clear All
+          </button>
+          <button
+            onClick={() => setIsExportDialogOpen(true)}
+            className="w-full px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
+          >
+            Export
+          </button>
+        </div>
       </div>
-    </div>
+      <ExportDialog isOpen={isExportDialogOpen} onClose={() => setIsExportDialogOpen(false)} />
+    </>
   );
 }

@@ -55,4 +55,33 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  {
+    // Special configuration for Jest setup files
+    files: ['**/jest.setup.mjs', '**/jest.config.mjs'],
+    languageOptions: {
+      globals: {
+        jest: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        describe: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        global: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        HTMLCanvasElement: 'readonly',
+        Blob: 'readonly',
+        URL: 'readonly',
+        ImageBitmap: 'readonly',
+        Document: 'readonly',
+        console: 'readonly',
+        AbortSignal: 'readonly',
+      },
+    },
+    rules: {
+      'no-undef': 'off',
+    }
+  },
 ];

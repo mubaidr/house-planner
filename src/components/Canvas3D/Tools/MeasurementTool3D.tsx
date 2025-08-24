@@ -32,11 +32,6 @@ export function MeasurementTool3D() {
     case 'wall': {
       const wall = selectedElement as Wall;
 
-      // Calculate wall length
-      const wallLength = Math.sqrt(
-        Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
-      );
-
       // Calculate midpoint for measurement display
       const midpoint = new THREE.Vector3(
         (wall.start.x + wall.end.x) / 2,

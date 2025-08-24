@@ -49,6 +49,19 @@ export function WindowConfigPanel({
           <option value="slider">Slider</option>
         </select>
       </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Glazing</label>
+        <select
+          value={window.glazing}
+          onChange={e => handleChange('glazing', e.target.value as WindowType['glazing'])}
+          className="mt-1 block w-full rounded-md border-gray-300"
+        >
+          <option value="single">Single</option>
+          <option value="double">Double</option>
+          <option value="triple">Triple</option>
+        </select>
+      </div>
     </div>
   );
 }

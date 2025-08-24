@@ -1,11 +1,14 @@
-import { useDesignStore } from '@/stores/designStore';
-import { ThreeEvent, useThree } from '@react-three/fiber';
+import { Door, Stair, useDesignStore, Wall, Window } from '@/stores/designStore';
+import { ThreeEvent } from '@react-three/fiber';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 interface ElementManipulationToolProps {
   isActive: boolean;
+  onDeactivate?: () => void;
 }
+
+type ManipulatableElement = Wall | Door | Window | Stair;
 
 export function ElementManipulationTool3D({ isActive }: ElementManipulationToolProps) {
   const selectedElementId = useDesignStore(state => state.selectedElementId);
@@ -19,14 +22,12 @@ export function ElementManipulationTool3D({ isActive }: ElementManipulationToolP
   const updateWindow = useDesignStore(state => state.updateWindow);
   const updateStair = useDesignStore(state => state.updateStair);
 
-  const { camera, gl } = useThree();
-
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<THREE.Vector2 | null>(null);
   const [manipulationMode, setManipulationMode] = useState<'move' | 'rotate' | 'scale'>('move');
 
-  const selectedElement = useRef<any>(null);
-  const initialElementState = useRef<any>(null);
+  const selectedElement = useRef<ManipulatableElement | null>(null);
+  const initialElementState = useRef<ManipulatableElement | null>(null);
 
   // Find the selected element
   useEffect(() => {
@@ -37,181 +38,101 @@ export function ElementManipulationTool3D({ isActive }: ElementManipulationToolP
 
     switch (selectedElementType) {
       case 'wall':
-        selectedElement.current = walls.find(w => w.id === selectedElementId);
+        selectedElement.current = walls.find(w => w.id === selectedElementId) ?? null;
         break;
       case 'door':
-        selectedElement.current = doors.find(d => d.id === selectedElementId);
+        selectedElement.current = doors.find(d => d.id === selectedElementId) ?? null;
         break;
       case 'window':
-        selectedElement.current = windows.find(w => w.id === selectedElementId);
+        selectedElement.current = windows.find(w => w.id === selectedElementId) ?? null;
         break;
       case 'stair':
-        selectedElement.current = stairs.find(s => s.id === selectedElementId);
+        selectedElement.current = stairs.find(s => s.id === selectedElementId) ?? null;
         break;
       default:
         selectedElement.current = null;
     }
   }, [selectedElementId, selectedElementType, walls, doors, windows, stairs]);
 
-  // Handle mouse down on the manipulation gizmo
-  const handleMouseDown = useCallback(
-    (event: ThreeEvent<MouseEvent>) => {
-      if (!isActive || !selectedElement.current) return;
-
-      event.stopPropagation();
-
-      setIsDragging(true);
-      setDragStart(new THREE.Vector2(event.clientX, event.clientY));
-      initialElementState.current = { ...selectedElement.current };
-    },
-    [isActive]
-  );
-
-  // Handle mouse move for dragging
+  // Handle mouse movement for dragging
   const handleMouseMove = useCallback(
-    (event: ThreeEvent<MouseEvent>) => {
-      if (!isDragging || !dragStart || !selectedElement.current || !initialElementState.current)
-        return;
+    (event: ThreeEvent<PointerEvent>) => {
+      if (!isDragging || !dragStart || !selectedElementId || !selectedElementType) return;
 
-      const deltaX = event.clientX - dragStart.x;
-      const deltaY = event.clientY - dragStart.y;
+      const mouse = new THREE.Vector2(
+        (event.clientX / window.innerWidth) * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1
+      );
 
-      // Convert screen movement to world movement
-      const worldDelta = new THREE.Vector3(deltaX * 0.01, 0, deltaY * 0.01);
-
-      // Apply transformation based on mode
       switch (manipulationMode) {
         case 'move':
-          // Move the element
-          if (selectedElementType === 'wall') {
-            updateWall(selectedElementId!, {
+          // Handle movement logic
+          if (selectedElementType === 'wall' && selectedElement.current) {
+            const wall = selectedElement.current as Wall;
+            const direction = new THREE.Vector2(
+              wall.end.x - wall.start.x,
+              wall.end.z - wall.start.z
+            ).normalize();
+
+            const delta = new THREE.Vector2(mouse.x - dragStart.x, mouse.y - dragStart.y);
+            const moveDistance = delta.dot(direction);
+
+            updateWall(selectedElementId, {
               start: {
-                x: initialElementState.current.start.x + worldDelta.x,
-                y: initialElementState.current.start.y + worldDelta.y,
-                z: initialElementState.current.start.z + worldDelta.z,
+                x: wall.start.x + direction.x * moveDistance,
+                y: wall.start.y,
+                z: wall.start.z + direction.y * moveDistance,
               },
               end: {
-                x: initialElementState.current.end.x + worldDelta.x,
-                y: initialElementState.current.end.y + worldDelta.y,
-                z: initialElementState.current.end.z + worldDelta.z,
-              },
-            });
-          } else if (selectedElementType === 'stair') {
-            updateStair(selectedElementId!, {
-              start: {
-                x: initialElementState.current.start.x + worldDelta.x,
-                y: initialElementState.current.start.y + worldDelta.y,
-                z: initialElementState.current.start.z + worldDelta.z,
-              },
-              end: {
-                x: initialElementState.current.end.x + worldDelta.x,
-                y: initialElementState.current.end.y + worldDelta.y,
-                z: initialElementState.current.end.z + worldDelta.z,
-              },
-            });
-          }
-          break;
-
-        case 'rotate':
-          // Rotate the element (simplified implementation)
-          if (selectedElementType === 'wall') {
-            const center = new THREE.Vector3(
-              (initialElementState.current.start.x + initialElementState.current.end.x) / 2,
-              0,
-              (initialElementState.current.start.z + initialElementState.current.end.z) / 2
-            );
-
-            const angle = deltaX * 0.01;
-            const cos = Math.cos(angle);
-            const sin = Math.sin(angle);
-
-            const start = new THREE.Vector3(
-              initialElementState.current.start.x - center.x,
-              0,
-              initialElementState.current.start.z - center.z
-            );
-
-            const end = new THREE.Vector3(
-              initialElementState.current.end.x - center.x,
-              0,
-              initialElementState.current.end.z - center.z
-            );
-
-            const rotatedStart = new THREE.Vector3(
-              start.x * cos - start.z * sin,
-              0,
-              start.x * sin + start.z * cos
-            );
-
-            const rotatedEnd = new THREE.Vector3(
-              end.x * cos - end.z * sin,
-              0,
-              end.x * sin + end.z * cos
-            );
-
-            updateWall(selectedElementId!, {
-              start: {
-                x: rotatedStart.x + center.x,
-                y: initialElementState.current.start.y,
-                z: rotatedStart.z + center.z,
-              },
-              end: {
-                x: rotatedEnd.x + center.x,
-                y: initialElementState.current.end.y,
-                z: rotatedEnd.z + center.z,
+                x: wall.end.x + direction.x * moveDistance,
+                y: wall.end.y,
+                z: wall.end.z + direction.y * moveDistance,
               },
             });
           }
           break;
 
         case 'scale':
-          // Scale the element (simplified implementation)
-          const scale = 1 + deltaY * 0.01;
+          // Handle scaling logic
+          if (selectedElementType === 'wall' && selectedElement.current) {
+            const wall = selectedElement.current as Wall;
+            const direction = new THREE.Vector2(
+              wall.end.x - wall.start.x,
+              wall.end.z - wall.start.z
+            ).normalize();
 
-          if (selectedElementType === 'wall') {
-            const length = Math.sqrt(
-              Math.pow(initialElementState.current.end.x - initialElementState.current.start.x, 2) +
-                Math.pow(initialElementState.current.end.z - initialElementState.current.start.z, 2)
+            const delta = new THREE.Vector2(mouse.x - dragStart.x, mouse.y - dragStart.y);
+            const scaleAmount = delta.dot(direction);
+
+            // Calculate new length
+            const currentLength = Math.sqrt(
+              Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
+            );
+            const newLength = Math.max(0.1, currentLength + scaleAmount);
+
+            // Scale from center
+            const center = new THREE.Vector2(
+              (wall.start.x + wall.end.x) / 2,
+              (wall.start.z + wall.end.z) / 2
             );
 
-            const direction = new THREE.Vector3(
-              (initialElementState.current.end.x - initialElementState.current.start.x) / length,
-              0,
-              (initialElementState.current.end.z - initialElementState.current.start.z) / length
-            );
-
-            const newLength = length * scale;
-            const center = new THREE.Vector3(
-              (initialElementState.current.start.x + initialElementState.current.end.x) / 2,
-              0,
-              (initialElementState.current.start.z + initialElementState.current.end.z) / 2
-            );
-
-            updateWall(selectedElementId!, {
+            updateWall(selectedElementId, {
               start: {
                 x: center.x - (direction.x * newLength) / 2,
-                y: initialElementState.current.start.y,
-                z: center.z - (direction.z * newLength) / 2,
+                y: wall.start.y,
+                z: center.y - (direction.y * newLength) / 2,
               },
               end: {
                 x: center.x + (direction.x * newLength) / 2,
-                y: initialElementState.current.end.y,
-                z: center.z + (direction.z * newLength) / 2,
+                y: wall.end.y,
+                z: center.y + (direction.y * newLength) / 2,
               },
             });
           }
           break;
       }
     },
-    [
-      isDragging,
-      dragStart,
-      manipulationMode,
-      selectedElementType,
-      selectedElementId,
-      updateWall,
-      updateStair,
-    ]
+    [isDragging, dragStart, manipulationMode, selectedElementType, selectedElementId, updateWall]
   );
 
   // Handle mouse up to stop dragging
@@ -229,16 +150,16 @@ export function ElementManipulationTool3D({ isActive }: ElementManipulationToolP
         if (initialElementState.current && selectedElementId && selectedElementType) {
           switch (selectedElementType) {
             case 'wall':
-              updateWall(selectedElementId, initialElementState.current);
+              updateWall(selectedElementId, initialElementState.current as Wall);
               break;
             case 'door':
-              updateDoor(selectedElementId, initialElementState.current);
+              updateDoor(selectedElementId, initialElementState.current as Door);
               break;
             case 'window':
-              updateWindow(selectedElementId, initialElementState.current);
+              updateWindow(selectedElementId, initialElementState.current as Window);
               break;
             case 'stair':
-              updateStair(selectedElementId, initialElementState.current);
+              updateStair(selectedElementId, initialElementState.current as Stair);
               break;
           }
         }
@@ -280,7 +201,7 @@ export function ElementManipulationTool3D({ isActive }: ElementManipulationToolP
 
   switch (selectedElementType) {
     case 'wall': {
-      const wall = selectedElement.current;
+      const wall = selectedElement.current as Wall;
       gizmoPosition = new THREE.Vector3(
         (wall.start.x + wall.end.x) / 2,
         wall.height / 2,
@@ -289,7 +210,7 @@ export function ElementManipulationTool3D({ isActive }: ElementManipulationToolP
       break;
     }
     case 'door': {
-      const door = selectedElement.current;
+      const door = selectedElement.current as Door;
       const doorWall = walls.find(w => w.id === door.wallId);
       if (doorWall) {
         const wallLength = Math.sqrt(
@@ -312,7 +233,7 @@ export function ElementManipulationTool3D({ isActive }: ElementManipulationToolP
       break;
     }
     case 'window': {
-      const windowElement = selectedElement.current;
+      const windowElement = selectedElement.current as Window;
       const windowWall = walls.find(w => w.id === windowElement.wallId);
       if (windowWall) {
         const wallLength = Math.sqrt(
@@ -335,7 +256,7 @@ export function ElementManipulationTool3D({ isActive }: ElementManipulationToolP
       break;
     }
     case 'stair': {
-      const stair = selectedElement.current;
+      const stair = selectedElement.current as Stair;
       gizmoPosition = new THREE.Vector3(
         (stair.start.x + stair.end.x) / 2,
         (stair.stepHeight * stair.steps) / 2,

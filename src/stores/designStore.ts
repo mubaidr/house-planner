@@ -43,6 +43,7 @@ export interface Window {
   height: number;
   thickness: number;
   type: 'single' | 'double' | 'triple' | 'awning' | 'casement' | 'slider';
+  glazing: 'single' | 'double' | 'triple';
   materialId?: string;
   frameMaterialId?: string;
 }
@@ -55,7 +56,8 @@ export interface Stair {
   stepHeight: number;
   stepDepth: number;
   width: number;
-  type: 'straight' | 'spiral' | 'l-shaped' | 'u-shaped';
+  type: 'straight' | 'l-shaped' | 'u-shaped' | 'spiral';
+  radius?: number; // for spiral stairs
   materialId?: string;
   railingHeight?: number;
   hasHandrail?: boolean;
@@ -102,7 +104,7 @@ export interface DesignState {
   selectedElementId: string | null;
   selectedElementType: 'wall' | 'door' | 'window' | 'room' | 'stair' | 'roof' | null;
   viewMode: '2d' | '3d' | 'hybrid';
-  activeTool: 'select' | 'wall' | 'door' | 'window' | 'room' | null;
+  activeTool: 'select' | 'wall' | 'door' | 'window' | 'room' | 'measure' | null;
 }
 
 export interface DesignActions {
@@ -148,6 +150,9 @@ export interface DesignActions {
   // Material actions
   addMaterial: (material: Omit<Material, 'id'>) => void;
   updateMaterial: (id: string, updates: Partial<Material>) => void;
+
+  // Clear all
+  clearAll: () => void;
 
   // Helper functions
   getConnectedWalls: (wallId: string) => { start: Wall[]; end: Wall[] };
@@ -273,7 +278,7 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       addWindow: window =>
         set(state => {
           const id = `window-${Date.now()}`;
-          state.windows.push({ ...window, id });
+          state.windows.push({ ...window, id, glazing: 'single' });
         }),
 
       updateWindow: (id, updates) =>
@@ -383,6 +388,20 @@ export const useDesignStore = create<DesignState & DesignActions>()(
           }
         }),
 
+      // Clear all
+      clearAll: () =>
+        set(state => {
+          state.walls = [];
+          state.doors = [];
+          state.windows = [];
+          state.stairs = [];
+          state.rooms = [];
+          state.roofs = [];
+          state.selectedElementId = null;
+          state.selectedElementType = null;
+          state.activeTool = null;
+        }),
+
       // Helper functions
       getConnectedWalls: wallId => {
         const { walls } = _get();
@@ -392,15 +411,16 @@ export const useDesignStore = create<DesignState & DesignActions>()(
         const connectedAtStart = walls.filter(
           w =>
             w.id !== wallId &&
-            ((w.start.x === wall.start.x && w.start.z === wall.start.z) ||
-              (w.end.x === wall.start.x && w.end.z === wall.start.z))
+            ((Math.abs(w.start.x - wall.start.x) < 0.01 &&
+              Math.abs(w.start.z - wall.start.z) < 0.01) ||
+              (Math.abs(w.end.x - wall.start.x) < 0.01 && Math.abs(w.end.z - wall.start.z) < 0.01))
         );
 
         const connectedAtEnd = walls.filter(
           w =>
             w.id !== wallId &&
-            ((w.start.x === wall.end.x && w.start.z === wall.end.z) ||
-              (w.end.x === wall.end.x && w.end.z === wall.end.z))
+            ((Math.abs(w.start.x - wall.end.x) < 0.01 && Math.abs(w.start.z - wall.end.z) < 0.01) ||
+              (Math.abs(w.end.x - wall.end.x) < 0.01 && Math.abs(w.end.z - wall.end.z) < 0.01))
         );
 
         return { start: connectedAtStart, end: connectedAtEnd };

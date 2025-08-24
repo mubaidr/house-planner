@@ -1,5 +1,6 @@
 import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
-import { useDesignStore, Wall } from '@/stores/designStore';
+import { useDesignStore } from '@/stores/designStore';
+import { GeometryGenerator } from '@/utils/3d/geometry3D';
 import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -37,54 +38,20 @@ export function Room3D({ roomId }: Room3DProps) {
   }, [room, walls]);
 
   const floorGeometry = useMemo(() => {
-    if (roomWalls.length < 3) return null;
-
-    // Wall tracing algorithm to order the vertices
-    const orderedWalls: Wall[] = [];
-    let currentWall = roomWalls[0];
-    const remainingWalls = [...roomWalls.slice(1)];
-
-    orderedWalls.push(currentWall);
-
-    while (remainingWalls.length > 0) {
-      const currentEndpoint = currentWall.end;
-      let foundNext = false;
-      for (let i = 0; i < remainingWalls.length; i++) {
-        const nextWall = remainingWalls[i];
-        if (nextWall.start.x === currentEndpoint.x && nextWall.start.z === currentEndpoint.z) {
-          orderedWalls.push(nextWall);
-          currentWall = nextWall;
-          remainingWalls.splice(i, 1);
-          foundNext = true;
-          break;
-        } else if (nextWall.end.x === currentEndpoint.x && nextWall.end.z === currentEndpoint.z) {
-          // Reverse the wall direction and add it
-          const reversedWall = { ...nextWall, start: nextWall.end, end: nextWall.start };
-          orderedWalls.push(reversedWall);
-          currentWall = reversedWall;
-          remainingWalls.splice(i, 1);
-          foundNext = true;
-          break;
-        }
-      }
-      if (!foundNext) {
-        // Could not find a closed loop, return null
-        return null;
-      }
-    }
-
-    const points = orderedWalls.map(w => new THREE.Vector2(w.start.x, w.start.z));
-    const shape = new THREE.Shape(points);
-    const geometry = new THREE.ShapeGeometry(shape);
+    const geometry = GeometryGenerator.createRoomFloorGeometry(roomWalls);
     geometryRef.current = geometry;
-
     return geometry;
   }, [roomWalls]);
 
   const ceilingGeometry = useMemo(() => {
-    if (!floorGeometry) return null;
-    return floorGeometry.clone();
-  }, [floorGeometry]);
+    const geometry = GeometryGenerator.createRoomCeilingGeometry(roomWalls);
+    return geometry;
+  }, [roomWalls]);
+
+  const roomHeight = useMemo(() => {
+    if (roomWalls.length === 0) return 0;
+    return roomWalls.reduce((acc, wall) => acc + wall.height, 0) / roomWalls.length;
+  }, [roomWalls]);
 
   // If room doesn't exist, don't render
   if (!room) return null;
@@ -97,8 +64,6 @@ export function Room3D({ roomId }: Room3DProps) {
 
   // Check if room is selected
   const isSelected = selectedElementId === roomId;
-
-  const roomHeight = roomWalls.length > 0 ? roomWalls[0].height : 0;
 
   return (
     <group onClick={handleSelect}>

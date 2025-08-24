@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('should load the application without an infinite loop', async ({ page }) => {
   await page.goto('/');
