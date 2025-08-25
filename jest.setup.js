@@ -36,8 +36,33 @@ global.cancelAnimationFrame = jest.fn().mockImplementation(id => {
 });
 
 // Mock HTMLCanvasElement methods
-HTMLCanvasElement.prototype.getContext = jest.fn();
-HTMLCanvasElement.prototype.toDataURL = jest.fn();
+HTMLCanvasElement.prototype.getContext = jest.fn((contextType) => {
+  if (contextType === '2d') {
+    return {
+      fillStyle: '',
+      strokeStyle: '',
+      lineWidth: 1,
+      font: '',
+      textAlign: '',
+      fillRect: jest.fn(),
+      strokeRect: jest.fn(),
+      drawImage: jest.fn(),
+      beginPath: jest.fn(),
+      moveTo: jest.fn(),
+      lineTo: jest.fn(),
+      closePath: jest.fn(),
+      fill: jest.fn(),
+      stroke: jest.fn(),
+      fillText: jest.fn(),
+      measureText: jest.fn(() => ({ width: 100 }))
+    };
+  }
+  return null;
+});
+HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:image/png;base64,mock');
+HTMLCanvasElement.prototype.toBlob = jest.fn((callback) => {
+  callback(new Blob(['mock canvas data'], { type: 'image/png' }));
+});
 
 // Mock localStorage
 const localStorageMock = (() => {
