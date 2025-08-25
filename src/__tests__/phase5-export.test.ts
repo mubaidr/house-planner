@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import * as THREE from 'three';
 import { Export3DSystem } from '../utils/3d/export3D';
 import { PDFExportSystem } from '../utils/3d/pdfExport';
@@ -6,37 +6,37 @@ import { PDFExportSystem } from '../utils/3d/pdfExport';
 // Mock Three.js exporters
 jest.mock('three/examples/jsm/exporters/GLTFExporter.js', () => ({
   GLTFExporter: jest.fn().mockImplementation(() => ({
-    parse: jest.fn((scene, onComplete, onError, options) => {
+    parse: jest.fn((scene, onComplete: (result: any) => void, onError: (error: any) => void, options) => {
       // Simulate successful export
       setTimeout(() => {
         onComplete({ scenes: [{}], nodes: [], materials: [] });
       }, 100);
-    })
-  }))
+    }),
+  })),
 }));
 
 jest.mock('three/examples/jsm/exporters/OBJExporter.js', () => ({
   OBJExporter: jest.fn().mockImplementation(() => ({
-    parse: jest.fn(() => 'v 0.0 0.0 0.0\nf 1 2 3')
-  }))
+    parse: jest.fn(() => 'v 0.0 0.0 0.0\nf 1 2 3'),
+  })),
 }));
 
 // Mock pdfMake
 jest.mock('pdfmake/build/pdfmake', () => ({
   createPdf: jest.fn(() => ({
-    getBlob: jest.fn((callback) => {
+    getBlob: jest.fn((callback: (blob: Blob) => void) => {
       callback(new Blob(['mock pdf'], { type: 'application/pdf' }));
-    })
-  }))
+    }),
+  })),
 }));
 
 jest.mock('pdfmake/build/vfs_fonts', () => ({
-  pdfMake: { vfs: {} }
+  pdfMake: { vfs: {} },
 }));
 
 // Mock file-saver
 jest.mock('file-saver', () => ({
-  saveAs: jest.fn()
+  saveAs: jest.fn(),
 }));
 
 describe('Phase 5: Export & Integration', () => {
@@ -50,7 +50,7 @@ describe('Phase 5: Export & Integration', () => {
     // Create mock Three.js objects
     mockScene = new THREE.Scene();
     mockCamera = new THREE.PerspectiveCamera();
-    
+
     // Mock renderer with required methods
     mockRenderer = {
       getPixelRatio: jest.fn(() => 1),
@@ -60,18 +60,18 @@ describe('Phase 5: Export & Integration', () => {
       shadowMap: {
         enabled: false,
         type: THREE.PCFShadowMap,
-        mapSize: { width: 1024, height: 1024, setScalar: jest.fn() }
+        mapSize: { width: 1024, height: 1024, setScalar: jest.fn() },
       },
       toneMapping: THREE.NoToneMapping,
       toneMappingExposure: 1,
       render: jest.fn(),
-      domElement: document.createElement('canvas')
+      domElement: document.createElement('canvas'),
     } as any;
 
     // Initialize systems
     export3DSystem = new Export3DSystem();
     export3DSystem.setRenderer(mockRenderer);
-    
+
     pdfExportSystem = new PDFExportSystem();
     pdfExportSystem.setRenderer(mockRenderer);
 
@@ -86,28 +86,28 @@ describe('Phase 5: Export & Integration', () => {
   describe('3D Model Export', () => {
     it('should export GLTF format successfully', async () => {
       const blob = await export3DSystem.exportGLTF(mockScene);
-      
+
       expect(blob).toBeInstanceOf(Blob);
       expect(blob.type).toBe('application/json');
     });
 
     it('should export OBJ format successfully', async () => {
       const blob = await export3DSystem.exportOBJ(mockScene);
-      
+
       expect(blob).toBeInstanceOf(Blob);
       expect(blob.type).toBe('text/plain');
     });
 
     it('should handle GLTF export with binary option', async () => {
       const blob = await export3DSystem.exportGLTF(mockScene, { binary: true });
-      
+
       expect(blob).toBeInstanceOf(Blob);
     });
 
     it('should handle export errors gracefully', async () => {
       // Mock an error scenario by creating a system without proper setup
       const errorSystem = new Export3DSystem();
-      
+
       // This should work since we have mocked the exporter to succeed
       const blob = await errorSystem.exportGLTF(mockScene);
       expect(blob).toBeInstanceOf(Blob);
@@ -118,19 +118,18 @@ describe('Phase 5: Export & Integration', () => {
     beforeEach(() => {
       // Mock canvas methods
       Object.defineProperty(mockRenderer.domElement, 'toBlob', {
-        value: jest.fn((callback) => {
+        value: jest.fn((callback: (blob: Blob) => void) => {
           callback(new Blob(['mock image'], { type: 'image/png' }));
-        })
+        }),
       });
     });
 
     it('should export high-quality screenshot', async () => {
-      const blob = await export3DSystem.exportHighQualityRender(
-        mockScene,
-        mockCamera,
-        { width: 1920, height: 1080 }
-      );
-      
+      const blob = await export3DSystem.exportHighQualityRender(mockScene, mockCamera, {
+        width: 1920,
+        height: 1080,
+      });
+
       expect(blob).toBeInstanceOf(Blob);
       expect(mockRenderer.setPixelRatio).toHaveBeenCalledWith(2);
       expect(mockRenderer.setSize).toHaveBeenCalledWith(1920, 1080);
@@ -139,12 +138,12 @@ describe('Phase 5: Export & Integration', () => {
     it('should restore original renderer settings after export', async () => {
       const originalPixelRatio = 1;
       const originalSize = new THREE.Vector2(800, 600);
-      
+
       (mockRenderer.getPixelRatio as jest.Mock).mockReturnValue(originalPixelRatio);
       (mockRenderer.getSize as jest.Mock).mockReturnValue(originalSize);
 
       await export3DSystem.exportHighQualityRender(mockScene, mockCamera);
-      
+
       // Should restore original settings
       expect(mockRenderer.setPixelRatio).toHaveBeenLastCalledWith(originalPixelRatio);
       expect(mockRenderer.setSize).toHaveBeenLastCalledWith(originalSize.x, originalSize.y);
@@ -152,13 +151,11 @@ describe('Phase 5: Export & Integration', () => {
 
     it('should handle different image formats', async () => {
       const formats = ['png', 'jpeg', 'webp'] as const;
-      
+
       for (const format of formats) {
-        const blob = await export3DSystem.exportHighQualityRender(
-          mockScene,
-          mockCamera,
-          { format }
-        );
+        const blob = await export3DSystem.exportHighQualityRender(mockScene, mockCamera, {
+          format,
+        });
         expect(blob).toBeInstanceOf(Blob);
       }
     });
@@ -175,15 +172,15 @@ describe('Phase 5: Export & Integration', () => {
           { x: 0, z: 0 },
           { x: 5, z: 0 },
           { x: 5, z: 4 },
-          { x: 0, z: 4 }
-        ]
+          { x: 0, z: 4 },
+        ],
       };
       mockScene.add(room);
     });
 
     it('should generate 2D floor plan', async () => {
       const blob = await export3DSystem.export2DFloorPlan(mockScene);
-      
+
       expect(blob).toBeInstanceOf(Blob);
       expect(blob.type).toBe('image/png');
     });
@@ -191,16 +188,16 @@ describe('Phase 5: Export & Integration', () => {
     it('should include dimensions when requested', async () => {
       const blob = await export3DSystem.export2DFloorPlan(mockScene, {
         showDimensions: true,
-        showLabels: true
+        showLabels: true,
       });
-      
+
       expect(blob).toBeInstanceOf(Blob);
     });
 
     it('should handle empty scene gracefully', async () => {
       const emptyScene = new THREE.Scene();
       const blob = await export3DSystem.export2DFloorPlan(emptyScene);
-      
+
       expect(blob).toBeInstanceOf(Blob);
     });
   });
@@ -212,7 +209,7 @@ describe('Phase 5: Export & Integration', () => {
       clientName: 'Test Client',
       architect: 'Test Architect',
       date: '2025-01-01',
-      scale: '1:100'
+      scale: '1:100',
     };
 
     it('should create professional PDF with all sections', async () => {
@@ -233,10 +230,10 @@ describe('Phase 5: Export & Integration', () => {
         {
           includeFloorPlan: false,
           include3DViews: false,
-          includeMaterials: false
+          includeMaterials: false,
         }
       );
-      
+
       expect(blob).toBeInstanceOf(Blob);
     });
   });
@@ -244,12 +241,12 @@ describe('Phase 5: Export & Integration', () => {
   describe('Export Performance', () => {
     it('should complete GLTF export within reasonable time', async () => {
       const startTime = performance.now();
-      
+
       await export3DSystem.exportGLTF(mockScene);
-      
+
       const endTime = performance.now();
       const duration = endTime - startTime;
-      
+
       // Should complete within 5 seconds for test scene
       expect(duration).toBeLessThan(5000);
     });
@@ -266,7 +263,7 @@ describe('Phase 5: Export & Integration', () => {
       const startTime = performance.now();
       await export3DSystem.exportOBJ(mockScene);
       const endTime = performance.now();
-      
+
       // Should still complete within reasonable time
       expect(endTime - startTime).toBeLessThan(10000);
     });
@@ -275,7 +272,7 @@ describe('Phase 5: Export & Integration', () => {
   describe('Error Handling', () => {
     it('should handle renderer not set error', async () => {
       const systemWithoutRenderer = new Export3DSystem();
-      
+
       await expect(
         systemWithoutRenderer.exportHighQualityRender(mockScene, mockCamera)
       ).rejects.toThrow('Renderer not set');
@@ -309,10 +306,10 @@ describe('Phase 5: Export & Integration', () => {
 
     it('should maintain scene integrity during exports', async () => {
       const originalChildCount = mockScene.children.length;
-      
+
       await export3DSystem.exportGLTF(mockScene);
       await export3DSystem.exportOBJ(mockScene);
-      
+
       // Scene should remain unchanged
       expect(mockScene.children.length).toBe(originalChildCount);
     });

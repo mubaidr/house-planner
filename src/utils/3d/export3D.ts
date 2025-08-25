@@ -36,23 +36,28 @@ export class Export3DSystem {
   async exportGLTF(scene: THREE.Scene, options: Partial<ExportOptions> = {}): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const exporter = new GLTFExporter();
-      
+
       const exportOptions = {
         binary: options.binary ?? false,
         embedImages: options.embedImages ?? true,
         includeCustomExtensions: options.includeCustomExtensions ?? false,
-        ...options
+        ...options,
       };
 
       exporter.parse(
         scene,
-        (gltf) => {
-          const content = exportOptions.binary ? gltf : JSON.stringify(gltf);
+        gltf => {
+          let content: string | ArrayBuffer;
+          if (exportOptions.binary) {
+            content = gltf as ArrayBuffer;
+          } else {
+            content = JSON.stringify(gltf);
+          }
           const mimeType = exportOptions.binary ? 'application/octet-stream' : 'application/json';
           const blob = new Blob([content], { type: mimeType });
           resolve(blob);
         },
-        (error) => {
+        error => {
           console.error('Error exporting GLTF:', error);
           reject(error);
         },
@@ -84,7 +89,7 @@ export class Export3DSystem {
       height = 1080,
       quality = 0.95,
       format = 'png',
-      transparent = false
+      transparent = false,
     } = options;
 
     return new Promise((resolve, reject) => {
@@ -93,7 +98,7 @@ export class Export3DSystem {
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = width;
         tempCanvas.height = height;
-        
+
         const ctx = tempCanvas.getContext('2d');
         if (!ctx) {
           reject(new Error('Could not get 2D context'));
@@ -111,7 +116,7 @@ export class Export3DSystem {
 
         // Convert to blob
         tempCanvas.toBlob(
-          (blob) => {
+          blob => {
             if (blob) {
               resolve(blob);
             } else {
@@ -136,12 +141,7 @@ export class Export3DSystem {
       throw new Error('Renderer not set. Call setRenderer() first.');
     }
 
-    const {
-      width = 3840,
-      height = 2160,
-      quality = 1.0,
-      format = 'png'
-    } = options;
+    const { width = 3840, height = 2160, quality = 1.0, format = 'png' } = options;
 
     // Store original settings
     this.originalSettings = {
@@ -150,7 +150,7 @@ export class Export3DSystem {
       shadowMapEnabled: this.renderer.shadowMap.enabled,
       shadowMapType: this.renderer.shadowMap.type,
       toneMapping: this.renderer.toneMapping,
-      toneMappingExposure: this.renderer.toneMappingExposure
+      toneMappingExposure: this.renderer.toneMappingExposure,
     };
 
     try {
@@ -170,7 +170,7 @@ export class Export3DSystem {
         width,
         height,
         quality,
-        format
+        format,
       });
 
       return blob;
@@ -180,23 +180,20 @@ export class Export3DSystem {
     }
   }
 
-  async export2DFloorPlan(
-    scene: THREE.Scene,
-    options: FloorPlanOptions = {}
-  ): Promise<Blob> {
+  async export2DFloorPlan(scene: THREE.Scene, options: FloorPlanOptions = {}): Promise<Blob> {
     const {
       scale = 100,
       showDimensions = true,
       showLabels = true,
       lineWidth = 2,
-      backgroundColor = '#ffffff'
+      backgroundColor = '#ffffff',
     } = options;
 
     // Create a 2D canvas for floor plan
     const canvas = document.createElement('canvas');
     canvas.width = 1200;
     canvas.height = 800;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       throw new Error('Could not get 2D context');
@@ -216,7 +213,7 @@ export class Export3DSystem {
     const walls: any[] = [];
     const rooms: any[] = [];
 
-    scene.traverse((object) => {
+    scene.traverse(object => {
       if (object.userData.type === 'wall') {
         walls.push(object.userData);
       } else if (object.userData.type === 'room') {
@@ -226,13 +223,13 @@ export class Export3DSystem {
 
     // Draw rooms (as filled areas)
     ctx.fillStyle = '#f0f0f0';
-    rooms.forEach((room) => {
+    rooms.forEach(room => {
       if (room.points && room.points.length > 0) {
         ctx.beginPath();
         room.points.forEach((point: any, index: number) => {
-          const x = (point.x * scale) + canvas.width / 2;
-          const y = (point.z * scale) + canvas.height / 2;
-          
+          const x = point.x * scale + canvas.width / 2;
+          const y = point.z * scale + canvas.height / 2;
+
           if (index === 0) {
             ctx.moveTo(x, y);
           } else {
@@ -245,14 +242,16 @@ export class Export3DSystem {
 
         // Add room label if enabled
         if (showLabels && room.name) {
-          const centerX = room.points.reduce((sum: number, p: any) => sum + p.x, 0) / room.points.length;
-          const centerZ = room.points.reduce((sum: number, p: any) => sum + p.z, 0) / room.points.length;
-          
+          const centerX =
+            room.points.reduce((sum: number, p: any) => sum + p.x, 0) / room.points.length;
+          const centerZ =
+            room.points.reduce((sum: number, p: any) => sum + p.z, 0) / room.points.length;
+
           ctx.fillStyle = '#000000';
           ctx.fillText(
             room.name,
-            (centerX * scale) + canvas.width / 2,
-            (centerZ * scale) + canvas.height / 2
+            centerX * scale + canvas.width / 2,
+            centerZ * scale + canvas.height / 2
           );
         }
       }
@@ -261,13 +260,13 @@ export class Export3DSystem {
     // Draw walls
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = lineWidth * 2;
-    
-    walls.forEach((wall) => {
+
+    walls.forEach(wall => {
       if (wall.start && wall.end) {
-        const startX = (wall.start.x * scale) + canvas.width / 2;
-        const startY = (wall.start.z * scale) + canvas.height / 2;
-        const endX = (wall.end.x * scale) + canvas.width / 2;
-        const endY = (wall.end.z * scale) + canvas.height / 2;
+        const startX = wall.start.x * scale + canvas.width / 2;
+        const startY = wall.start.z * scale + canvas.height / 2;
+        const endX = wall.end.x * scale + canvas.width / 2;
+        const endY = wall.end.z * scale + canvas.height / 2;
 
         ctx.beginPath();
         ctx.moveTo(startX, startY);
@@ -277,13 +276,12 @@ export class Export3DSystem {
         // Add dimensions if enabled
         if (showDimensions) {
           const length = Math.sqrt(
-            Math.pow(wall.end.x - wall.start.x, 2) + 
-            Math.pow(wall.end.z - wall.start.z, 2)
+            Math.pow(wall.end.x - wall.start.x, 2) + Math.pow(wall.end.z - wall.start.z, 2)
           );
-          
+
           const midX = (startX + endX) / 2;
           const midY = (startY + endY) / 2;
-          
+
           ctx.fillStyle = '#666666';
           ctx.font = '10px Arial';
           ctx.fillText(`${length.toFixed(1)}m`, midX, midY - 5);
@@ -294,14 +292,14 @@ export class Export3DSystem {
     // Add grid
     ctx.strokeStyle = '#e0e0e0';
     ctx.lineWidth = 0.5;
-    
+
     for (let x = 0; x < canvas.width; x += scale) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, canvas.height);
       ctx.stroke();
     }
-    
+
     for (let y = 0; y < canvas.height; y += scale) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -312,7 +310,7 @@ export class Export3DSystem {
     // Convert to blob
     return new Promise((resolve, reject) => {
       canvas.toBlob(
-        (blob) => {
+        blob => {
           if (blob) {
             resolve(blob);
           } else {

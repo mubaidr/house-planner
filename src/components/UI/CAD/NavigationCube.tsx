@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { RotateCcw, Home, Maximize } from 'lucide-react';
+import { Home, Maximize, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 
 interface NavigationCubeProps {
   className?: string;
@@ -15,7 +15,7 @@ export function NavigationCube({ className = '', theme }: NavigationCubeProps) {
     { id: 'right', label: 'RIGHT', position: 'translate3d(50px, 0, 0) rotateY(90deg)' },
     { id: 'left', label: 'LEFT', position: 'translate3d(-50px, 0, 0) rotateY(-90deg)' },
     { id: 'top', label: 'TOP', position: 'translate3d(0, -50px, 0) rotateX(90deg)' },
-    { id: 'bottom', label: 'BOTTOM', position: 'translate3d(0, 50px, 0) rotateX(-90deg)' }
+    { id: 'bottom', label: 'BOTTOM', position: 'translate3d(0, 50px, 0) rotateX(-90deg)' },
   ];
 
   const handleFaceClick = (faceId: string) => {
@@ -28,14 +28,14 @@ export function NavigationCube({ className = '', theme }: NavigationCubeProps) {
       <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 border border-gray-600">
         {/* Navigation Cube */}
         <div className="relative w-24 h-24 mx-auto mb-3" style={{ perspective: '200px' }}>
-          <div 
+          <div
             className="relative w-full h-full transition-transform duration-300 ease-out"
-            style={{ 
+            style={{
               transformStyle: 'preserve-3d',
-              transform: 'rotateX(-15deg) rotateY(25deg)'
+              transform: 'rotateX(-15deg) rotateY(25deg)',
             }}
           >
-            {faces.map((face) => (
+            {faces.map(face => (
               <div
                 key={face.id}
                 className={`absolute w-full h-full border-2 cursor-pointer transition-all duration-200 flex items-center justify-center text-xs font-bold ${

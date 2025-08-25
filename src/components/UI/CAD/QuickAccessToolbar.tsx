@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
-import { 
-  Save, FolderOpen, Undo, Redo, Copy, Paste, 
-  ZoomIn, ZoomOut, Maximize, Grid, Target, 
-  Square, Eye, Layers, Settings, Plus, 
-  FileText, Download, Upload, Search
+import {
+  ClipboardPaste,
+  Copy,
+  Download,
+  FileText,
+  FolderOpen,
+  Grid,
+  Layers,
+  Maximize,
+  Redo,
+  Save,
+  Search,
+  Settings,
+  Square,
+  Target,
+  Undo,
+  Upload,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface QuickAccessToolbarProps {
   height: number;
@@ -30,21 +44,21 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
       name: 'New',
       icon: <FileText size={16} />,
       shortcut: 'Ctrl+N',
-      action: () => console.log('New file')
+      action: () => console.log('New file'),
     },
     {
       id: 'open',
       name: 'Open',
       icon: <FolderOpen size={16} />,
       shortcut: 'Ctrl+O',
-      action: () => console.log('Open file')
+      action: () => console.log('Open file'),
     },
     {
       id: 'save',
       name: 'Save',
       icon: <Save size={16} />,
       shortcut: 'Ctrl+S',
-      action: () => console.log('Save file')
+      action: () => console.log('Save file'),
     },
     { separator: true, id: 'sep1', name: '', icon: null, action: () => {} },
     {
@@ -52,14 +66,14 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
       name: 'Undo',
       icon: <Undo size={16} />,
       shortcut: 'Ctrl+Z',
-      action: () => console.log('Undo')
+      action: () => console.log('Undo'),
     },
     {
       id: 'redo',
       name: 'Redo',
       icon: <Redo size={16} />,
       shortcut: 'Ctrl+Y',
-      action: () => console.log('Redo')
+      action: () => console.log('Redo'),
     },
     { separator: true, id: 'sep2', name: '', icon: null, action: () => {} },
     {
@@ -67,34 +81,34 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
       name: 'Copy',
       icon: <Copy size={16} />,
       shortcut: 'Ctrl+C',
-      action: () => console.log('Copy')
+      action: () => console.log('Copy'),
     },
     {
       id: 'paste',
       name: 'Paste',
-      icon: <Paste size={16} />,
+      icon: <ClipboardPaste size={16} />,
       shortcut: 'Ctrl+V',
-      action: () => console.log('Paste')
+      action: () => console.log('Paste'),
     },
     { separator: true, id: 'sep3', name: '', icon: null, action: () => {} },
     {
       id: 'zoom-in',
       name: 'Zoom In',
       icon: <ZoomIn size={16} />,
-      action: () => console.log('Zoom in')
+      action: () => console.log('Zoom in'),
     },
     {
       id: 'zoom-out',
       name: 'Zoom Out',
       icon: <ZoomOut size={16} />,
-      action: () => console.log('Zoom out')
+      action: () => console.log('Zoom out'),
     },
     {
       id: 'zoom-extents',
       name: 'Zoom Extents',
       icon: <Maximize size={16} />,
       shortcut: 'Ctrl+E',
-      action: () => console.log('Zoom extents')
+      action: () => console.log('Zoom extents'),
     },
     { separator: true, id: 'sep4', name: '', icon: null, action: () => {} },
     {
@@ -102,22 +116,22 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
       name: 'Grid',
       icon: <Grid size={16} />,
       shortcut: 'F7',
-      action: () => console.log('Toggle grid')
+      action: () => console.log('Toggle grid'),
     },
     {
       id: 'snap',
       name: 'Snap',
       icon: <Target size={16} />,
       shortcut: 'F9',
-      action: () => console.log('Toggle snap')
+      action: () => console.log('Toggle snap'),
     },
     {
       id: 'ortho',
       name: 'Ortho',
       icon: <Square size={16} />,
       shortcut: 'F8',
-      action: () => console.log('Toggle ortho')
-    }
+      action: () => console.log('Toggle ortho'),
+    },
   ];
 
   const availableTools: QuickTool[] = [
@@ -126,27 +140,27 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
       id: 'import',
       name: 'Import',
       icon: <Upload size={16} />,
-      action: () => console.log('Import')
+      action: () => console.log('Import'),
     },
     {
       id: 'export',
       name: 'Export',
       icon: <Download size={16} />,
-      action: () => console.log('Export')
+      action: () => console.log('Export'),
     },
     {
       id: 'layers',
       name: 'Layers',
       icon: <Layers size={16} />,
-      action: () => console.log('Layers')
+      action: () => console.log('Layers'),
     },
     {
       id: 'search',
       name: 'Search',
       icon: <Search size={16} />,
       shortcut: 'Ctrl+F',
-      action: () => console.log('Search')
-    }
+      action: () => console.log('Search'),
+    },
   ];
 
   const visibleTools = defaultTools.concat(
@@ -164,21 +178,17 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
   };
 
   return (
-    <div 
+    <div
       className={`w-full border-b border-gray-600 flex items-center px-2 relative ${
-        theme === 'dark' ? 'bg-gray-800' : 
-        theme === 'light' ? 'bg-gray-100' : 
-        'bg-gray-700'
+        theme === 'dark' ? 'bg-gray-800' : theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'
       }`}
       style={{ height }}
     >
       {/* Quick Access Tools */}
       <div className="flex items-center space-x-1">
-        {visibleTools.map((tool) => {
+        {visibleTools.map(tool => {
           if (tool.separator) {
-            return (
-              <div key={tool.id} className="w-px h-6 bg-gray-600 mx-1" />
-            );
+            return <div key={tool.id} className="w-px h-6 bg-gray-600 mx-1" />;
           }
 
           return (
@@ -213,7 +223,7 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
             <div className="text-xs text-gray-400 mb-3">
               Add or remove tools from the quick access toolbar
             </div>
-            
+
             <div className="space-y-2">
               {availableTools
                 .filter(tool => !tool.separator && !defaultTools.some(dt => dt.id === tool.id))

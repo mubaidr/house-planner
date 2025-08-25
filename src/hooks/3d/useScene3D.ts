@@ -37,7 +37,7 @@ const defaultSettings: Scene3DSettings = {
   gridDivisions: 20,
   axesEnabled: false,
   shadowsEnabled: true,
-  shadowMapSize: 2048
+  shadowMapSize: 2048,
 };
 
 export function useScene3D(): [Scene3DSettings, Scene3DActions] {
@@ -51,11 +51,7 @@ export function useScene3D(): [Scene3DSettings, Scene3DActions] {
 
     // Fog
     if (settings.fogEnabled) {
-      scene.fog = new THREE.Fog(
-        settings.fogColor,
-        settings.fogNear,
-        settings.fogFar
-      );
+      scene.fog = new THREE.Fog(settings.fogColor, settings.fogNear, settings.fogFar);
     } else {
       scene.fog = null;
     }
@@ -64,8 +60,13 @@ export function useScene3D(): [Scene3DSettings, Scene3DActions] {
     gl.shadowMap.enabled = settings.shadowsEnabled;
     if (settings.shadowsEnabled) {
       gl.shadowMap.type = THREE.PCFSoftShadowMap;
-      gl.shadowMap.mapSize.width = settings.shadowMapSize;
-      gl.shadowMap.mapSize.height = settings.shadowMapSize;
+      // Update shadow map size for all lights in the scene
+      scene.traverse((object) => {
+        if (object instanceof THREE.Light && object.castShadow) {
+          object.shadow.mapSize.width = settings.shadowMapSize;
+          object.shadow.mapSize.height = settings.shadowMapSize;
+        }
+      });
     }
   }, [scene, gl, settings]);
 
@@ -73,23 +74,29 @@ export function useScene3D(): [Scene3DSettings, Scene3DActions] {
     setSettings(prev => ({ ...prev, ...newSettings }));
   }, []);
 
-  const addObject = useCallback((object: THREE.Object3D) => {
-    scene.add(object);
-  }, [scene]);
+  const addObject = useCallback(
+    (object: THREE.Object3D) => {
+      scene.add(object);
+    },
+    [scene]
+  );
 
-  const removeObject = useCallback((object: THREE.Object3D) => {
-    scene.remove(object);
-  }, [scene]);
+  const removeObject = useCallback(
+    (object: THREE.Object3D) => {
+      scene.remove(object);
+    },
+    [scene]
+  );
 
   const clearScene = useCallback(() => {
     // Remove all objects except lights and camera
     const objectsToRemove: THREE.Object3D[] = [];
-    scene.traverse((object) => {
+    scene.traverse(object => {
       if (!(object instanceof THREE.Light) && !(object instanceof THREE.Camera)) {
         objectsToRemove.push(object);
       }
     });
-    
+
     objectsToRemove.forEach(object => {
       if (object.parent) {
         object.parent.remove(object);
@@ -97,19 +104,25 @@ export function useScene3D(): [Scene3DSettings, Scene3DActions] {
     });
   }, [scene]);
 
-  const getObjectById = useCallback((id: string): THREE.Object3D | undefined => {
-    return scene.getObjectById(parseInt(id));
-  }, [scene]);
+  const getObjectById = useCallback(
+    (id: string): THREE.Object3D | undefined => {
+      return scene.getObjectById(parseInt(id));
+    },
+    [scene]
+  );
 
-  const getObjectsByType = useCallback((type: string): THREE.Object3D[] => {
-    const objects: THREE.Object3D[] = [];
-    scene.traverse((object) => {
-      if (object.userData.type === type) {
-        objects.push(object);
-      }
-    });
-    return objects;
-  }, [scene]);
+  const getObjectsByType = useCallback(
+    (type: string): THREE.Object3D[] => {
+      const objects: THREE.Object3D[] = [];
+      scene.traverse(object => {
+        if (object.userData.type === type) {
+          objects.push(object);
+        }
+      });
+      return objects;
+    },
+    [scene]
+  );
 
   const exportScene = useCallback((): THREE.Scene => {
     return scene.clone();
@@ -122,7 +135,7 @@ export function useScene3D(): [Scene3DSettings, Scene3DActions] {
     clearScene,
     getObjectById,
     getObjectsByType,
-    exportScene
+    exportScene,
   };
 
   return [settings, actions];

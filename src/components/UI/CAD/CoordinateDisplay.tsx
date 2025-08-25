@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Crosshair, Target, Grid } from 'lucide-react';
+import { Crosshair, Target } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface CoordinateDisplayProps {
   className?: string;
@@ -19,7 +19,7 @@ export function CoordinateDisplay({ className = '', theme }: CoordinateDisplayPr
       setCoordinates({
         x: Math.random() * 10000,
         y: Math.random() * 10000,
-        z: Math.random() * 3000
+        z: Math.random() * 3000,
       });
     }, 100);
 
@@ -39,19 +39,25 @@ export function CoordinateDisplay({ className = '', theme }: CoordinateDisplayPr
             <Crosshair size={12} />
             <span>Cursor Position</span>
           </div>
-          
+
           <div className="font-mono text-sm space-y-1">
             <div className="flex justify-between">
               <span className="text-gray-300">X:</span>
-              <span className="text-white">{formatCoordinate(coordinates.x)} {units}</span>
+              <span className="text-white">
+                {formatCoordinate(coordinates.x)} {units}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-300">Y:</span>
-              <span className="text-white">{formatCoordinate(coordinates.y)} {units}</span>
+              <span className="text-white">
+                {formatCoordinate(coordinates.y)} {units}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-300">Z:</span>
-              <span className="text-white">{formatCoordinate(coordinates.z)} {units}</span>
+              <span className="text-white">
+                {formatCoordinate(coordinates.z)} {units}
+              </span>
             </div>
           </div>
         </div>
@@ -65,19 +71,25 @@ export function CoordinateDisplay({ className = '', theme }: CoordinateDisplayPr
                 <Target size={12} />
                 <span>Snap Point</span>
               </div>
-              
+
               <div className="font-mono text-sm space-y-1">
                 <div className="flex justify-between">
                   <span className="text-gray-300">X:</span>
-                  <span className="text-green-400">{formatCoordinate(snapPoint.x)} {units}</span>
+                  <span className="text-green-400">
+                    {formatCoordinate(snapPoint.x)} {units}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Y:</span>
-                  <span className="text-green-400">{formatCoordinate(snapPoint.y)} {units}</span>
+                  <span className="text-green-400">
+                    {formatCoordinate(snapPoint.y)} {units}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Z:</span>
-                  <span className="text-green-400">{formatCoordinate(snapPoint.z)} {units}</span>
+                  <span className="text-green-400">
+                    {formatCoordinate(snapPoint.z)} {units}
+                  </span>
                 </div>
               </div>
             </div>
@@ -89,7 +101,7 @@ export function CoordinateDisplay({ className = '', theme }: CoordinateDisplayPr
           <div className="flex items-center justify-between">
             <select
               value={units}
-              onChange={(e) => setUnits(e.target.value)}
+              onChange={e => setUnits(e.target.value)}
               className="text-xs bg-gray-700 border border-gray-600 rounded px-1 py-0.5"
             >
               <option value="mm">mm</option>
@@ -98,10 +110,10 @@ export function CoordinateDisplay({ className = '', theme }: CoordinateDisplayPr
               <option value="in">in</option>
               <option value="ft">ft</option>
             </select>
-            
+
             <select
               value={precision}
-              onChange={(e) => setPrecision(parseInt(e.target.value))}
+              onChange={e => setPrecision(parseInt(e.target.value))}
               className="text-xs bg-gray-700 border border-gray-600 rounded px-1 py-0.5"
             >
               <option value={0}>0</option>

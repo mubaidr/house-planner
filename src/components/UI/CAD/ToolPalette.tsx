@@ -1,12 +1,34 @@
-import React, { useState, useCallback } from 'react';
-import { 
-  Minus, Square, Circle, Spline, Home, DoorOpen, 
-  RectangleHorizontal, Stairs, Move, RotateCcw, Copy, 
-  Scale, FlipHorizontal, Scissors, Maximize, 
-  CornerDownRight, Ruler, MousePointer, Hand, 
-  ZoomIn, ZoomOut, Grid, Layers, Eye, EyeOff,
-  ChevronLeft, ChevronRight, Settings, Palette
+import {
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Copy,
+  CornerDownRight,
+  DoorOpen,
+  Eye,
+  FlipHorizontal,
+  Grid,
+  Hand,
+  Home,
+  Layers,
+  Maximize,
+  Minus,
+  Mountain,
+  MousePointer,
+  Move,
+  Palette,
+  RectangleHorizontal,
+  RotateCcw,
+  Ruler,
+  Scale,
+  Scissors,
+  Settings,
+  Spline,
+  Square,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
 
 interface ToolPaletteProps {
   onCollapsePanel: () => void;
@@ -44,7 +66,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'L',
       category: 'draw',
       description: 'Draw a line between two points',
-      action: () => console.log('Line tool activated')
+      action: () => console.log('Line tool activated'),
     },
     {
       id: 'rectangle',
@@ -53,7 +75,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'REC',
       category: 'draw',
       description: 'Draw a rectangle',
-      action: () => console.log('Rectangle tool activated')
+      action: () => console.log('Rectangle tool activated'),
     },
     {
       id: 'circle',
@@ -62,7 +84,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'C',
       category: 'draw',
       description: 'Draw a circle',
-      action: () => console.log('Circle tool activated')
+      action: () => console.log('Circle tool activated'),
     },
     {
       id: 'arc',
@@ -71,7 +93,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'A',
       category: 'draw',
       description: 'Draw an arc',
-      action: () => console.log('Arc tool activated')
+      action: () => console.log('Arc tool activated'),
     },
     {
       id: 'wall',
@@ -89,7 +111,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <Minus size={16} />,
           category: 'draw',
           description: 'Draw straight wall segments',
-          action: () => console.log('Straight wall')
+          action: () => console.log('Straight wall'),
         },
         {
           id: 'wall-curved',
@@ -97,9 +119,9 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <Spline size={16} />,
           category: 'draw',
           description: 'Draw curved wall segments',
-          action: () => console.log('Curved wall')
-        }
-      ]
+          action: () => console.log('Curved wall'),
+        },
+      ],
     },
     {
       id: 'door',
@@ -117,7 +139,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <DoorOpen size={16} />,
           category: 'draw',
           description: 'Single swing door',
-          action: () => console.log('Single door')
+          action: () => console.log('Single door'),
         },
         {
           id: 'door-double',
@@ -125,7 +147,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <DoorOpen size={16} />,
           category: 'draw',
           description: 'Double swing door',
-          action: () => console.log('Double door')
+          action: () => console.log('Double door'),
         },
         {
           id: 'door-sliding',
@@ -133,9 +155,9 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <RectangleHorizontal size={16} />,
           category: 'draw',
           description: 'Sliding door',
-          action: () => console.log('Sliding door')
-        }
-      ]
+          action: () => console.log('Sliding door'),
+        },
+      ],
     },
     {
       id: 'window',
@@ -144,17 +166,17 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'WI',
       category: 'draw',
       description: 'Insert windows',
-      action: () => console.log('Window tool activated')
+      action: () => console.log('Window tool activated'),
     },
     {
       id: 'stair',
       name: 'Stair',
-      icon: <Stairs size={18} />,
+      icon: <Mountain size={18} />,
       shortcut: 'ST',
       category: 'draw',
       description: 'Insert stairs',
       action: () => console.log('Stair tool activated')
-    }
+    },
   ];
 
   const modifyTools: Tool[] = [
@@ -165,7 +187,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'M',
       category: 'modify',
       description: 'Move selected objects',
-      action: () => console.log('Move tool activated')
+      action: () => console.log('Move tool activated'),
     },
     {
       id: 'copy',
@@ -174,7 +196,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'CO',
       category: 'modify',
       description: 'Copy selected objects',
-      action: () => console.log('Copy tool activated')
+      action: () => console.log('Copy tool activated'),
     },
     {
       id: 'rotate',
@@ -183,7 +205,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'RO',
       category: 'modify',
       description: 'Rotate selected objects',
-      action: () => console.log('Rotate tool activated')
+      action: () => console.log('Rotate tool activated'),
     },
     {
       id: 'scale',
@@ -192,7 +214,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'SC',
       category: 'modify',
       description: 'Scale selected objects',
-      action: () => console.log('Scale tool activated')
+      action: () => console.log('Scale tool activated'),
     },
     {
       id: 'mirror',
@@ -201,7 +223,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'MI',
       category: 'modify',
       description: 'Mirror selected objects',
-      action: () => console.log('Mirror tool activated')
+      action: () => console.log('Mirror tool activated'),
     },
     {
       id: 'trim',
@@ -210,7 +232,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'TR',
       category: 'modify',
       description: 'Trim objects to boundaries',
-      action: () => console.log('Trim tool activated')
+      action: () => console.log('Trim tool activated'),
     },
     {
       id: 'extend',
@@ -219,7 +241,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'EX',
       category: 'modify',
       description: 'Extend objects to boundaries',
-      action: () => console.log('Extend tool activated')
+      action: () => console.log('Extend tool activated'),
     },
     {
       id: 'fillet',
@@ -228,8 +250,8 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'F',
       category: 'modify',
       description: 'Create rounded corners',
-      action: () => console.log('Fillet tool activated')
-    }
+      action: () => console.log('Fillet tool activated'),
+    },
   ];
 
   const selectTools: Tool[] = [
@@ -240,7 +262,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'S',
       category: 'select',
       description: 'Select objects',
-      action: () => console.log('Select tool activated')
+      action: () => console.log('Select tool activated'),
     },
     {
       id: 'pan',
@@ -249,8 +271,8 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'P',
       category: 'view',
       description: 'Pan the view',
-      action: () => console.log('Pan tool activated')
-    }
+      action: () => console.log('Pan tool activated'),
+    },
   ];
 
   const viewTools: Tool[] = [
@@ -261,7 +283,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'Z+',
       category: 'view',
       description: 'Zoom in',
-      action: () => console.log('Zoom in')
+      action: () => console.log('Zoom in'),
     },
     {
       id: 'zoom-out',
@@ -270,7 +292,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'Z-',
       category: 'view',
       description: 'Zoom out',
-      action: () => console.log('Zoom out')
+      action: () => console.log('Zoom out'),
     },
     {
       id: 'zoom-extents',
@@ -279,8 +301,8 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'ZE',
       category: 'view',
       description: 'Zoom to show all objects',
-      action: () => console.log('Zoom extents')
-    }
+      action: () => console.log('Zoom extents'),
+    },
   ];
 
   const measureTools: Tool[] = [
@@ -291,8 +313,8 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'DIST',
       category: 'measure',
       description: 'Measure distance between points',
-      action: () => console.log('Measure tool activated')
-    }
+      action: () => console.log('Measure tool activated'),
+    },
   ];
 
   const layerTools: Tool[] = [
@@ -302,7 +324,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       icon: <Eye size={18} />,
       category: 'layer',
       description: 'Toggle layer visibility',
-      action: () => console.log('Toggle layer visibility')
+      action: () => console.log('Toggle layer visibility'),
     },
     {
       id: 'layer-manager',
@@ -311,8 +333,8 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'LA',
       category: 'layer',
       description: 'Open layer manager',
-      action: () => console.log('Layer manager')
-    }
+      action: () => console.log('Layer manager'),
+    },
   ];
 
   const categories = [
@@ -321,7 +343,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
     { id: 'modify', name: 'Modify', tools: modifyTools, icon: <Move size={16} /> },
     { id: 'view', name: 'View', tools: viewTools, icon: <Eye size={16} /> },
     { id: 'measure', name: 'Measure', tools: measureTools, icon: <Ruler size={16} /> },
-    { id: 'layer', name: 'Layers', tools: layerTools, icon: <Layers size={16} /> }
+    { id: 'layer', name: 'Layers', tools: layerTools, icon: <Layers size={16} /> },
   ];
 
   const renderTool = (tool: Tool) => (
@@ -331,8 +353,8 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           activeTool === tool.id
             ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
             : theme === 'dark'
-            ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
-            : 'bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+              ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
+              : 'bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'
         }`}
         onClick={() => {
           handleToolSelect(tool.id, tool.action);
@@ -345,15 +367,14 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
         <div className="flex flex-col items-center space-y-1">
           {tool.icon}
           <span className="text-xs font-medium">{tool.name}</span>
-          {tool.shortcut && (
-            <span className="text-xs opacity-60">{tool.shortcut}</span>
-          )}
+          {tool.shortcut && <span className="text-xs opacity-60">{tool.shortcut}</span>}
         </div>
         {tool.hasSubmenu && (
           <div className="absolute top-1 right-1">
-            <ChevronRight size={12} className={`transition-transform ${
-              expandedSubmenu === tool.id ? 'rotate-90' : ''
-            }`} />
+            <ChevronRight
+              size={12}
+              className={`transition-transform ${expandedSubmenu === tool.id ? 'rotate-90' : ''}`}
+            />
           </div>
         )}
       </button>
@@ -361,7 +382,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       {/* Submenu */}
       {tool.hasSubmenu && expandedSubmenu === tool.id && tool.submenu && (
         <div className="absolute left-full top-0 ml-2 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50 min-w-48">
-          {tool.submenu.map((subTool) => (
+          {tool.submenu.map(subTool => (
             <button
               key={subTool.id}
               className="w-full p-2 text-left hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center space-x-2"
@@ -382,11 +403,11 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
   const activeCategory_tools = categories.find(cat => cat.id === activeCategory)?.tools || [];
 
   return (
-    <div className={`h-full flex flex-col ${
-      theme === 'dark' ? 'bg-gray-900' : 
-      theme === 'light' ? 'bg-gray-50' : 
-      'bg-gray-800'
-    }`}>
+    <div
+      className={`h-full flex flex-col ${
+        theme === 'dark' ? 'bg-gray-900' : theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'
+      }`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-600">
         <div className="flex items-center space-x-2">
@@ -404,7 +425,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
 
       {/* Category Tabs */}
       <div className="flex flex-wrap gap-1 p-2 border-b border-gray-600">
-        {categories.map((category) => (
+        {categories.map(category => (
           <button
             key={category.id}
             className={`px-2 py-1 rounded text-xs flex items-center space-x-1 transition-colors ${
@@ -423,9 +444,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
 
       {/* Tools Grid */}
       <div className="flex-1 p-3 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-2">
-          {activeCategory_tools.map(renderTool)}
-        </div>
+        <div className="grid grid-cols-2 gap-2">{activeCategory_tools.map(renderTool)}</div>
       </div>
 
       {/* Quick Settings */}
@@ -434,7 +453,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           <span className="text-xs font-medium">Quick Settings</span>
           <Settings size={14} />
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs">Grid</span>
@@ -442,14 +461,14 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
               <Grid size={14} />
             </button>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <span className="text-xs">Snap</span>
             <button className="p-1 hover:bg-gray-700 rounded">
               <div className="w-3 h-3 border border-current rounded-sm"></div>
             </button>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <span className="text-xs">Ortho</span>
             <button className="p-1 hover:bg-gray-700 rounded">

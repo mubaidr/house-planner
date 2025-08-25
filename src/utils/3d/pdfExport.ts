@@ -1,10 +1,11 @@
-import * as pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfMake_ from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as THREE from 'three';
 import { Export3DSystem } from './export3D';
 
 // Set up pdfMake fonts
-(pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
+const pdfMake = pdfMake_ as any;
+pdfMake.vfs = (pdfFonts as any).pdfMake.vfs;
 
 export interface PDFExportOptions {
   title?: string;
@@ -54,8 +55,8 @@ export class PDFExportSystem {
       include3DViews = true,
       includeMaterials = true,
       includeDimensions = true,
-      pageSize = 'A3',
-      orientation = 'landscape'
+      // pageSize and orientation are used in the PDF document definition
+      // but not directly in this function
     } = options;
 
     // Generate images
@@ -65,7 +66,7 @@ export class PDFExportSystem {
       const floorPlanBlob = await this.export3D.export2DFloorPlan(scene, {
         showDimensions: includeDimensions,
         showLabels: true,
-        scale: 50
+        scale: 50,
       });
       images.floorPlan = await this.blobToBase64(floorPlanBlob);
     }
@@ -74,14 +75,14 @@ export class PDFExportSystem {
       // Front view
       const frontViewBlob = await this.export3D.exportHighQualityRender(scene, camera, {
         width: 1200,
-        height: 800
+        height: 800,
       });
       images.frontView = await this.blobToBase64(frontViewBlob);
 
       // Perspective view (current camera position)
       const perspectiveBlob = await this.export3D.exportHighQualityRender(scene, camera, {
         width: 1200,
-        height: 800
+        height: 800,
       });
       images.perspective = await this.blobToBase64(perspectiveBlob);
     }
@@ -132,13 +133,13 @@ export class PDFExportSystem {
     return {
       pageSize: options.pageSize || 'A3',
       pageOrientation: options.orientation || 'landscape',
-      pageMargins: [40, 60, 40, 60],
+      pageMargins: [40, 60, 40, 60] as [number, number, number, number],
       content,
       styles: this.getPDFStyles(),
       defaultStyle: {
         fontSize: 10,
-        font: 'Helvetica'
-      }
+        font: 'Helvetica',
+      },
     };
   }
 
@@ -148,34 +149,31 @@ export class PDFExportSystem {
         text: 'ARCHITECTURAL DRAWING',
         style: 'header',
         alignment: 'center',
-        margin: [0, 100, 0, 50]
+        margin: [0, 100, 0, 50],
       },
       {
         text: projectInfo.title,
         style: 'title',
         alignment: 'center',
-        margin: [0, 0, 0, 30]
+        margin: [0, 0, 0, 30],
       },
       {
         table: {
           widths: ['*', '*'],
           body: [
-            [
-              { text: 'Project Information', style: 'sectionHeader', colSpan: 2 },
-              {}
-            ],
+            [{ text: 'Project Information', style: 'sectionHeader', colSpan: 2 }, {}],
             ['Project Name:', projectInfo.projectName],
             ['Client:', projectInfo.clientName],
             ['Architect:', projectInfo.architect],
             ['Date:', projectInfo.date],
             ['Scale:', projectInfo.scale],
             ...(projectInfo.address ? [['Address:', projectInfo.address]] : []),
-            ...(projectInfo.description ? [['Description:', projectInfo.description]] : [])
-          ]
+            ...(projectInfo.description ? [['Description:', projectInfo.description]] : []),
+          ],
         },
         layout: 'lightHorizontalLines',
-        margin: [100, 50, 100, 0]
-      }
+        margin: [100, 50, 100, 0],
+      },
     ];
   }
 
@@ -185,31 +183,27 @@ export class PDFExportSystem {
         text: 'FLOOR PLAN',
         style: 'pageHeader',
         alignment: 'center',
-        margin: [0, 0, 0, 20]
+        margin: [0, 0, 0, 20],
       },
       {
         image: floorPlanImage,
         width: 700,
         alignment: 'center',
-        margin: [0, 0, 0, 20]
+        margin: [0, 0, 0, 20],
       },
       {
         table: {
           widths: ['*', '*', '*'],
           body: [
-            [
-              { text: 'Drawing Information', style: 'sectionHeader', colSpan: 3 },
-              {},
-              {}
-            ],
+            [{ text: 'Drawing Information', style: 'sectionHeader', colSpan: 3 }, {}, {}],
             ['Scale:', projectInfo.scale, 'Date: ' + projectInfo.date],
             ['Project:', projectInfo.projectName, 'Drawing: Floor Plan'],
-            ['Architect:', projectInfo.architect, 'Sheet: 1 of 3']
-          ]
+            ['Architect:', projectInfo.architect, 'Sheet: 1 of 3'],
+          ],
         },
         layout: 'lightHorizontalLines',
-        margin: [0, 20, 0, 0]
-      }
+        margin: [0, 20, 0, 0],
+      },
     ];
   }
 
@@ -219,8 +213,8 @@ export class PDFExportSystem {
         text: '3D PERSPECTIVES',
         style: 'pageHeader',
         alignment: 'center',
-        margin: [0, 0, 0, 20]
-      }
+        margin: [0, 0, 0, 20],
+      },
     ];
 
     if (images.frontView && images.perspective) {
@@ -230,33 +224,33 @@ export class PDFExportSystem {
             width: '48%',
             stack: [
               { text: 'Front View', style: 'imageLabel', alignment: 'center' },
-              { image: images.frontView, width: 350, alignment: 'center' }
-            ]
+              { image: images.frontView, width: 350, alignment: 'center' },
+            ],
           },
           { width: '4%', text: '' },
           {
             width: '48%',
             stack: [
               { text: 'Perspective View', style: 'imageLabel', alignment: 'center' },
-              { image: images.perspective, width: 350, alignment: 'center' }
-            ]
-          }
+              { image: images.perspective, width: 350, alignment: 'center' },
+            ],
+          },
         ],
-        margin: [0, 0, 0, 20]
+        margin: [0, 0, 0, 20],
       });
     } else if (images.frontView) {
       content.push({
         image: images.frontView,
         width: 600,
         alignment: 'center',
-        margin: [0, 0, 0, 20]
+        margin: [0, 0, 0, 20],
       });
     } else if (images.perspective) {
       content.push({
         image: images.perspective,
         width: 600,
         alignment: 'center',
-        margin: [0, 0, 0, 20]
+        margin: [0, 0, 0, 20],
       });
     }
 
@@ -264,18 +258,14 @@ export class PDFExportSystem {
       table: {
         widths: ['*', '*', '*'],
         body: [
-          [
-            { text: 'Drawing Information', style: 'sectionHeader', colSpan: 3 },
-            {},
-            {}
-          ],
+          [{ text: 'Drawing Information', style: 'sectionHeader', colSpan: 3 }, {}, {}],
           ['Scale:', 'As Shown', 'Date: ' + projectInfo.date],
           ['Project:', projectInfo.projectName, 'Drawing: 3D Views'],
-          ['Architect:', projectInfo.architect, 'Sheet: 2 of 3']
-        ]
+          ['Architect:', projectInfo.architect, 'Sheet: 2 of 3'],
+        ],
       },
       layout: 'lightHorizontalLines',
-      margin: [0, 20, 0, 0]
+      margin: [0, 20, 0, 0],
     });
 
     return content;
@@ -287,62 +277,51 @@ export class PDFExportSystem {
         text: 'MATERIALS & SPECIFICATIONS',
         style: 'pageHeader',
         alignment: 'center',
-        margin: [0, 0, 0, 20]
+        margin: [0, 0, 0, 20],
       },
       {
         table: {
           widths: ['*', '*', '*'],
           body: [
-            [
-              { text: 'Material Schedule', style: 'sectionHeader', colSpan: 3 },
-              {},
-              {}
-            ],
+            [{ text: 'Material Schedule', style: 'sectionHeader', colSpan: 3 }, {}, {}],
             ['Item', 'Material', 'Specification'],
             ['Walls', 'Brick/Concrete', 'Standard construction'],
             ['Floors', 'Hardwood/Tile', 'As per design'],
             ['Roof', 'Asphalt Shingles', 'Weather resistant'],
             ['Windows', 'Double Glazed', 'Energy efficient'],
-            ['Doors', 'Solid Wood', 'Standard hardware']
-          ]
+            ['Doors', 'Solid Wood', 'Standard hardware'],
+          ],
         },
         layout: 'lightHorizontalLines',
-        margin: [0, 0, 0, 30]
+        margin: [0, 0, 0, 30],
       },
       {
         table: {
           widths: ['*', '*'],
           body: [
-            [
-              { text: 'General Notes', style: 'sectionHeader', colSpan: 2 },
-              {}
-            ],
+            [{ text: 'General Notes', style: 'sectionHeader', colSpan: 2 }, {}],
             ['1.', 'All dimensions to be verified on site'],
             ['2.', 'Materials to comply with local building codes'],
             ['3.', 'Contractor to verify all dimensions before construction'],
             ['4.', 'Any discrepancies to be reported to architect'],
-            ['5.', 'All work to be carried out by qualified professionals']
-          ]
+            ['5.', 'All work to be carried out by qualified professionals'],
+          ],
         },
         layout: 'lightHorizontalLines',
-        margin: [0, 0, 0, 30]
+        margin: [0, 0, 0, 30],
       },
       {
         table: {
           widths: ['*', '*', '*'],
           body: [
-            [
-              { text: 'Drawing Information', style: 'sectionHeader', colSpan: 3 },
-              {},
-              {}
-            ],
+            [{ text: 'Drawing Information', style: 'sectionHeader', colSpan: 3 }, {}, {}],
             ['Scale:', 'N/A', 'Date: ' + projectInfo.date],
             ['Project:', projectInfo.projectName, 'Drawing: Specifications'],
-            ['Architect:', projectInfo.architect, 'Sheet: 3 of 3']
-          ]
+            ['Architect:', projectInfo.architect, 'Sheet: 3 of 3'],
+          ],
         },
-        layout: 'lightHorizontalLines'
-      }
+        layout: 'lightHorizontalLines',
+      },
     ];
   }
 
@@ -351,29 +330,29 @@ export class PDFExportSystem {
       header: {
         fontSize: 24,
         bold: true,
-        color: '#2c3e50'
+        color: '#2c3e50',
       },
       title: {
         fontSize: 20,
         bold: true,
-        color: '#34495e'
+        color: '#34495e',
       },
       pageHeader: {
         fontSize: 16,
         bold: true,
-        color: '#2c3e50'
+        color: '#2c3e50',
       },
       sectionHeader: {
         fontSize: 12,
         bold: true,
         fillColor: '#ecf0f1',
-        color: '#2c3e50'
+        color: '#2c3e50',
       },
       imageLabel: {
         fontSize: 11,
         bold: true,
-        margin: [0, 0, 0, 10]
-      }
+        margin: [0, 0, 0, 10] as [number, number, number, number],
+      },
     };
   }
 

@@ -1,9 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  FileText, Save, FolderOpen, Download, Upload, Settings, 
-  Eye, Grid, Layers, Ruler, Move, RotateCcw, Copy, 
-  Undo, Redo, Search, HelpCircle, User, Monitor
+import {
+  Copy,
+  Download,
+  FileText,
+  FolderOpen,
+  Grid,
+  HelpCircle,
+  Layers,
+  Monitor,
+  Move,
+  Redo,
+  RotateCcw,
+  Ruler,
+  Save,
+  Search,
+  Settings,
+  Undo,
+  Upload,
+  User,
 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface MenuBarProps {
   height: number;
@@ -15,7 +30,7 @@ interface MenuBarProps {
 }
 
 interface MenuItem {
-  label: string;
+  label?: string;
   icon?: React.ReactNode;
   shortcut?: string;
   action?: () => void;
@@ -24,19 +39,19 @@ interface MenuItem {
   disabled?: boolean;
 }
 
-export function MenuBar({ 
-  height, 
-  onTogglePanel, 
-  onResetWorkspace, 
-  onSaveWorkspace, 
-  onLoadWorkspace, 
-  theme 
+export function MenuBar({
+  height,
+  onTogglePanel,
+  onResetWorkspace,
+  onSaveWorkspace,
+  onLoadWorkspace,
+  theme,
 }: MenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [recentFiles, setRecentFiles] = useState<string[]>([
     'House_Design_v1.dwg',
     'Apartment_Layout.dwg',
-    'Office_Building.dwg'
+    'Office_Building.dwg',
   ]);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -52,51 +67,94 @@ export function MenuBar({
   }, []);
 
   const fileMenu: MenuItem[] = [
-    { label: 'New', icon: <FileText size={16} />, shortcut: 'Ctrl+N', action: () => console.log('New file') },
-    { label: 'Open', icon: <FolderOpen size={16} />, shortcut: 'Ctrl+O', action: () => console.log('Open file') },
-    { separator: true },
-    { label: 'Save', icon: <Save size={16} />, shortcut: 'Ctrl+S', action: () => console.log('Save file') },
-    { label: 'Save As...', shortcut: 'Ctrl+Shift+S', action: () => console.log('Save as') },
-    { separator: true },
-    { 
-      label: 'Recent Files', 
-      submenu: recentFiles.map(file => ({
-        label: file,
-        action: () => console.log('Open recent:', file)
-      }))
+    {
+      label: 'New',
+      icon: <FileText size={16} />,
+      shortcut: 'Ctrl+N',
+      action: () => console.log('New file'),
+    },
+    {
+      label: 'Open',
+      icon: <FolderOpen size={16} />,
+      shortcut: 'Ctrl+O',
+      action: () => console.log('Open file'),
     },
     { separator: true },
-    { label: 'Import', icon: <Upload size={16} />, submenu: [
-      { label: 'DWG/DXF...', action: () => console.log('Import DWG') },
-      { label: 'IFC...', action: () => console.log('Import IFC') },
-      { label: 'SketchUp...', action: () => console.log('Import SKP') },
-      { label: '3D Model...', action: () => console.log('Import 3D') }
-    ]},
-    { label: 'Export', icon: <Download size={16} />, submenu: [
-      { label: 'DWG/DXF...', action: () => console.log('Export DWG') },
-      { label: 'PDF...', action: () => console.log('Export PDF') },
-      { label: 'Image...', action: () => console.log('Export Image') },
-      { label: '3D Model...', action: () => console.log('Export 3D') }
-    ]},
+    {
+      label: 'Save',
+      icon: <Save size={16} />,
+      shortcut: 'Ctrl+S',
+      action: () => console.log('Save file'),
+    },
+    { label: 'Save As...', shortcut: 'Ctrl+Shift+S', action: () => console.log('Save as') },
+    { separator: true },
+    {
+      label: 'Recent Files',
+      submenu: recentFiles.map(file => ({
+        label: file,
+        action: () => console.log('Open recent:', file),
+      })),
+    },
+    { separator: true },
+    {
+      label: 'Import',
+      icon: <Upload size={16} />,
+      submenu: [
+        { label: 'DWG/DXF...', action: () => console.log('Import DWG') },
+        { label: 'IFC...', action: () => console.log('Import IFC') },
+        { label: 'SketchUp...', action: () => console.log('Import SKP') },
+        { label: '3D Model...', action: () => console.log('Import 3D') },
+      ],
+    },
+    {
+      label: 'Export',
+      icon: <Download size={16} />,
+      submenu: [
+        { label: 'DWG/DXF...', action: () => console.log('Export DWG') },
+        { label: 'PDF...', action: () => console.log('Export PDF') },
+        { label: 'Image...', action: () => console.log('Export Image') },
+        { label: '3D Model...', action: () => console.log('Export 3D') },
+      ],
+    },
     { separator: true },
     { label: 'Print', shortcut: 'Ctrl+P', action: () => console.log('Print') },
-    { label: 'Print Preview', action: () => console.log('Print preview') }
+    { label: 'Print Preview', action: () => console.log('Print preview') },
   ];
 
   const editMenu: MenuItem[] = [
-    { label: 'Undo', icon: <Undo size={16} />, shortcut: 'Ctrl+Z', action: () => console.log('Undo') },
-    { label: 'Redo', icon: <Redo size={16} />, shortcut: 'Ctrl+Y', action: () => console.log('Redo') },
+    {
+      label: 'Undo',
+      icon: <Undo size={16} />,
+      shortcut: 'Ctrl+Z',
+      action: () => console.log('Undo'),
+    },
+    {
+      label: 'Redo',
+      icon: <Redo size={16} />,
+      shortcut: 'Ctrl+Y',
+      action: () => console.log('Redo'),
+    },
     { separator: true },
     { label: 'Cut', shortcut: 'Ctrl+X', action: () => console.log('Cut') },
-    { label: 'Copy', icon: <Copy size={16} />, shortcut: 'Ctrl+C', action: () => console.log('Copy') },
+    {
+      label: 'Copy',
+      icon: <Copy size={16} />,
+      shortcut: 'Ctrl+C',
+      action: () => console.log('Copy'),
+    },
     { label: 'Paste', shortcut: 'Ctrl+V', action: () => console.log('Paste') },
     { separator: true },
     { label: 'Select All', shortcut: 'Ctrl+A', action: () => console.log('Select all') },
     { label: 'Select Similar', action: () => console.log('Select similar') },
     { label: 'Invert Selection', action: () => console.log('Invert selection') },
     { separator: true },
-    { label: 'Find', icon: <Search size={16} />, shortcut: 'Ctrl+F', action: () => console.log('Find') },
-    { label: 'Replace', shortcut: 'Ctrl+H', action: () => console.log('Replace') }
+    {
+      label: 'Find',
+      icon: <Search size={16} />,
+      shortcut: 'Ctrl+F',
+      action: () => console.log('Find'),
+    },
+    { label: 'Replace', shortcut: 'Ctrl+H', action: () => console.log('Replace') },
   ];
 
   const viewMenu: MenuItem[] = [
@@ -109,13 +167,18 @@ export function MenuBar({
     { label: 'Right View', shortcut: 'Ctrl+3', action: () => console.log('Right view') },
     { label: 'Isometric', shortcut: 'Ctrl+4', action: () => console.log('Isometric') },
     { separator: true },
-    { label: 'Grid', icon: <Grid size={16} />, shortcut: 'F7', action: () => console.log('Toggle grid') },
+    {
+      label: 'Grid',
+      icon: <Grid size={16} />,
+      shortcut: 'F7',
+      action: () => console.log('Toggle grid'),
+    },
     { label: 'Snap', shortcut: 'F9', action: () => console.log('Toggle snap') },
     { label: 'Ortho', shortcut: 'F8', action: () => console.log('Toggle ortho') },
     { separator: true },
     { label: 'Layers Panel', icon: <Layers size={16} />, action: () => onTogglePanel('leftPanel') },
     { label: 'Properties Panel', action: () => onTogglePanel('rightPanel') },
-    { label: 'Command Line', action: () => onTogglePanel('commandLine') }
+    { label: 'Command Line', action: () => onTogglePanel('commandLine') },
   ];
 
   const drawMenu: MenuItem[] = [
@@ -131,13 +194,18 @@ export function MenuBar({
     { separator: true },
     { label: 'Text', shortcut: 'T', action: () => console.log('Add text') },
     { label: 'Dimension', shortcut: 'DIM', action: () => console.log('Add dimension') },
-    { label: 'Hatch', shortcut: 'H', action: () => console.log('Add hatch') }
+    { label: 'Hatch', shortcut: 'H', action: () => console.log('Add hatch') },
   ];
 
   const modifyMenu: MenuItem[] = [
     { label: 'Move', icon: <Move size={16} />, shortcut: 'M', action: () => console.log('Move') },
     { label: 'Copy', icon: <Copy size={16} />, shortcut: 'CO', action: () => console.log('Copy') },
-    { label: 'Rotate', icon: <RotateCcw size={16} />, shortcut: 'RO', action: () => console.log('Rotate') },
+    {
+      label: 'Rotate',
+      icon: <RotateCcw size={16} />,
+      shortcut: 'RO',
+      action: () => console.log('Rotate'),
+    },
     { label: 'Scale', shortcut: 'SC', action: () => console.log('Scale') },
     { separator: true },
     { label: 'Mirror', shortcut: 'MI', action: () => console.log('Mirror') },
@@ -147,20 +215,29 @@ export function MenuBar({
     { label: 'Trim', shortcut: 'TR', action: () => console.log('Trim') },
     { label: 'Extend', shortcut: 'EX', action: () => console.log('Extend') },
     { label: 'Fillet', shortcut: 'F', action: () => console.log('Fillet') },
-    { label: 'Chamfer', shortcut: 'CHA', action: () => console.log('Chamfer') }
+    { label: 'Chamfer', shortcut: 'CHA', action: () => console.log('Chamfer') },
   ];
 
   const toolsMenu: MenuItem[] = [
-    { label: 'Measure', icon: <Ruler size={16} />, shortcut: 'DIST', action: () => console.log('Measure') },
+    {
+      label: 'Measure',
+      icon: <Ruler size={16} />,
+      shortcut: 'DIST',
+      action: () => console.log('Measure'),
+    },
     { label: 'Area', action: () => console.log('Calculate area') },
     { label: 'List Properties', action: () => console.log('List properties') },
     { separator: true },
-    { label: 'Layer Manager', icon: <Layers size={16} />, action: () => console.log('Layer manager') },
+    {
+      label: 'Layer Manager',
+      icon: <Layers size={16} />,
+      action: () => console.log('Layer manager'),
+    },
     { label: 'Block Library', action: () => console.log('Block library') },
     { label: 'Material Library', action: () => console.log('Material library') },
     { separator: true },
     { label: 'Options', icon: <Settings size={16} />, action: () => console.log('Options') },
-    { label: 'Customize', action: () => console.log('Customize') }
+    { label: 'Customize', action: () => console.log('Customize') },
   ];
 
   const windowMenu: MenuItem[] = [
@@ -171,16 +248,21 @@ export function MenuBar({
     { separator: true },
     { label: 'Reset Workspace', action: onResetWorkspace },
     { label: 'Save Workspace', action: onSaveWorkspace },
-    { label: 'Load Workspace', action: onLoadWorkspace }
+    { label: 'Load Workspace', action: onLoadWorkspace },
   ];
 
   const helpMenu: MenuItem[] = [
-    { label: 'Help Topics', icon: <HelpCircle size={16} />, shortcut: 'F1', action: () => console.log('Help') },
+    {
+      label: 'Help Topics',
+      icon: <HelpCircle size={16} />,
+      shortcut: 'F1',
+      action: () => console.log('Help'),
+    },
     { label: 'Keyboard Shortcuts', action: () => console.log('Shortcuts') },
     { label: 'Video Tutorials', action: () => console.log('Tutorials') },
     { separator: true },
     { label: 'Check for Updates', action: () => console.log('Check updates') },
-    { label: 'About', action: () => console.log('About') }
+    { label: 'About', action: () => console.log('About') },
   ];
 
   const menus = {
@@ -191,7 +273,7 @@ export function MenuBar({
     modify: modifyMenu,
     tools: toolsMenu,
     window: windowMenu,
-    help: helpMenu
+    help: helpMenu,
   };
 
   const renderMenuItem = (item: MenuItem, index: number) => {
@@ -216,23 +298,17 @@ export function MenuBar({
           {item.icon}
           <span>{item.label}</span>
         </div>
-        {item.shortcut && (
-          <span className="text-xs text-gray-400">{item.shortcut}</span>
-        )}
-        {item.submenu && (
-          <span className="text-xs">▶</span>
-        )}
+        {item.shortcut && <span className="text-xs text-gray-400">{item.shortcut}</span>}
+        {item.submenu && <span className="text-xs">▶</span>}
       </div>
     );
   };
 
   return (
-    <div 
+    <div
       ref={menuRef}
       className={`w-full border-b border-gray-600 ${
-        theme === 'dark' ? 'bg-gray-800' : 
-        theme === 'light' ? 'bg-gray-100' : 
-        'bg-gray-700'
+        theme === 'dark' ? 'bg-gray-800' : theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'
       }`}
       style={{ height }}
     >

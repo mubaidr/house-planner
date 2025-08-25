@@ -1,16 +1,16 @@
-import React, { useState, useCallback } from 'react';
 import { Scene3D } from '@/components/Canvas3D/Scene3D';
 import { CommandLine } from '@/components/UI/CAD/CommandLine';
-import { MenuBar } from '@/components/UI/CAD/MenuBar';
-import { ToolPalette } from '@/components/UI/CAD/ToolPalette';
-import { PropertiesPalette } from '@/components/UI/CAD/PropertiesPalette';
-import { LayerManager } from '@/components/UI/CAD/LayerManager';
-import { StatusBar } from '@/components/UI/CAD/StatusBar';
-import { ViewportTabs } from '@/components/UI/CAD/ViewportTabs';
-import { QuickAccessToolbar } from '@/components/UI/CAD/QuickAccessToolbar';
-import { NavigationCube } from '@/components/UI/CAD/NavigationCube';
 import { CoordinateDisplay } from '@/components/UI/CAD/CoordinateDisplay';
+import { LayerManager } from '@/components/UI/CAD/LayerManager';
+import { MenuBar } from '@/components/UI/CAD/MenuBar';
+import { NavigationCube } from '@/components/UI/CAD/NavigationCube';
+import { PropertiesPalette } from '@/components/UI/CAD/PropertiesPalette';
+import { QuickAccessToolbar } from '@/components/UI/CAD/QuickAccessToolbar';
+import { StatusBar } from '@/components/UI/CAD/StatusBar';
+import { ToolPalette } from '@/components/UI/CAD/ToolPalette';
 import { ViewportManager } from '@/components/UI/CAD/ViewportManager';
+import { ViewportTabs } from '@/components/UI/CAD/ViewportTabs';
+import { useCallback, useState } from 'react';
 
 export interface CADLayoutProps {
   theme?: 'light' | 'dark' | 'classic';
@@ -42,7 +42,7 @@ const defaultWorkspaceState: WorkspaceState = {
   commandLine: { isVisible: true, isCollapsed: false, height: 40 },
   statusBar: { isVisible: true, isCollapsed: false, height: 24 },
   menuBar: { isVisible: true, isCollapsed: false, height: 32 },
-  quickAccess: { isVisible: true, isCollapsed: false, height: 48 }
+  quickAccess: { isVisible: true, isCollapsed: false, height: 48 },
 };
 
 export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: CADLayoutProps) {
@@ -51,20 +51,32 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
 
-  const updatePanel = useCallback((panelKey: keyof WorkspaceState, updates: Partial<PanelState>) => {
-    setWorkspace(prev => ({
-      ...prev,
-      [panelKey]: { ...prev[panelKey], ...updates }
-    }));
-  }, []);
+  const updatePanel = useCallback(
+    (panelKey: keyof WorkspaceState, updates: Partial<PanelState>) => {
+      setWorkspace(prev => ({
+        ...prev,
+        [panelKey]: { ...prev[panelKey], ...updates },
+      }));
+    },
+    []
+  );
 
-  const togglePanel = useCallback((panelKey: keyof WorkspaceState) => {
-    updatePanel(panelKey, { isVisible: !workspace[panelKey].isVisible });
-  }, [workspace, updatePanel]);
+  const togglePanel = useCallback(
+    (panel: string) => {
+      const panelKey = panel as keyof WorkspaceState;
+      if (panelKey in workspace) {
+        updatePanel(panelKey, { isVisible: !workspace[panelKey].isVisible });
+      }
+    },
+    [workspace, updatePanel]
+  );
 
-  const collapsePanel = useCallback((panelKey: keyof WorkspaceState) => {
-    updatePanel(panelKey, { isCollapsed: !workspace[panelKey].isCollapsed });
-  }, [workspace, updatePanel]);
+  const collapsePanel = useCallback(
+    (panelKey: keyof WorkspaceState) => {
+      updatePanel(panelKey, { isCollapsed: !workspace[panelKey].isCollapsed });
+    },
+    [workspace, updatePanel]
+  );
 
   const executeCommand = useCallback((command: string) => {
     setCommandHistory(prev => [...prev, command]);
@@ -88,29 +100,43 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
   }, []);
 
   // Calculate dynamic dimensions
-  const leftPanelWidth = workspace.leftPanel.isVisible && !workspace.leftPanel.isCollapsed 
-    ? workspace.leftPanel.width || 280 : 0;
-  const rightPanelWidth = workspace.rightPanel.isVisible && !workspace.rightPanel.isCollapsed 
-    ? workspace.rightPanel.width || 320 : 0;
-  const bottomPanelHeight = workspace.bottomPanel.isVisible && !workspace.bottomPanel.isCollapsed 
-    ? workspace.bottomPanel.height || 200 : 0;
-  const commandLineHeight = workspace.commandLine.isVisible ? workspace.commandLine.height || 40 : 0;
+  const leftPanelWidth =
+    workspace.leftPanel.isVisible && !workspace.leftPanel.isCollapsed
+      ? workspace.leftPanel.width || 280
+      : 0;
+  const rightPanelWidth =
+    workspace.rightPanel.isVisible && !workspace.rightPanel.isCollapsed
+      ? workspace.rightPanel.width || 320
+      : 0;
+  const bottomPanelHeight =
+    workspace.bottomPanel.isVisible && !workspace.bottomPanel.isCollapsed
+      ? workspace.bottomPanel.height || 200
+      : 0;
+  const commandLineHeight = workspace.commandLine.isVisible
+    ? workspace.commandLine.height || 40
+    : 0;
   const statusBarHeight = workspace.statusBar.isVisible ? workspace.statusBar.height || 24 : 0;
   const menuBarHeight = workspace.menuBar.isVisible ? workspace.menuBar.height || 32 : 0;
-  const quickAccessHeight = workspace.quickAccess.isVisible ? workspace.quickAccess.height || 48 : 0;
+  const quickAccessHeight = workspace.quickAccess.isVisible
+    ? workspace.quickAccess.height || 48
+    : 0;
 
   const viewportHeight = `calc(100vh - ${menuBarHeight + quickAccessHeight + commandLineHeight + statusBarHeight}px)`;
   const viewportWidth = `calc(100vw - ${leftPanelWidth + rightPanelWidth}px)`;
 
   return (
-    <div className={`h-screen w-screen flex flex-col overflow-hidden ${
-      theme === 'dark' ? 'bg-gray-900 text-white' : 
-      theme === 'light' ? 'bg-white text-gray-900' : 
-      'bg-gray-800 text-gray-100'
-    }`}>
+    <div
+      className={`h-screen w-screen flex flex-col overflow-hidden ${
+        theme === 'dark'
+          ? 'bg-gray-900 text-white'
+          : theme === 'light'
+            ? 'bg-white text-gray-900'
+            : 'bg-gray-800 text-gray-100'
+      }`}
+    >
       {/* Menu Bar */}
       {workspace.menuBar.isVisible && (
-        <MenuBar 
+        <MenuBar
           height={menuBarHeight}
           onTogglePanel={togglePanel}
           onResetWorkspace={resetWorkspace}
@@ -122,17 +148,14 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
 
       {/* Quick Access Toolbar */}
       {workspace.quickAccess.isVisible && (
-        <QuickAccessToolbar 
-          height={quickAccessHeight}
-          theme={theme}
-        />
+        <QuickAccessToolbar height={quickAccessHeight} theme={theme} />
       )}
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel */}
         {workspace.leftPanel.isVisible && (
-          <div 
+          <div
             className={`flex-shrink-0 border-r border-gray-600 ${
               workspace.leftPanel.isCollapsed ? 'w-8' : ''
             }`}
@@ -140,10 +163,7 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
           >
             {!workspace.leftPanel.isCollapsed && (
               <div className="h-full flex flex-col">
-                <ToolPalette 
-                  onCollapsePanel={() => collapsePanel('leftPanel')}
-                  theme={theme}
-                />
+                <ToolPalette onCollapsePanel={() => collapsePanel('leftPanel')} theme={theme} />
                 <LayerManager theme={theme} />
               </div>
             )}
@@ -164,31 +184,25 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
         {/* Center Viewport Area */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
           {/* Viewport Tabs */}
-          <ViewportTabs 
+          <ViewportTabs
             activeViewport={activeViewport}
             onViewportChange={setActiveViewport}
             theme={theme}
           />
 
           {/* Main Viewport */}
-          <div 
+          <div
             className="flex-1 relative overflow-hidden"
             style={{ height: viewportHeight, width: viewportWidth }}
           >
             <Scene3D />
-            
-            {/* Viewport Overlays */}
-            <NavigationCube 
-              className="absolute top-4 right-4"
-              theme={theme}
-            />
-            
-            <CoordinateDisplay 
-              className="absolute bottom-4 left-4"
-              theme={theme}
-            />
 
-            <ViewportManager 
+            {/* Viewport Overlays */}
+            <NavigationCube className="absolute top-4 right-4" theme={theme} />
+
+            <CoordinateDisplay className="absolute bottom-4 left-4" theme={theme} />
+
+            <ViewportManager
               activeViewport={activeViewport}
               className="absolute top-4 left-4"
               theme={theme}
@@ -197,7 +211,7 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
 
           {/* Bottom Panel */}
           {workspace.bottomPanel.isVisible && (
-            <div 
+            <div
               className={`border-t border-gray-600 ${
                 workspace.bottomPanel.isCollapsed ? 'h-8' : ''
               }`}
@@ -231,14 +245,14 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
 
         {/* Right Panel */}
         {workspace.rightPanel.isVisible && (
-          <div 
+          <div
             className={`flex-shrink-0 border-l border-gray-600 ${
               workspace.rightPanel.isCollapsed ? 'w-8' : ''
             }`}
             style={{ width: workspace.rightPanel.isCollapsed ? 32 : rightPanelWidth }}
           >
             {!workspace.rightPanel.isCollapsed && (
-              <PropertiesPalette 
+              <PropertiesPalette
                 onCollapsePanel={() => collapsePanel('rightPanel')}
                 theme={theme}
               />
@@ -260,7 +274,7 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
 
       {/* Command Line */}
       {workspace.commandLine.isVisible && (
-        <CommandLine 
+        <CommandLine
           height={commandLineHeight}
           onExecuteCommand={executeCommand}
           commandHistory={commandHistory}
@@ -269,12 +283,7 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
       )}
 
       {/* Status Bar */}
-      {workspace.statusBar.isVisible && (
-        <StatusBar 
-          height={statusBarHeight}
-          theme={theme}
-        />
-      )}
+      {workspace.statusBar.isVisible && <StatusBar height={statusBarHeight} theme={theme} />}
     </div>
   );
 }

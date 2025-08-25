@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Grid, Square, MousePointer, Ruler, Eye, 
-  Layers, Clock, Cpu, HardDrive, Wifi, 
-  Zap, Target, Move3D
+import {
+  Clock,
+  Cpu,
+  Eye,
+  Grid,
+  HardDrive,
+  Layers,
+  MousePointer,
+  Move3D,
+  Ruler,
+  Square,
+  Target,
+  Wifi,
+  Zap,
 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface StatusBarProps {
   height: number;
@@ -29,7 +39,7 @@ export function StatusBar({ height, theme }: StatusBarProps) {
     fps: 60,
     memoryUsage: 45,
     renderTime: 16.7,
-    objectCount: 0
+    objectCount: 0,
   });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [snapMode, setSnapMode] = useState(true);
@@ -53,10 +63,10 @@ export function StatusBar({ height, theme }: StatusBarProps) {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -70,10 +80,10 @@ export function StatusBar({ height, theme }: StatusBarProps) {
         ...prev,
         fps: 58 + Math.random() * 4,
         memoryUsage: 40 + Math.random() * 20,
-        renderTime: 15 + Math.random() * 5
+        renderTime: 15 + Math.random() * 5,
       }));
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -91,25 +101,23 @@ export function StatusBar({ height, theme }: StatusBarProps) {
     return 'text-red-400';
   };
 
-  const StatusButton = ({ 
-    active, 
-    onClick, 
-    icon, 
-    label, 
-    tooltip 
-  }: { 
-    active: boolean; 
-    onClick: () => void; 
-    icon: React.ReactNode; 
+  const StatusButton = ({
+    active,
+    onClick,
+    icon,
+    label,
+    tooltip,
+  }: {
+    active: boolean;
+    onClick: () => void;
+    icon: React.ReactNode;
     label: string;
     tooltip: string;
   }) => (
     <button
       onClick={onClick}
       className={`px-2 py-1 text-xs flex items-center space-x-1 rounded transition-colors ${
-        active 
-          ? 'bg-blue-600 text-white' 
-          : 'hover:bg-gray-700'
+        active ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'
       }`}
       title={tooltip}
     >
@@ -119,11 +127,13 @@ export function StatusBar({ height, theme }: StatusBarProps) {
   );
 
   return (
-    <div 
+    <div
       className={`w-full border-t border-gray-600 flex items-center justify-between px-2 text-xs ${
-        theme === 'dark' ? 'bg-gray-900 text-gray-300' : 
-        theme === 'light' ? 'bg-gray-100 text-gray-700' : 
-        'bg-gray-800 text-gray-300'
+        theme === 'dark'
+          ? 'bg-gray-900 text-gray-300'
+          : theme === 'light'
+            ? 'bg-gray-100 text-gray-700'
+            : 'bg-gray-800 text-gray-300'
       }`}
       style={{ height }}
     >
@@ -166,7 +176,7 @@ export function StatusBar({ height, theme }: StatusBarProps) {
           label="SNAP"
           tooltip="Object Snap (F9)"
         />
-        
+
         <StatusButton
           active={gridMode}
           onClick={() => setGridMode(!gridMode)}
@@ -174,7 +184,7 @@ export function StatusBar({ height, theme }: StatusBarProps) {
           label="GRID"
           tooltip="Grid Display (F7)"
         />
-        
+
         <StatusButton
           active={orthoMode}
           onClick={() => setOrthoMode(!orthoMode)}

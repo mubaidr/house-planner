@@ -1,9 +1,5 @@
-import React, { useState } from 'react';
-import { 
-  Camera, Eye, Grid, Lightbulb, Palette, 
-  Settings, Maximize, RotateCcw, ZoomIn, 
-  ZoomOut, Move, Target, Square
-} from 'lucide-react';
+import { Camera, Grid, Maximize, Move, RotateCcw, Settings, ZoomIn, ZoomOut } from 'lucide-react';
+import { useState } from 'react';
 
 interface ViewportManagerProps {
   activeViewport: string;
@@ -19,13 +15,13 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
     showLighting: true,
     wireframe: false,
     shadows: true,
-    antialiasing: true
+    antialiasing: true,
   });
 
   const toggleSetting = (setting: keyof typeof viewportSettings) => {
     setViewportSettings(prev => ({
       ...prev,
-      [setting]: !prev[setting]
+      [setting]: !prev[setting],
     }));
   };
 
@@ -92,9 +88,7 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
             </button>
             <button
               className={`p-2 rounded flex flex-col items-center ${
-                viewportSettings.showGrid 
-                  ? 'bg-blue-600 text-white' 
-                  : 'hover:bg-gray-700'
+                viewportSettings.showGrid ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'
               }`}
               title="Toggle Grid"
               onClick={() => toggleSetting('showGrid')}
@@ -110,7 +104,7 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
           <div className="border-t border-gray-600 p-2">
             <div className="space-y-2">
               <div className="text-xs text-gray-400 mb-2">Display Options</div>
-              
+
               <div className="space-y-1">
                 <label className="flex items-center justify-between text-xs">
                   <span>Show Axes</span>
@@ -121,7 +115,7 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
                     className="w-3 h-3"
                   />
                 </label>
-                
+
                 <label className="flex items-center justify-between text-xs">
                   <span>Lighting</span>
                   <input
@@ -131,7 +125,7 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
                     className="w-3 h-3"
                   />
                 </label>
-                
+
                 <label className="flex items-center justify-between text-xs">
                   <span>Wireframe</span>
                   <input
@@ -141,7 +135,7 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
                     className="w-3 h-3"
                   />
                 </label>
-                
+
                 <label className="flex items-center justify-between text-xs">
                   <span>Shadows</span>
                   <input
@@ -151,7 +145,7 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
                     className="w-3 h-3"
                   />
                 </label>
-                
+
                 <label className="flex items-center justify-between text-xs">
                   <span>Anti-aliasing</span>
                   <input

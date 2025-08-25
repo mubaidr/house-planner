@@ -1,9 +1,18 @@
-import React, { useState, useCallback } from 'react';
-import { 
-  Layers, Eye, EyeOff, Lock, Unlock, Plus, 
-  Trash2, Edit3, Palette, Settings, Search,
-  ChevronDown, ChevronRight, Copy, Download
+import {
+  ChevronDown,
+  ChevronRight,
+  Download,
+  Eye,
+  EyeOff,
+  Layers,
+  Lock,
+  Palette,
+  Plus,
+  Search,
+  Settings,
+  Unlock,
 } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 interface LayerManagerProps {
   theme: 'light' | 'dark' | 'classic';
@@ -36,7 +45,7 @@ const defaultLayers: Layer[] = [
     lineWeight: 0.25,
     transparency: 0,
     objectCount: 0,
-    description: 'Default layer'
+    description: 'Default layer',
   },
   {
     id: 'walls',
@@ -49,7 +58,7 @@ const defaultLayers: Layer[] = [
     lineWeight: 0.5,
     transparency: 0,
     objectCount: 12,
-    description: 'Architectural walls'
+    description: 'Architectural walls',
   },
   {
     id: 'doors',
@@ -62,7 +71,7 @@ const defaultLayers: Layer[] = [
     lineWeight: 0.25,
     transparency: 0,
     objectCount: 5,
-    description: 'Door openings'
+    description: 'Door openings',
   },
   {
     id: 'windows',
@@ -75,7 +84,7 @@ const defaultLayers: Layer[] = [
     lineWeight: 0.25,
     transparency: 0,
     objectCount: 8,
-    description: 'Window openings'
+    description: 'Window openings',
   },
   {
     id: 'dimensions',
@@ -88,7 +97,7 @@ const defaultLayers: Layer[] = [
     lineWeight: 0.18,
     transparency: 0,
     objectCount: 15,
-    description: 'Dimension annotations'
+    description: 'Dimension annotations',
   },
   {
     id: 'text',
@@ -101,7 +110,7 @@ const defaultLayers: Layer[] = [
     lineWeight: 0.18,
     transparency: 0,
     objectCount: 3,
-    description: 'Text annotations'
+    description: 'Text annotations',
   },
   {
     id: 'furniture',
@@ -114,8 +123,8 @@ const defaultLayers: Layer[] = [
     lineWeight: 0.25,
     transparency: 20,
     objectCount: 7,
-    description: 'Furniture and fixtures'
-  }
+    description: 'Furniture and fixtures',
+  },
 ];
 
 export function LayerManager({ theme }: LayerManagerProps) {
@@ -125,28 +134,31 @@ export function LayerManager({ theme }: LayerManagerProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showLayerProperties, setShowLayerProperties] = useState<string | null>(null);
 
-  const filteredLayers = layers.filter(layer =>
-    layer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    layer.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLayers = layers.filter(
+    layer =>
+      layer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      layer.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const toggleLayerVisibility = useCallback((layerId: string) => {
-    setLayers(prev => prev.map(layer =>
-      layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
-    ));
+    setLayers(prev =>
+      prev.map(layer => (layer.id === layerId ? { ...layer, visible: !layer.visible } : layer))
+    );
   }, []);
 
   const toggleLayerLock = useCallback((layerId: string) => {
-    setLayers(prev => prev.map(layer =>
-      layer.id === layerId ? { ...layer, locked: !layer.locked } : layer
-    ));
+    setLayers(prev =>
+      prev.map(layer => (layer.id === layerId ? { ...layer, locked: !layer.locked } : layer))
+    );
   }, []);
 
   const setCurrentLayer = useCallback((layerId: string) => {
-    setLayers(prev => prev.map(layer => ({
-      ...layer,
-      current: layer.id === layerId
-    })));
+    setLayers(prev =>
+      prev.map(layer => ({
+        ...layer,
+        current: layer.id === layerId,
+      }))
+    );
   }, []);
 
   const addNewLayer = useCallback(() => {
@@ -161,7 +173,7 @@ export function LayerManager({ theme }: LayerManagerProps) {
       lineWeight: 0.25,
       transparency: 0,
       objectCount: 0,
-      description: 'New layer'
+      description: 'New layer',
     };
     setLayers(prev => [...prev, newLayer]);
   }, [layers.length]);
@@ -171,24 +183,27 @@ export function LayerManager({ theme }: LayerManagerProps) {
     setLayers(prev => prev.filter(layer => layer.id !== layerId));
   }, []);
 
-  const duplicateLayer = useCallback((layerId: string) => {
-    const sourceLayer = layers.find(l => l.id === layerId);
-    if (!sourceLayer) return;
+  const duplicateLayer = useCallback(
+    (layerId: string) => {
+      const sourceLayer = layers.find(l => l.id === layerId);
+      if (!sourceLayer) return;
 
-    const newLayer: Layer = {
-      ...sourceLayer,
-      id: `${layerId}_copy_${Date.now()}`,
-      name: `${sourceLayer.name} Copy`,
-      current: false,
-      objectCount: 0
-    };
-    setLayers(prev => [...prev, newLayer]);
-  }, [layers]);
+      const newLayer: Layer = {
+        ...sourceLayer,
+        id: `${layerId}_copy_${Date.now()}`,
+        name: `${sourceLayer.name} Copy`,
+        current: false,
+        objectCount: 0,
+      };
+      setLayers(prev => [...prev, newLayer]);
+    },
+    [layers]
+  );
 
   const updateLayerProperty = useCallback((layerId: string, property: keyof Layer, value: any) => {
-    setLayers(prev => prev.map(layer =>
-      layer.id === layerId ? { ...layer, [property]: value } : layer
-    ));
+    setLayers(prev =>
+      prev.map(layer => (layer.id === layerId ? { ...layer, [property]: value } : layer))
+    );
   }, []);
 
   const selectAllVisible = useCallback(() => {
@@ -197,25 +212,29 @@ export function LayerManager({ theme }: LayerManagerProps) {
   }, [layers]);
 
   const hideSelected = useCallback(() => {
-    setLayers(prev => prev.map(layer =>
-      selectedLayers.includes(layer.id) ? { ...layer, visible: false } : layer
-    ));
+    setLayers(prev =>
+      prev.map(layer => (selectedLayers.includes(layer.id) ? { ...layer, visible: false } : layer))
+    );
     setSelectedLayers([]);
   }, [selectedLayers]);
 
   const lockSelected = useCallback(() => {
-    setLayers(prev => prev.map(layer =>
-      selectedLayers.includes(layer.id) ? { ...layer, locked: true } : layer
-    ));
+    setLayers(prev =>
+      prev.map(layer => (selectedLayers.includes(layer.id) ? { ...layer, locked: true } : layer))
+    );
     setSelectedLayers([]);
   }, [selectedLayers]);
 
   const getLineTypeDisplay = (lineType: string) => {
     switch (lineType) {
-      case 'dashed': return '- - - -';
-      case 'dotted': return '• • • •';
-      case 'dashdot': return '- • - •';
-      default: return '————';
+      case 'dashed':
+        return '- - - -';
+      case 'dotted':
+        return '• • • •';
+      case 'dashdot':
+        return '- • - •';
+      default:
+        return '————';
     }
   };
 
@@ -229,7 +248,7 @@ export function LayerManager({ theme }: LayerManagerProps) {
       <input
         type="checkbox"
         checked={selectedLayers.includes(layer.id)}
-        onChange={(e) => {
+        onChange={e => {
           if (e.target.checked) {
             setSelectedLayers(prev => [...prev, layer.id]);
           } else {
@@ -264,9 +283,7 @@ export function LayerManager({ theme }: LayerManagerProps) {
 
       {/* Transparency */}
       {layer.transparency > 0 && (
-        <div className="text-xs text-gray-400 mr-2">
-          {layer.transparency}%
-        </div>
+        <div className="text-xs text-gray-400 mr-2">{layer.transparency}%</div>
       )}
 
       {/* Visibility Toggle */}
@@ -299,11 +316,11 @@ export function LayerManager({ theme }: LayerManagerProps) {
   );
 
   return (
-    <div className={`h-full flex flex-col ${
-      theme === 'dark' ? 'bg-gray-900' : 
-      theme === 'light' ? 'bg-gray-50' : 
-      'bg-gray-800'
-    }`}>
+    <div
+      className={`h-full flex flex-col ${
+        theme === 'dark' ? 'bg-gray-900' : theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'
+      }`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-600">
         <div className="flex items-center space-x-2">
@@ -317,17 +334,10 @@ export function LayerManager({ theme }: LayerManagerProps) {
           <span className="font-semibold text-sm">Layers</span>
         </div>
         <div className="flex items-center space-x-1">
-          <button
-            onClick={addNewLayer}
-            className="p-1 hover:bg-gray-700 rounded"
-            title="New layer"
-          >
+          <button onClick={addNewLayer} className="p-1 hover:bg-gray-700 rounded" title="New layer">
             <Plus size={14} />
           </button>
-          <button
-            className="p-1 hover:bg-gray-700 rounded"
-            title="Layer settings"
-          >
+          <button className="p-1 hover:bg-gray-700 rounded" title="Layer settings">
             <Settings size={14} />
           </button>
         </div>
@@ -343,7 +353,7 @@ export function LayerManager({ theme }: LayerManagerProps) {
                 type="text"
                 placeholder="Search layers..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-8 pr-3 py-1 bg-gray-800 border border-gray-600 rounded text-sm"
               />
             </div>
@@ -353,9 +363,7 @@ export function LayerManager({ theme }: LayerManagerProps) {
           {selectedLayers.length > 0 && (
             <div className="p-2 border-b border-gray-600 bg-gray-800">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">
-                  {selectedLayers.length} selected
-                </span>
+                <span className="text-xs text-gray-400">{selectedLayers.length} selected</span>
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={hideSelected}
@@ -393,10 +401,7 @@ export function LayerManager({ theme }: LayerManagerProps) {
           {/* Quick Actions */}
           <div className="border-t border-gray-600 p-2">
             <div className="flex items-center justify-between text-xs">
-              <button
-                onClick={selectAllVisible}
-                className="hover:text-blue-400"
-              >
+              <button onClick={selectAllVisible} className="hover:text-blue-400">
                 Select All Visible
               </button>
               <div className="flex items-center space-x-2">

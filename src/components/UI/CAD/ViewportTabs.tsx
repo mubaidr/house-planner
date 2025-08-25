@@ -1,8 +1,5 @@
+import { Box, Camera, Grid3X3, Maximize, Plus } from 'lucide-react';
 import React from 'react';
-import { 
-  Cube, Eye, Grid3X3, Box, Maximize, 
-  RotateCcw, Move3D, Camera, Plus, X
-} from 'lucide-react';
 
 interface ViewportTabsProps {
   activeViewport: string;
@@ -22,50 +19,50 @@ const viewports: Viewport[] = [
   {
     id: 'perspective',
     name: 'Perspective',
-    icon: <Cube size={14} />,
+    icon: <Box size={14} />,
     description: '3D Perspective View',
-    shortcut: 'Ctrl+1'
+    shortcut: 'Ctrl+1',
   },
   {
     id: 'top',
     name: 'Top',
     icon: <Grid3X3 size={14} />,
     description: 'Top View (Plan)',
-    shortcut: 'Ctrl+2'
+    shortcut: 'Ctrl+2',
   },
   {
     id: 'front',
     name: 'Front',
     icon: <Box size={14} />,
     description: 'Front Elevation',
-    shortcut: 'Ctrl+3'
+    shortcut: 'Ctrl+3',
   },
   {
     id: 'right',
     name: 'Right',
     icon: <Box size={14} />,
     description: 'Right Elevation',
-    shortcut: 'Ctrl+4'
+    shortcut: 'Ctrl+4',
   },
   {
     id: 'isometric',
     name: 'Isometric',
-    icon: <Cube size={14} />,
+    icon: <Box size={14} />,
     description: 'Isometric View',
-    shortcut: 'Ctrl+5'
-  }
+    shortcut: 'Ctrl+5',
+  },
 ];
 
 export function ViewportTabs({ activeViewport, onViewportChange, theme }: ViewportTabsProps) {
   return (
-    <div className={`flex items-center border-b border-gray-600 ${
-      theme === 'dark' ? 'bg-gray-800' : 
-      theme === 'light' ? 'bg-gray-100' : 
-      'bg-gray-700'
-    }`}>
+    <div
+      className={`flex items-center border-b border-gray-600 ${
+        theme === 'dark' ? 'bg-gray-800' : theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'
+      }`}
+    >
       {/* Viewport Tabs */}
       <div className="flex items-center">
-        {viewports.map((viewport) => (
+        {viewports.map(viewport => (
           <button
             key={viewport.id}
             onClick={() => onViewportChange(viewport.id)}
@@ -84,24 +81,15 @@ export function ViewportTabs({ activeViewport, onViewportChange, theme }: Viewpo
 
       {/* Viewport Controls */}
       <div className="flex items-center ml-auto mr-2 space-x-1">
-        <button
-          className="p-1 hover:bg-gray-700 rounded"
-          title="Add New Viewport"
-        >
+        <button className="p-1 hover:bg-gray-700 rounded" title="Add New Viewport">
           <Plus size={14} />
         </button>
-        
-        <button
-          className="p-1 hover:bg-gray-700 rounded"
-          title="Viewport Settings"
-        >
+
+        <button className="p-1 hover:bg-gray-700 rounded" title="Viewport Settings">
           <Camera size={14} />
         </button>
-        
-        <button
-          className="p-1 hover:bg-gray-700 rounded"
-          title="Maximize Viewport"
-        >
+
+        <button className="p-1 hover:bg-gray-700 rounded" title="Maximize Viewport">
           <Maximize size={14} />
         </button>
       </div>

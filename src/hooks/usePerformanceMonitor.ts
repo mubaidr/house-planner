@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+import { useEffect, useRef, useState } from 'react';
 
 export interface PerformanceMetrics {
   fps: number;
@@ -32,7 +33,7 @@ export function usePerformanceMonitor() {
     triangles: 0,
     geometries: 0,
     textures: 0,
-    programs: 0
+    programs: 0,
   });
 
   const [settings, setSettings] = useState<PerformanceSettings>({
@@ -42,12 +43,12 @@ export function usePerformanceMonitor() {
     enableShadows: true,
     shadowMapSize: 2048,
     antialias: true,
-    pixelRatio: Math.min(window.devicePixelRatio, 2)
+    pixelRatio: Math.min(window.devicePixelRatio, 2),
   });
 
   const frameTimeRef = useRef<number[]>([]);
   const lastFrameTimeRef = useRef(performance.now());
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
 
   // Performance monitoring loop
   useEffect(() => {
@@ -62,7 +63,8 @@ export function usePerformanceMonitor() {
         frameTimeRef.current.shift();
       }
 
-      const avgFrameTime = frameTimeRef.current.reduce((a, b) => a + b, 0) / frameTimeRef.current.length;
+      const avgFrameTime =
+        frameTimeRef.current.reduce((a, b) => a + b, 0) / frameTimeRef.current.length;
       const fps = 1000 / avgFrameTime;
 
       // Get renderer info
@@ -77,7 +79,7 @@ export function usePerformanceMonitor() {
         triangles: info.render.triangles,
         geometries: memory.geometries || 0,
         textures: memory.textures || 0,
-        programs: info.programs?.length || 0
+        programs: info.programs?.length || 0,
       });
 
       // Auto-optimization
@@ -99,7 +101,7 @@ export function usePerformanceMonitor() {
 
   const optimizePerformance = () => {
     const currentQuality = settings.qualityLevel;
-    
+
     if (currentQuality === 'ultra') {
       updateSettings({ qualityLevel: 'high' });
     } else if (currentQuality === 'high') {
@@ -124,35 +126,48 @@ export function usePerformanceMonitor() {
     // Apply shadow settings
     gl.shadowMap.enabled = settings.enableShadows;
     if (settings.enableShadows) {
-      gl.shadowMap.mapSize.width = settings.shadowMapSize;
-      gl.shadowMap.mapSize.height = settings.shadowMapSize;
+      // Update shadow map size for all lights in the scene
+      scene.traverse((object: any) => {
+        if (object instanceof THREE.Light && object.castShadow) {
+          object.shadow.mapSize.width = settings.shadowMapSize;
+          object.shadow.mapSize.height = settings.shadowMapSize;
+        }
+      });
     }
 
     // Apply quality-based settings
     switch (settings.qualityLevel) {
       case 'low':
         gl.setPixelRatio(Math.min(settings.pixelRatio, 1));
-        if (gl.shadowMap.enabled) {
-          gl.shadowMap.mapSize.setScalar(512);
-        }
+        scene.traverse((object: any) => {
+          if (object instanceof THREE.Light && object.castShadow) {
+            object.shadow.mapSize.setScalar(512);
+          }
+        });
         break;
       case 'medium':
         gl.setPixelRatio(Math.min(settings.pixelRatio, 1.5));
-        if (gl.shadowMap.enabled) {
-          gl.shadowMap.mapSize.setScalar(1024);
-        }
+        scene.traverse((object: any) => {
+          if (object instanceof THREE.Light && object.castShadow) {
+            object.shadow.mapSize.setScalar(1024);
+          }
+        });
         break;
       case 'high':
         gl.setPixelRatio(Math.min(settings.pixelRatio, 2));
-        if (gl.shadowMap.enabled) {
-          gl.shadowMap.mapSize.setScalar(2048);
-        }
+        scene.traverse((object: any) => {
+          if (object instanceof THREE.Light && object.castShadow) {
+            object.shadow.mapSize.setScalar(2048);
+          }
+        });
         break;
       case 'ultra':
         gl.setPixelRatio(settings.pixelRatio);
-        if (gl.shadowMap.enabled) {
-          gl.shadowMap.mapSize.setScalar(4096);
-        }
+        scene.traverse((object: any) => {
+          if (object instanceof THREE.Light && object.castShadow) {
+            object.shadow.mapSize.setScalar(4096);
+          }
+        });
         break;
     }
 
@@ -201,7 +216,7 @@ export function usePerformanceMonitor() {
       shadowMapSize: 4096,
       antialias: true,
       pixelRatio: 2,
-      autoOptimize: false
+      autoOptimize: false,
     };
   };
 
@@ -216,6 +231,6 @@ export function usePerformanceMonitor() {
     getPerformanceRecommendations,
     exportOptimizedSettings,
     restoreSettings,
-    optimizePerformance
+    optimizePerformance,
   };
 }

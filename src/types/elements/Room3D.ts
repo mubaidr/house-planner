@@ -59,7 +59,16 @@ export interface Room3DClimate {
 export interface Room3DProperties {
   id: string;
   name: string;
-  type: 'living' | 'bedroom' | 'kitchen' | 'bathroom' | 'office' | 'dining' | 'utility' | 'storage' | 'other';
+  type:
+    | 'living'
+    | 'bedroom'
+    | 'kitchen'
+    | 'bathroom'
+    | 'office'
+    | 'dining'
+    | 'utility'
+    | 'storage'
+    | 'other';
   wallIds: string[];
   doorIds: string[];
   windowIds: string[];

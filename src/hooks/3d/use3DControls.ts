@@ -1,6 +1,5 @@
 import { useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useState } from 'react';
-import * as THREE from 'three';
 
 export interface Controls3D {
   enableOrbit: boolean;
@@ -36,7 +35,7 @@ const defaultControls: Controls3D = {
   minPolarAngle: 0,
   maxPolarAngle: Math.PI,
   autoRotate: false,
-  autoRotateSpeed: 2.0
+  autoRotateSpeed: 2.0,
 };
 
 export function use3DControls(): [Controls3D, Controls3DActions] {
@@ -49,7 +48,7 @@ export function use3DControls(): [Controls3D, Controls3DActions] {
     if (!controls || !('enableRotate' in controls)) return;
 
     const orbitControls = controls as any;
-    
+
     orbitControls.enableRotate = controlSettings.enableOrbit;
     orbitControls.enablePan = controlSettings.enablePan;
     orbitControls.enableZoom = controlSettings.enableZoom;
@@ -102,7 +101,7 @@ export function use3DControls(): [Controls3D, Controls3DActions] {
     disableControls,
     resetControls,
     saveState,
-    restoreState
+    restoreState,
   };
 
   return [controlSettings, actions];

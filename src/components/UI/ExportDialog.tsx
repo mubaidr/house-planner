@@ -1,8 +1,13 @@
-import { Export3DSystem, ExportOptions, ScreenshotOptions, FloorPlanOptions } from '@/utils/3d/export3D';
-import { PDFExportSystem, ProjectInfo, PDFExportOptions } from '@/utils/3d/pdfExport';
+import {
+  Export3DSystem,
+  ExportOptions,
+  FloorPlanOptions,
+  ScreenshotOptions,
+} from '@/utils/3d/export3D';
+import { PDFExportOptions, PDFExportSystem, ProjectInfo } from '@/utils/3d/pdfExport';
 import { useThree } from '@react-three/fiber';
 import { saveAs } from 'file-saver';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -23,7 +28,7 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
   const [imageQuality, setImageQuality] = useState(0.95);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState('');
-  
+
   // Project info for PDF export
   const [projectInfo, setProjectInfo] = useState<ProjectInfo>({
     title: 'House Design',
@@ -33,17 +38,17 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
     date: new Date().toLocaleDateString(),
     scale: '1:100',
     address: '',
-    description: ''
+    description: '',
   });
 
-  const exportSystemRef = useRef<Export3DSystem>();
-  const pdfSystemRef = useRef<PDFExportSystem>();
+  const exportSystemRef = useRef<Export3DSystem | null>(null);
+  const pdfSystemRef = useRef<PDFExportSystem | null>(null);
 
   useEffect(() => {
     if (gl) {
       exportSystemRef.current = new Export3DSystem();
       exportSystemRef.current.setRenderer(gl);
-      
+
       pdfSystemRef.current = new PDFExportSystem();
       pdfSystemRef.current.setRenderer(gl);
     }
@@ -64,9 +69,9 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
           setExportProgress('Exporting 3D model...');
           const exportOptions: Partial<ExportOptions> = {
             binary: modelFormat === 'gltf',
-            embedImages: true
+            embedImages: true,
           };
-          
+
           if (modelFormat === 'gltf') {
             blob = await exportSystemRef.current.exportGLTF(scene, exportOptions);
             filename = `house-design.${exportOptions.binary ? 'glb' : 'gltf'}`;
@@ -82,9 +87,9 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
             width: imageWidth,
             height: imageHeight,
             quality: imageQuality,
-            format: imageFormat
+            format: imageFormat,
           };
-          
+
           blob = await exportSystemRef.current.exportHighQualityRender(
             scene,
             camera,
@@ -98,9 +103,9 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
           const floorPlanOptions: FloorPlanOptions = {
             showDimensions: true,
             showLabels: true,
-            scale: 50
+            scale: 50,
           };
-          
+
           blob = await exportSystemRef.current.export2DFloorPlan(scene, floorPlanOptions);
           filename = 'floor-plan.png';
           break;
@@ -113,9 +118,9 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
             includeMaterials: true,
             includeDimensions: true,
             pageSize: 'A3',
-            orientation: 'landscape'
+            orientation: 'landscape',
           };
-          
+
           blob = await pdfSystemRef.current.exportProfessionalDrawing(
             scene,
             camera,
@@ -132,11 +137,10 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
       setExportProgress('Downloading...');
       saveAs(blob, filename);
       setExportProgress('Export completed!');
-      
+
       setTimeout(() => {
         onClose();
       }, 1000);
-
     } catch (error) {
       console.error('Export failed:', error);
       setExportProgress('Export failed. Please try again.');
@@ -151,7 +155,7 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">Export Project</h2>
-        
+
         <div className="space-y-6">
           {/* Export Type Selection */}
           <div>
@@ -160,44 +164,44 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
               <button
                 onClick={() => setExportType('model')}
                 className={`p-4 border-2 rounded-lg text-left transition ${
-                  exportType === 'model' 
-                    ? 'border-blue-500 bg-blue-50' 
+                  exportType === 'model'
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="font-semibold">3D Model</div>
                 <div className="text-sm text-gray-600">GLTF, OBJ formats</div>
               </button>
-              
+
               <button
                 onClick={() => setExportType('image')}
                 className={`p-4 border-2 rounded-lg text-left transition ${
-                  exportType === 'image' 
-                    ? 'border-blue-500 bg-blue-50' 
+                  exportType === 'image'
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="font-semibold">High-Res Image</div>
                 <div className="text-sm text-gray-600">PNG, JPEG, WebP</div>
               </button>
-              
+
               <button
                 onClick={() => setExportType('floorplan')}
                 className={`p-4 border-2 rounded-lg text-left transition ${
-                  exportType === 'floorplan' 
-                    ? 'border-blue-500 bg-blue-50' 
+                  exportType === 'floorplan'
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="font-semibold">2D Floor Plan</div>
                 <div className="text-sm text-gray-600">Top-down view with dimensions</div>
               </button>
-              
+
               <button
                 onClick={() => setExportType('pdf')}
                 className={`p-4 border-2 rounded-lg text-left transition ${
-                  exportType === 'pdf' 
-                    ? 'border-blue-500 bg-blue-50' 
+                  exportType === 'pdf'
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -236,7 +240,7 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
                   <option value="webp">WebP (Modern)</option>
                 </select>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
@@ -261,7 +265,7 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Quality: {Math.round(imageQuality * 100)}%
@@ -283,25 +287,33 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Project Name
+                  </label>
                   <input
                     type="text"
                     value={projectInfo.projectName}
-                    onChange={e => setProjectInfo(prev => ({ ...prev, projectName: e.target.value }))}
+                    onChange={e =>
+                      setProjectInfo(prev => ({ ...prev, projectName: e.target.value }))
+                    }
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Client Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Client Name
+                  </label>
                   <input
                     type="text"
                     value={projectInfo.clientName}
-                    onChange={e => setProjectInfo(prev => ({ ...prev, clientName: e.target.value }))}
+                    onChange={e =>
+                      setProjectInfo(prev => ({ ...prev, clientName: e.target.value }))
+                    }
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Architect</label>

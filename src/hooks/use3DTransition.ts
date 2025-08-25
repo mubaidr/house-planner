@@ -21,14 +21,14 @@ export interface Transition3D {
 
 const defaultOptions: TransitionOptions = {
   duration: 1000,
-  easing: 'easeInOut'
+  easing: 'easeInOut',
 };
 
 const easingFunctions = {
   linear: (t: number) => t,
   easeIn: (t: number) => t * t,
   easeOut: (t: number) => t * (2 - t),
-  easeInOut: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+  easeInOut: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
 };
 
 export function use3DTransition(): Transition3D {
@@ -46,56 +46,59 @@ export function use3DTransition(): Transition3D {
     setProgress(0);
   }, []);
 
-  const startTransition = useCallback((
-    from: THREE.Vector3 | THREE.Euler | number,
-    to: THREE.Vector3 | THREE.Euler | number,
-    options: Partial<TransitionOptions> = {}
-  ): Promise<void> => {
-    return new Promise((resolve) => {
-      const opts = { ...defaultOptions, ...options };
-      
-      // Stop any existing transition
-      stopTransition();
-      
-      setIsTransitioning(true);
-      startTimeRef.current = performance.now();
+  const startTransition = useCallback(
+    (
+      from: THREE.Vector3 | THREE.Euler | number,
+      to: THREE.Vector3 | THREE.Euler | number,
+      options: Partial<TransitionOptions> = {}
+    ): Promise<void> => {
+      return new Promise(resolve => {
+        const opts = { ...defaultOptions, ...options };
 
-      const animate = (currentTime: number) => {
-        const elapsed = currentTime - startTimeRef.current;
-        const rawProgress = Math.min(elapsed / opts.duration, 1);
-        const easedProgress = easingFunctions[opts.easing](rawProgress);
-        
-        setProgress(easedProgress);
-        
-        // Call update callback if provided
-        if (opts.onUpdate) {
-          opts.onUpdate(easedProgress);
-        }
+        // Stop any existing transition
+        stopTransition();
 
-        if (rawProgress < 1) {
-          animationRef.current = requestAnimationFrame(animate);
-        } else {
-          // Transition complete
-          setIsTransitioning(false);
-          setProgress(1);
-          
-          if (opts.onComplete) {
-            opts.onComplete();
+        setIsTransitioning(true);
+        startTimeRef.current = performance.now();
+
+        const animate = (currentTime: number) => {
+          const elapsed = currentTime - startTimeRef.current;
+          const rawProgress = Math.min(elapsed / opts.duration, 1);
+          const easedProgress = easingFunctions[opts.easing](rawProgress);
+
+          setProgress(easedProgress);
+
+          // Call update callback if provided
+          if (opts.onUpdate) {
+            opts.onUpdate(easedProgress);
           }
-          
-          resolve();
-        }
-      };
 
-      animationRef.current = requestAnimationFrame(animate);
-    });
-  }, [stopTransition]);
+          if (rawProgress < 1) {
+            animationRef.current = requestAnimationFrame(animate);
+          } else {
+            // Transition complete
+            setIsTransitioning(false);
+            setProgress(1);
+
+            if (opts.onComplete) {
+              opts.onComplete();
+            }
+
+            resolve();
+          }
+        };
+
+        animationRef.current = requestAnimationFrame(animate);
+      });
+    },
+    [stopTransition]
+  );
 
   return {
     isTransitioning,
     progress,
     startTransition,
-    stopTransition
+    stopTransition,
   };
 }
 
