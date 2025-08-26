@@ -54,7 +54,7 @@ export interface Door3DProperties {
   hardware: Door3DHardware;
   isSelected?: boolean;
   isHovered?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Door3DEvents {

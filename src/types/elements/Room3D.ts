@@ -79,7 +79,7 @@ export interface Room3DProperties {
   climate: Room3DClimate;
   isSelected?: boolean;
   isHovered?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Room3DEvents {

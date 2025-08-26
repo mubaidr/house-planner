@@ -64,18 +64,27 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
   const togglePanel = useCallback(
     (panel: string) => {
       const panelKey = panel as keyof WorkspaceState;
-      if (panelKey in workspace) {
-        updatePanel(panelKey, { isVisible: !workspace[panelKey].isVisible });
-      }
+      setWorkspace(prev => {
+        if (panelKey in prev) {
+          return {
+            ...prev,
+            [panelKey]: { ...prev[panelKey], isVisible: !prev[panelKey].isVisible },
+          };
+        }
+        return prev;
+      });
     },
-    [workspace, updatePanel]
+    []
   );
 
   const collapsePanel = useCallback(
     (panelKey: keyof WorkspaceState) => {
-      updatePanel(panelKey, { isCollapsed: !workspace[panelKey].isCollapsed });
+      setWorkspace(prev => ({
+        ...prev,
+        [panelKey]: { ...prev[panelKey], isCollapsed: !prev[panelKey].isCollapsed },
+      }));
     },
-    [workspace, updatePanel]
+    []
   );
 
   const executeCommand = useCallback((command: string) => {
