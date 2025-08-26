@@ -1,6 +1,6 @@
 import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
 import { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
 
 export interface PerformanceMetrics {
   fps: number;
@@ -97,9 +97,9 @@ export function usePerformanceMonitor() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [gl, settings.autoOptimize, settings.targetFPS]);
+  }, [gl, settings.autoOptimize, settings.targetFPS, optimizePerformance]);
 
-  const optimizePerformance = () => {
+  const optimizePerformance = useCallback(() => {
     const currentQuality = settings.qualityLevel;
 
     if (currentQuality === 'ultra') {
@@ -109,79 +109,88 @@ export function usePerformanceMonitor() {
     } else if (currentQuality === 'medium') {
       updateSettings({ qualityLevel: 'low' });
     }
-  };
+  }, [settings.qualityLevel, updateSettings]);
 
-  const updateSettings = (newSettings: Partial<PerformanceSettings>) => {
-    setSettings(prev => {
-      const updated = { ...prev, ...newSettings };
-      applySettings(updated);
-      return updated;
-    });
-  };
+  const updateSettings = useCallback(
+    (newSettings: Partial<PerformanceSettings>) => {
+      setSettings(prev => {
+        const updated = { ...prev, ...newSettings };
+        applySettings(updated);
+        return updated;
+      });
+    },
+    [applySettings]
+  );
 
-  const applySettings = (settings: PerformanceSettings) => {
-    // Apply pixel ratio
-    gl.setPixelRatio(settings.pixelRatio);
+  const applySettings = useCallback(
+    (settings: PerformanceSettings) => {
+      // Apply pixel ratio
+      gl.setPixelRatio(settings.pixelRatio);
 
-    // Apply shadow settings
-    gl.shadowMap.enabled = settings.enableShadows;
-    if (settings.enableShadows) {
-      // Update shadow map size for all lights in the scene
+      // Apply shadow settings
+      gl.shadowMap.enabled = settings.enableShadows;
+      if (settings.enableShadows) {
+        // Update shadow map size for all lights in the scene
+        scene.traverse((object: any) => {
+          if (object instanceof THREE.Light && object.castShadow) {
+            object.shadow.mapSize.width = settings.shadowMapSize;
+            object.shadow.mapSize.height = settings.shadowMapSize;
+          }
+        });
+      }
+
+      // Apply quality-based settings
+      switch (settings.qualityLevel) {
+        case 'low':
+          gl.setPixelRatio(Math.min(settings.pixelRatio, 1));
+          scene.traverse((object: any) => {
+            if (object instanceof THREE.Light && object.castShadow) {
+              object.shadow.mapSize.setScalar(512);
+            }
+          });
+          break;
+        case 'medium':
+          gl.setPixelRatio(Math.min(settings.pixelRatio, 1.5));
+          scene.traverse((object: any) => {
+            if (object instanceof THREE.Light && object.castShadow) {
+              object.shadow.mapSize.setScalar(1024);
+            }
+          });
+          break;
+        case 'high':
+          gl.setPixelRatio(Math.min(settings.pixelRatio, 2));
+          scene.traverse((object: any) => {
+            if (object instanceof THREE.Light && object.castShadow) {
+              object.shadow.mapSize.setScalar(2048);
+            }
+          });
+          break;
+        case 'ultra':
+          gl.setPixelRatio(settings.pixelRatio);
+          scene.traverse((object: any) => {
+            if (object instanceof THREE.Light && object.castShadow) {
+              object.shadow.mapSize.setScalar(4096);
+            }
+          });
+          break;
+      }
+
+      // Update scene objects with quality settings
       scene.traverse((object: any) => {
-        if (object instanceof THREE.Light && object.castShadow) {
-          object.shadow.mapSize.width = settings.shadowMapSize;
-          object.shadow.mapSize.height = settings.shadowMapSize;
+        if (object.material) {
+          // Adjust material quality based on settings
+          if (settings.qualityLevel === 'low') {
+            object.material.transparent = false;
+            object.material.alphaTest = 0;
+          } else {
+            object.material.transparent = true;
+            object.material.alphaTest = 0.1;
+          }
         }
       });
-    }
-
-    // Apply quality-based settings
-    switch (settings.qualityLevel) {
-      case 'low':
-        gl.setPixelRatio(Math.min(settings.pixelRatio, 1));
-        scene.traverse((object: any) => {
-          if (object instanceof THREE.Light && object.castShadow) {
-            object.shadow.mapSize.setScalar(512);
-          }
-        });
-        break;
-      case 'medium':
-        gl.setPixelRatio(Math.min(settings.pixelRatio, 1.5));
-        scene.traverse((object: any) => {
-          if (object instanceof THREE.Light && object.castShadow) {
-            object.shadow.mapSize.setScalar(1024);
-          }
-        });
-        break;
-      case 'high':
-        gl.setPixelRatio(Math.min(settings.pixelRatio, 2));
-        scene.traverse((object: any) => {
-          if (object instanceof THREE.Light && object.castShadow) {
-            object.shadow.mapSize.setScalar(2048);
-          }
-        });
-        break;
-      case 'ultra':
-        gl.setPixelRatio(settings.pixelRatio);
-        scene.traverse((object: any) => {
-          if (object instanceof THREE.Light && object.castShadow) {
-            object.shadow.mapSize.setScalar(4096);
-          }
-        });
-        break;
-    }
-
-    // Update scene objects with quality settings
-    scene.traverse((object: any) => {
-      if (object.material) {
-        // Adjust material quality based on settings
-        if (settings.qualityLevel === 'low') {
-          object.material.transparent = false;
-          object.material.alphaTest = 0;
-        }
-      }
-    });
-  };
+    },
+    [gl, scene]
+  );
 
   const getPerformanceRecommendations = (): string[] => {
     const recommendations: string[] = [];
