@@ -19,43 +19,34 @@ export function Wall3D({ wallId }: Wall3DProps) {
 
   const materialProps = useMaterial3D(wall?.materialId);
 
-  const geometryRef = useRef<THREE.BufferGeometry | null>(null);
-
   const { geometry, position, rotation } = useMemo(() => {
     if (!wall)
       return { geometry: null, position: new THREE.Vector3(), rotation: new THREE.Euler() };
 
-    // Clean up previous geometry if it exists
-    if (geometryRef.current) {
-      geometryRef.current.dispose();
-    }
-
-    const geometry = GeometryGenerator.createWallGeometry(wall, connectedWalls);
-    geometryRef.current = geometry;
+    const newGeometry = GeometryGenerator.createWallGeometry(wall, connectedWalls);
 
     const start = new THREE.Vector3(wall.start.x, wall.start.y, wall.start.z);
     const end = new THREE.Vector3(wall.end.x, wall.end.y, wall.end.z);
 
-    const position = new THREE.Vector3(
+    const newPosition = new THREE.Vector3(
       (start.x + end.x) / 2,
       wall.height / 2,
       (start.z + end.z) / 2
     );
 
-    const rotation = new THREE.Euler(0, -Math.atan2(end.z - start.z, end.x - start.x), 0);
+    const newRotation = new THREE.Euler(0, -Math.atan2(end.z - start.z, end.x - start.x), 0);
 
-    return { geometry, position, rotation };
+    return { geometry: newGeometry, position: newPosition, rotation: newRotation };
   }, [wall, connectedWalls]);
 
-  // Clean up geometry on unmount
+  // Clean up geometry on unmount or when it changes
   useEffect(() => {
     return () => {
-      if (geometryRef.current) {
-        geometryRef.current.dispose();
-        geometryRef.current = null;
+      if (geometry) {
+        geometry.dispose();
       }
     };
-  }, []);
+  }, [geometry]);
 
   // If wall doesn't exist, don't render
   if (!wall) return null;

@@ -44,7 +44,7 @@ export interface Wall3DProperties {
   connections: Wall3DConnection[];
   isSelected?: boolean;
   isHovered?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Wall3DEvents {

@@ -349,12 +349,15 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
   const renderTool = (tool: Tool) => (
     <div key={tool.id} className="relative">
       <button
+        aria-pressed={activeTool === tool.id}
+        aria-haspopup={tool.hasSubmenu ? 'true' : 'false'}
+        aria-expanded={tool.hasSubmenu ? expandedSubmenu === tool.id : undefined}
         className={`w-full p-3 rounded-lg border transition-all duration-200 ${
           activeTool === tool.id
             ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
             : theme === 'dark'
-              ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
-              : 'bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+            ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
+            : 'bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'
         }`}
         onClick={() => {
           handleToolSelect(tool.id, tool.action);
@@ -381,10 +384,14 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
 
       {/* Submenu */}
       {tool.hasSubmenu && expandedSubmenu === tool.id && tool.submenu && (
-        <div className="absolute left-full top-0 ml-2 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50 min-w-48">
+        <div
+          role="menu"
+          className="absolute left-full top-0 ml-2 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50 min-w-48"
+        >
           {tool.submenu.map(subTool => (
             <button
               key={subTool.id}
+              role="menuitem"
               className="w-full p-2 text-left hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg flex items-center space-x-2"
               onClick={() => {
                 handleToolSelect(subTool.id, subTool.action);
@@ -424,10 +431,12 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex flex-wrap gap-1 p-2 border-b border-gray-600">
+      <div role="tablist" className="flex flex-wrap gap-1 p-2 border-b border-gray-600">
         {categories.map(category => (
           <button
             key={category.id}
+            role="tab"
+            aria-selected={activeCategory === category.id}
             className={`px-2 py-1 rounded text-xs flex items-center space-x-1 transition-colors ${
               activeCategory === category.id
                 ? 'bg-blue-600 text-white'

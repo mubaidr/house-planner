@@ -73,7 +73,7 @@ export interface Stair3DProperties {
   spiralDirection?: 'clockwise' | 'counterclockwise'; // For spiral stairs
   isSelected?: boolean;
   isHovered?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Stair3DEvents {

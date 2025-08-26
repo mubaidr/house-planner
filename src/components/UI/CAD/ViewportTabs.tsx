@@ -61,10 +61,12 @@ export function ViewportTabs({ activeViewport, onViewportChange, theme }: Viewpo
       }`}
     >
       {/* Viewport Tabs */}
-      <div className="flex items-center">
+      <div role="tablist" className="flex items-center">
         {viewports.map(viewport => (
           <button
             key={viewport.id}
+            role="tab"
+            aria-selected={activeViewport === viewport.id}
             onClick={() => onViewportChange(viewport.id)}
             className={`px-4 py-2 text-sm flex items-center space-x-2 border-r border-gray-600 transition-colors ${
               activeViewport === viewport.id

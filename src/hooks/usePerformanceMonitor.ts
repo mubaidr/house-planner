@@ -100,16 +100,25 @@ export function usePerformanceMonitor() {
   }, [gl, settings.autoOptimize, settings.targetFPS, optimizePerformance]);
 
   const optimizePerformance = useCallback(() => {
-    const currentQuality = settings.qualityLevel;
-
-    if (currentQuality === 'ultra') {
-      updateSettings({ qualityLevel: 'high' });
-    } else if (currentQuality === 'high') {
-      updateSettings({ qualityLevel: 'medium' });
-    } else if (currentQuality === 'medium') {
-      updateSettings({ qualityLevel: 'low' });
-    }
-  }, [settings.qualityLevel, updateSettings]);
+    setSettings(prev => {
+      const currentQuality = prev.qualityLevel;
+      let newQualityLevel = prev.qualityLevel;
+      if (currentQuality === 'ultra') {
+        newQualityLevel = 'high';
+      } else if (currentQuality === 'high') {
+        newQualityLevel = 'medium';
+      } else if (currentQuality === 'medium') {
+        newQualityLevel = 'low';
+      }
+      
+      if (newQualityLevel !== currentQuality) {
+          const updated = { ...prev, qualityLevel: newQualityLevel };
+          applySettings(updated);
+          return updated;
+      }
+      return prev;
+    });
+  }, [applySettings]);
 
   const updateSettings = useCallback(
     (newSettings: Partial<PerformanceSettings>) => {

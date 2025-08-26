@@ -59,7 +59,7 @@ export interface Window3DProperties {
   operating: Window3DOperating;
   isSelected?: boolean;
   isHovered?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Window3DEvents {

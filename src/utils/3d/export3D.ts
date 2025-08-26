@@ -25,6 +25,18 @@ export interface FloorPlanOptions {
   backgroundColor?: string;
 }
 
+interface WallUserData {
+  type: 'wall';
+  start: { x: number; y: number; z: number };
+  end: { x: number; y: number; z: number };
+}
+
+interface RoomUserData {
+  type: 'room';
+  name: string;
+  points: { x: number; z: number }[];
+}
+
 export class Export3DSystem {
   private renderer: THREE.WebGLRenderer | null = null;
   private originalSettings: any = {};
@@ -210,14 +222,14 @@ export class Export3DSystem {
     ctx.textAlign = 'center';
 
     // Extract walls and rooms from the scene
-    const walls: any[] = [];
-    const rooms: any[] = [];
+    const walls: WallUserData[] = [];
+    const rooms: RoomUserData[] = [];
 
     scene.traverse(object => {
       if (object.userData.type === 'wall') {
-        walls.push(object.userData);
+        walls.push(object.userData as WallUserData);
       } else if (object.userData.type === 'room') {
-        rooms.push(object.userData);
+        rooms.push(object.userData as RoomUserData);
       }
     });
 
@@ -226,7 +238,7 @@ export class Export3DSystem {
     rooms.forEach(room => {
       if (room.points && room.points.length > 0) {
         ctx.beginPath();
-        room.points.forEach((point: any, index: number) => {
+        room.points.forEach((point, index) => {
           const x = point.x * scale + canvas.width / 2;
           const y = point.z * scale + canvas.height / 2;
 
@@ -243,9 +255,9 @@ export class Export3DSystem {
         // Add room label if enabled
         if (showLabels && room.name) {
           const centerX =
-            room.points.reduce((sum: number, p: any) => sum + p.x, 0) / room.points.length;
+            room.points.reduce((sum, p) => sum + p.x, 0) / room.points.length;
           const centerZ =
-            room.points.reduce((sum: number, p: any) => sum + p.z, 0) / room.points.length;
+            room.points.reduce((sum, p) => sum + p.z, 0) / room.points.length;
 
           ctx.fillStyle = '#000000';
           ctx.fillText(
