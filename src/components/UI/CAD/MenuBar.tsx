@@ -39,6 +39,38 @@ interface MenuItem {
   disabled?: boolean;
 }
 
+const MenuItemComponent = React.memo(
+  ({
+    item,
+    onAction,
+  }: {
+    item: MenuItem;
+    onAction: (action?: () => void) => void;
+  }) => {
+    if (item.separator) {
+      return <div role="separator" className="border-t border-gray-600 my-1" />;
+    }
+
+    return (
+      <div
+        role="menuitem"
+        aria-disabled={item.disabled}
+        className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between hover:bg-gray-700 ${
+          item.disabled ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+        onClick={() => onAction(item.action)}
+      >
+        <div className="flex items-center space-x-2">
+          {item.icon}
+          <span>{item.label}</span>
+        </div>
+        {item.shortcut && <span className="text-xs text-gray-400">{item.shortcut}</span>}
+        {item.submenu && <span className="text-xs">▶</span>}
+      </div>
+    );
+  }
+);
+
 export function MenuBar({
   height,
   onTogglePanel,
@@ -65,6 +97,13 @@ export function MenuBar({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleAction = (action?: () => void) => {
+    if (action) {
+      action();
+      setActiveMenu(null);
+    }
+  };
 
   const fileMenu: MenuItem[] = [
     {
@@ -276,37 +315,10 @@ export function MenuBar({
     help: helpMenu,
   };
 
-  const renderMenuItem = (item: MenuItem, index: number) => {
-    if (item.separator) {
-      return <div key={index} className="border-t border-gray-600 my-1" />;
-    }
-
-    return (
-      <div
-        key={index}
-        className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between hover:bg-gray-700 ${
-          item.disabled ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
-        onClick={() => {
-          if (!item.disabled && item.action) {
-            item.action();
-            setActiveMenu(null);
-          }
-        }}
-      >
-        <div className="flex items-center space-x-2">
-          {item.icon}
-          <span>{item.label}</span>
-        </div>
-        {item.shortcut && <span className="text-xs text-gray-400">{item.shortcut}</span>}
-        {item.submenu && <span className="text-xs">▶</span>}
-      </div>
-    );
-  };
-
   return (
     <div
       ref={menuRef}
+      role="menubar"
       className={`w-full border-b border-gray-600 ${
         theme === 'dark' ? 'bg-gray-800' : theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'
       }`}
@@ -324,6 +336,9 @@ export function MenuBar({
           {Object.entries(menus).map(([key, menu]) => (
             <div key={key} className="relative">
               <button
+                role="menuitem"
+                aria-haspopup="true"
+                aria-expanded={activeMenu === key}
                 className={`px-3 py-1 text-sm rounded hover:bg-gray-700 ${
                   activeMenu === key ? 'bg-gray-700' : ''
                 }`}
@@ -334,8 +349,13 @@ export function MenuBar({
 
               {/* Dropdown Menu */}
               {activeMenu === key && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
-                  {menu.map((item, index) => renderMenuItem(item, index))}
+                <div
+                  role="menu"
+                  className="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto"
+                >
+                  {menu.map((item, index) => (
+                    <MenuItemComponent key={index} item={item} onAction={handleAction} />
+                  ))}
                 </div>
               )}
             </div>

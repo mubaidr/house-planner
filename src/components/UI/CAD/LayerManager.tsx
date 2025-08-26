@@ -127,6 +127,110 @@ const defaultLayers: Layer[] = [
   },
 ];
 
+const getLineTypeDisplay = (lineType: string) => {
+  switch (lineType) {
+    case 'dashed':
+      return '- - - -';
+    case 'dotted':
+      return '• • • •';
+    case 'dashdot':
+      return '- • - •';
+    default:
+      return '————';
+  }
+};
+
+const LayerRow = React.memo(
+  ({
+    layer,
+    selectedLayers,
+    showLayerProperties,
+    onSelectLayer,
+    onSetCurrent,
+    onToggleVisibility,
+    onToggleLock,
+    onShowProperties,
+  }: {
+    layer: Layer;
+    selectedLayers: string[];
+    showLayerProperties: string | null;
+    onSelectLayer: (layerId: string, checked: boolean) => void;
+    onSetCurrent: (layerId: string) => void;
+    onToggleVisibility: (layerId: string) => void;
+    onToggleLock: (layerId: string) => void;
+    onShowProperties: (layerId: string | null) => void;
+  }) => (
+    <div
+      className={`flex items-center p-2 hover:bg-gray-700 border-l-2 ${
+        layer.current ? 'border-blue-500 bg-blue-900/20' : 'border-transparent'
+      } ${selectedLayers.includes(layer.id) ? 'bg-gray-700' : ''}`}
+    >
+      {/* Selection Checkbox */}
+      <input
+        type="checkbox"
+        checked={selectedLayers.includes(layer.id)}
+        onChange={e => onSelectLayer(layer.id, e.target.checked)}
+        className="mr-2"
+      />
+
+      {/* Layer Color */}
+      <div
+        className="w-4 h-4 rounded border border-gray-500 mr-2 cursor-pointer"
+        style={{ backgroundColor: layer.color }}
+        onClick={() => {
+          // Color picker would open here
+          console.log('Open color picker for layer', layer.id);
+        }}
+        title="Click to change color"
+      />
+
+      {/* Layer Name */}
+      <div
+        className="flex-1 cursor-pointer"
+        onClick={() => onSetCurrent(layer.id)}
+        title={layer.description}
+      >
+        <div className="font-medium text-sm">{layer.name}</div>
+        <div className="text-xs text-gray-400">
+          {layer.objectCount} objects • {getLineTypeDisplay(layer.lineType)}
+        </div>
+      </div>
+
+      {/* Transparency */}
+      {layer.transparency > 0 && (
+        <div className="text-xs text-gray-400 mr-2">{layer.transparency}%</div>
+      )}
+
+      {/* Visibility Toggle */}
+      <button
+        onClick={() => onToggleVisibility(layer.id)}
+        className="p-1 hover:bg-gray-600 rounded mr-1"
+        title={layer.visible ? 'Hide layer' : 'Show layer'}
+      >
+        {layer.visible ? <Eye size={14} /> : <EyeOff size={14} className="text-gray-500" />}
+      </button>
+
+      {/* Lock Toggle */}
+      <button
+        onClick={() => onToggleLock(layer.id)}
+        className="p-1 hover:bg-gray-600 rounded mr-1"
+        title={layer.locked ? 'Unlock layer' : 'Lock layer'}
+      >
+        {layer.locked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} />}
+      </button>
+
+      {/* Layer Properties */}
+      <button
+        onClick={() => onShowProperties(showLayerProperties === layer.id ? null : layer.id)}
+        className="p-1 hover:bg-gray-600 rounded"
+        title="Layer properties"
+      >
+        <Settings size={14} />
+      </button>
+    </div>
+  )
+);
+
 export function LayerManager({ theme }: LayerManagerProps) {
   const [layers, setLayers] = useState<Layer[]>(defaultLayers);
   const [searchTerm, setSearchTerm] = useState('');
@@ -162,31 +266,33 @@ export function LayerManager({ theme }: LayerManagerProps) {
   }, []);
 
   const addNewLayer = useCallback(() => {
-    const newLayer: Layer = {
-      id: `layer_${Date.now()}`,
-      name: `Layer ${layers.length}`,
-      color: '#808080',
-      visible: true,
-      locked: false,
-      current: false,
-      lineType: 'solid',
-      lineWeight: 0.25,
-      transparency: 0,
-      objectCount: 0,
-      description: 'New layer',
-    };
-    setLayers(prev => [...prev, newLayer]);
-  }, [layers.length]);
+    setLayers(prev => {
+      const newLayer: Layer = {
+        id: `layer_${Date.now()}`,
+        name: `Layer ${prev.length}`,
+        color: '#808080',
+        visible: true,
+        locked: false,
+        current: false,
+        lineType: 'solid',
+        lineWeight: 0.25,
+        transparency: 0,
+        objectCount: 0,
+        description: 'New layer',
+      };
+      return [...prev, newLayer];
+    });
+  }, []);
 
   const deleteLayer = useCallback((layerId: string) => {
     if (layerId === '0') return; // Can't delete layer 0
     setLayers(prev => prev.filter(layer => layer.id !== layerId));
   }, []);
 
-  const duplicateLayer = useCallback(
-    (layerId: string) => {
-      const sourceLayer = layers.find(l => l.id === layerId);
-      if (!sourceLayer) return;
+  const duplicateLayer = useCallback((layerId: string) => {
+    setLayers(prev => {
+      const sourceLayer = prev.find(l => l.id === layerId);
+      if (!sourceLayer) return prev;
 
       const newLayer: Layer = {
         ...sourceLayer,
@@ -195,16 +301,18 @@ export function LayerManager({ theme }: LayerManagerProps) {
         current: false,
         objectCount: 0,
       };
-      setLayers(prev => [...prev, newLayer]);
-    },
-    [layers]
-  );
-
-  const updateLayerProperty = useCallback((layerId: string, property: keyof Layer, value: any) => {
-    setLayers(prev =>
-      prev.map(layer => (layer.id === layerId ? { ...layer, [property]: value } : layer))
-    );
+      return [...prev, newLayer];
+    });
   }, []);
+
+  const updateLayerProperty = useCallback(
+    (layerId: string, property: keyof Layer, value: string | number | boolean) => {
+      setLayers(prev =>
+        prev.map(layer => (layer.id === layerId ? { ...layer, [property]: value } : layer))
+      );
+    },
+    []
+  );
 
   const selectAllVisible = useCallback(() => {
     const visibleLayerIds = layers.filter(l => l.visible).map(l => l.id);
@@ -225,95 +333,15 @@ export function LayerManager({ theme }: LayerManagerProps) {
     setSelectedLayers([]);
   }, [selectedLayers]);
 
-  const getLineTypeDisplay = (lineType: string) => {
-    switch (lineType) {
-      case 'dashed':
-        return '- - - -';
-      case 'dotted':
-        return '• • • •';
-      case 'dashdot':
-        return '- • - •';
-      default:
-        return '————';
-    }
-  };
-
-  const LayerRow = ({ layer }: { layer: Layer }) => (
-    <div
-      className={`flex items-center p-2 hover:bg-gray-700 border-l-2 ${
-        layer.current ? 'border-blue-500 bg-blue-900/20' : 'border-transparent'
-      } ${selectedLayers.includes(layer.id) ? 'bg-gray-700' : ''}`}
-    >
-      {/* Selection Checkbox */}
-      <input
-        type="checkbox"
-        checked={selectedLayers.includes(layer.id)}
-        onChange={e => {
-          if (e.target.checked) {
-            setSelectedLayers(prev => [...prev, layer.id]);
-          } else {
-            setSelectedLayers(prev => prev.filter(id => id !== layer.id));
-          }
-        }}
-        className="mr-2"
-      />
-
-      {/* Layer Color */}
-      <div
-        className="w-4 h-4 rounded border border-gray-500 mr-2 cursor-pointer"
-        style={{ backgroundColor: layer.color }}
-        onClick={() => {
-          // Color picker would open here
-          console.log('Open color picker for layer', layer.id);
-        }}
-        title="Click to change color"
-      />
-
-      {/* Layer Name */}
-      <div
-        className="flex-1 cursor-pointer"
-        onClick={() => setCurrentLayer(layer.id)}
-        title={layer.description}
-      >
-        <div className="font-medium text-sm">{layer.name}</div>
-        <div className="text-xs text-gray-400">
-          {layer.objectCount} objects • {getLineTypeDisplay(layer.lineType)}
-        </div>
-      </div>
-
-      {/* Transparency */}
-      {layer.transparency > 0 && (
-        <div className="text-xs text-gray-400 mr-2">{layer.transparency}%</div>
-      )}
-
-      {/* Visibility Toggle */}
-      <button
-        onClick={() => toggleLayerVisibility(layer.id)}
-        className="p-1 hover:bg-gray-600 rounded mr-1"
-        title={layer.visible ? 'Hide layer' : 'Show layer'}
-      >
-        {layer.visible ? <Eye size={14} /> : <EyeOff size={14} className="text-gray-500" />}
-      </button>
-
-      {/* Lock Toggle */}
-      <button
-        onClick={() => toggleLayerLock(layer.id)}
-        className="p-1 hover:bg-gray-600 rounded mr-1"
-        title={layer.locked ? 'Unlock layer' : 'Lock layer'}
-      >
-        {layer.locked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} />}
-      </button>
-
-      {/* Layer Properties */}
-      <button
-        onClick={() => setShowLayerProperties(showLayerProperties === layer.id ? null : layer.id)}
-        className="p-1 hover:bg-gray-600 rounded"
-        title="Layer properties"
-      >
-        <Settings size={14} />
-      </button>
-    </div>
-  );
+  const handleSelectLayer = useCallback((layerId: string, checked: boolean) => {
+    setSelectedLayers(prev => {
+      if (checked) {
+        return [...prev, layerId];
+      } else {
+        return prev.filter(id => id !== layerId);
+      }
+    });
+  }, []);
 
   return (
     <div
@@ -394,7 +422,17 @@ export function LayerManager({ theme }: LayerManagerProps) {
           {/* Layer List */}
           <div className="flex-1 overflow-y-auto">
             {filteredLayers.map(layer => (
-              <LayerRow key={layer.id} layer={layer} />
+              <LayerRow
+                key={layer.id}
+                layer={layer}
+                selectedLayers={selectedLayers}
+                showLayerProperties={showLayerProperties}
+                onSelectLayer={handleSelectLayer}
+                onSetCurrent={setCurrentLayer}
+                onToggleVisibility={toggleLayerVisibility}
+                onToggleLock={toggleLayerLock}
+                onShowProperties={setShowLayerProperties}
+              />
             ))}
           </div>
 

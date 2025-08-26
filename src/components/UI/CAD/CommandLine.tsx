@@ -348,7 +348,7 @@ export function CommandLine({ height, onExecuteCommand, commandHistory, theme }:
     ]
   );
 
-  const getPrompt = () => {
+  const getPrompt = useCallback(() => {
     switch (commandState) {
       case 'waiting':
         return 'Command:';
@@ -370,7 +370,7 @@ export function CommandLine({ height, onExecuteCommand, commandHistory, theme }:
       default:
         return 'Command:';
     }
-  };
+  }, [commandState, commandHistory, parameterIndex]);
 
   return (
     <div

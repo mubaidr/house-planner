@@ -10,7 +10,7 @@ import {
   Settings,
   Trash2,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 interface PropertiesPaletteProps {
   onCollapsePanel: () => void;
@@ -37,6 +37,115 @@ interface Property {
   unit?: string;
   readonly?: boolean;
 }
+
+const PropertyRow = React.memo(
+  ({
+    groupId,
+    property,
+    onUpdate,
+  }: {
+    groupId: string;
+    property: Property;
+    onUpdate: (groupId: string, propertyId: string, value: string | number | boolean) => void;
+  }) => {
+    const handleChange = (value: string | number | boolean) => {
+      onUpdate(groupId, property.id, value);
+    };
+
+    return (
+      <div key={property.id} className="flex items-center justify-between py-1">
+        <label className="text-xs text-gray-300 w-20 flex-shrink-0">{property.name}:</label>
+        <div className="flex-1 ml-2">
+          {property.type === 'text' && (
+            <input
+              type="text"
+              value={property.value as string}
+              onChange={e => handleChange(e.target.value)}
+              className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded"
+              readOnly={property.readonly}
+            />
+          )}
+
+          {property.type === 'number' && (
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                value={property.value as number}
+                onChange={e => handleChange(parseFloat(e.target.value))}
+                min={property.min}
+                max={property.max}
+                step={property.step}
+                className="flex-1 px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded"
+                readOnly={property.readonly}
+              />
+              {property.unit && <span className="text-xs text-gray-400">{property.unit}</span>}
+            </div>
+          )}
+
+          {property.type === 'boolean' && (
+            <input
+              type="checkbox"
+              checked={property.value as boolean}
+              onChange={e => handleChange(e.target.checked)}
+              className="w-4 h-4"
+              disabled={property.readonly}
+            />
+          )}
+
+          {property.type === 'color' && (
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={property.value as string}
+                onChange={e => handleChange(e.target.value)}
+                className="w-8 h-6 rounded border border-gray-600"
+                disabled={property.readonly}
+              />
+              <input
+                type="text"
+                value={property.value as string}
+                onChange={e => handleChange(e.target.value)}
+                className="flex-1 px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded font-mono"
+                readOnly={property.readonly}
+              />
+            </div>
+          )}
+
+          {property.type === 'select' && (
+            <select
+              value={property.value as string}
+              onChange={e => handleChange(e.target.value)}
+              className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded"
+              disabled={property.readonly}
+            >
+              {property.options?.map(option => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {property.type === 'range' && (
+            <div className="space-y-1">
+              <input
+                type="range"
+                value={property.value as number}
+                onChange={e => handleChange(parseFloat(e.target.value))}
+                min={property.min}
+                max={property.max}
+                step={property.step}
+                className="w-full"
+                disabled={property.readonly}
+              />
+              <div className="text-xs text-gray-400 text-center">{property.value}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
 
 export function PropertiesPalette({ onCollapsePanel, theme }: PropertiesPaletteProps) {
   const [selectedObject, setSelectedObject] = useState<string>('wall-001');
@@ -140,125 +249,29 @@ export function PropertiesPalette({ onCollapsePanel, theme }: PropertiesPaletteP
     },
   ]);
 
-  const toggleGroup = (groupId: string) => {
+  const toggleGroup = useCallback((groupId: string) => {
     setPropertyGroups(prev =>
       prev.map(group => (group.id === groupId ? { ...group, expanded: !group.expanded } : group))
     );
-  };
+  }, []);
 
-  const updateProperty = (groupId: string, propertyId: string, value: any) => {
-    setPropertyGroups(prev =>
-      prev.map(group =>
-        group.id === groupId
-          ? {
-              ...group,
-              properties: group.properties.map(prop =>
-                prop.id === propertyId ? { ...prop, value } : prop
-              ),
-            }
-          : group
-      )
-    );
-  };
-
-  const renderProperty = (groupId: string, property: Property) => {
-    const handleChange = (value: any) => {
-      updateProperty(groupId, property.id, value);
-    };
-
-    return (
-      <div key={property.id} className="flex items-center justify-between py-1">
-        <label className="text-xs text-gray-300 w-20 flex-shrink-0">{property.name}:</label>
-        <div className="flex-1 ml-2">
-          {property.type === 'text' && (
-            <input
-              type="text"
-              value={property.value as string}
-              onChange={e => handleChange(e.target.value)}
-              className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded"
-              readOnly={property.readonly}
-            />
-          )}
-
-          {property.type === 'number' && (
-            <div className="flex items-center space-x-1">
-              <input
-                type="number"
-                value={property.value as number}
-                onChange={e => handleChange(parseFloat(e.target.value))}
-                min={property.min}
-                max={property.max}
-                step={property.step}
-                className="flex-1 px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded"
-                readOnly={property.readonly}
-              />
-              {property.unit && <span className="text-xs text-gray-400">{property.unit}</span>}
-            </div>
-          )}
-
-          {property.type === 'boolean' && (
-            <input
-              type="checkbox"
-              checked={property.value as boolean}
-              onChange={e => handleChange(e.target.checked)}
-              className="w-4 h-4"
-              disabled={property.readonly}
-            />
-          )}
-
-          {property.type === 'color' && (
-            <div className="flex items-center space-x-2">
-              <input
-                type="color"
-                value={property.value as string}
-                onChange={e => handleChange(e.target.value)}
-                className="w-8 h-6 rounded border border-gray-600"
-                disabled={property.readonly}
-              />
-              <input
-                type="text"
-                value={property.value as string}
-                onChange={e => handleChange(e.target.value)}
-                className="flex-1 px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded font-mono"
-                readOnly={property.readonly}
-              />
-            </div>
-          )}
-
-          {property.type === 'select' && (
-            <select
-              value={property.value as string}
-              onChange={e => handleChange(e.target.value)}
-              className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded"
-              disabled={property.readonly}
-            >
-              {property.options?.map(option => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {property.type === 'range' && (
-            <div className="space-y-1">
-              <input
-                type="range"
-                value={property.value as number}
-                onChange={e => handleChange(parseFloat(e.target.value))}
-                min={property.min}
-                max={property.max}
-                step={property.step}
-                className="w-full"
-                disabled={property.readonly}
-              />
-              <div className="text-xs text-gray-400 text-center">{property.value}</div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const updateProperty = useCallback(
+    (groupId: string, propertyId: string, value: string | number | boolean) => {
+      setPropertyGroups(prev =>
+        prev.map(group =>
+          group.id === groupId
+            ? {
+                ...group,
+                properties: group.properties.map(prop =>
+                  prop.id === propertyId ? { ...prop, value } : prop
+                ),
+              }
+            : group
+        )
+      );
+    },
+    []
+  );
 
   return (
     <div
@@ -342,7 +355,14 @@ export function PropertiesPalette({ onCollapsePanel, theme }: PropertiesPaletteP
 
             {group.expanded && (
               <div className="px-3 pb-3 space-y-2">
-                {group.properties.map(property => renderProperty(group.id, property))}
+                {group.properties.map(property => (
+                  <PropertyRow
+                    key={property.id}
+                    groupId={group.id}
+                    property={property}
+                    onUpdate={updateProperty}
+                  />
+                ))}
               </div>
             )}
           </div>

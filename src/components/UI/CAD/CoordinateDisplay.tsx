@@ -1,5 +1,5 @@
 import { Crosshair, Target } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface CoordinateDisplayProps {
   className?: string;
@@ -26,9 +26,12 @@ export function CoordinateDisplay({ className = '', theme }: CoordinateDisplayPr
     return () => clearInterval(interval);
   }, []);
 
-  const formatCoordinate = (value: number): string => {
-    return value.toFixed(precision);
-  };
+  const formatCoordinate = useCallback(
+    (value: number): string => {
+      return value.toFixed(precision);
+    },
+    [precision]
+  );
 
   return (
     <div className={`${className} select-none`}>

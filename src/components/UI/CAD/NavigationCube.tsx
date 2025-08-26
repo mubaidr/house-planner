@@ -36,7 +36,7 @@ export function NavigationCube({ className = '', theme }: NavigationCubeProps) {
             }}
           >
             {faces.map(face => (
-              <div
+              <button
                 key={face.id}
                 className={`absolute w-full h-full border-2 cursor-pointer transition-all duration-200 flex items-center justify-center text-xs font-bold ${
                   hoveredFace === face.id
@@ -49,7 +49,7 @@ export function NavigationCube({ className = '', theme }: NavigationCubeProps) {
                 onMouseLeave={() => setHoveredFace(null)}
               >
                 {face.label}
-              </div>
+              </button>
             ))}
           </div>
         </div>

@@ -87,6 +87,7 @@ export function ViewportManager({ activeViewport, className = '', theme }: Viewp
               <span className="text-xs mt-1">Rotate</span>
             </button>
             <button
+              aria-pressed={viewportSettings.showGrid}
               className={`p-2 rounded flex flex-col items-center ${
                 viewportSettings.showGrid ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'
               }`}

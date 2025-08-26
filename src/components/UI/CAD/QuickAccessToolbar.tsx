@@ -18,7 +18,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 interface QuickAccessToolbarProps {
   height: number;
@@ -167,15 +167,18 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
     availableTools.filter(tool => customTools.includes(tool.id))
   );
 
-  const addCustomTool = (toolId: string) => {
-    if (!customTools.includes(toolId)) {
-      setCustomTools(prev => [...prev, toolId]);
-    }
-  };
+  const addCustomTool = useCallback((toolId: string) => {
+    setCustomTools(prev => {
+      if (!prev.includes(toolId)) {
+        return [...prev, toolId];
+      }
+      return prev;
+    });
+  }, []);
 
-  const removeCustomTool = (toolId: string) => {
+  const removeCustomTool = useCallback((toolId: string) => {
     setCustomTools(prev => prev.filter(id => id !== toolId));
-  };
+  }, []);
 
   return (
     <div

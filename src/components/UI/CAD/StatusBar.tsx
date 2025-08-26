@@ -33,6 +33,32 @@ interface SystemInfo {
   objectCount: number;
 }
 
+const StatusButton = ({
+  active,
+  onClick,
+  icon,
+  label,
+  tooltip,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  tooltip: string;
+}) => (
+  <button
+    onClick={onClick}
+    aria-pressed={active}
+    className={`px-2 py-1 text-xs flex items-center space-x-1 rounded transition-colors ${
+      active ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'
+    }`}
+    title={tooltip}
+  >
+    {icon}
+    <span>{label}</span>
+  </button>
+);
+
 export function StatusBar({ height, theme }: StatusBarProps) {
   const [coordinates, setCoordinates] = useState<CoordinateInfo>({ x: 0, y: 0, z: 0 });
   const [systemInfo, setSystemInfo] = useState<SystemInfo>({
@@ -100,31 +126,6 @@ export function StatusBar({ height, theme }: StatusBarProps) {
     if (fps >= 30) return 'text-yellow-400';
     return 'text-red-400';
   };
-
-  const StatusButton = ({
-    active,
-    onClick,
-    icon,
-    label,
-    tooltip,
-  }: {
-    active: boolean;
-    onClick: () => void;
-    icon: React.ReactNode;
-    label: string;
-    tooltip: string;
-  }) => (
-    <button
-      onClick={onClick}
-      className={`px-2 py-1 text-xs flex items-center space-x-1 rounded transition-colors ${
-        active ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'
-      }`}
-      title={tooltip}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
 
   return (
     <div
