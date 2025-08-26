@@ -50,6 +50,16 @@ export function Door3D({ doorId }: Door3DProps) {
     return new THREE.Euler(0, wallAngle, 0);
   }, [wall]);
 
+  // Memoize the light creation
+  const doorLight = useMemo(() => {
+    if (!door?.isOpen) return null;
+
+    const rect = new THREE.RectAreaLight('#FFFFFF', 2, door.width, door.height);
+    rect.position.set(0, door.height / 2, 0.1);
+    rect.rotation.set(0, Math.PI, 0);
+    return rect;
+  }, [door?.isOpen, door?.width, door?.height]);
+
   // Animate door opening based on type
   useFrame(() => {
     if (!door || !groupRef.current || !panelRef.current) return;
@@ -113,13 +123,8 @@ export function Door3D({ doorId }: Door3DProps) {
         <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.2} />
       </mesh>
 
-      {door.isOpen &&
-        (() => {
-          const rect = new THREE.RectAreaLight('#FFFFFF', 2, door.width, door.height);
-          rect.position.set(0, door.height / 2, 0.1);
-          rect.rotation.set(0, Math.PI, 0);
-          return <primitive object={rect} />;
-        })()}
+      {/* Door light */}
+      {doorLight && <primitive object={doorLight} />}
 
       {/* Selection highlight */}
       {isSelected && (

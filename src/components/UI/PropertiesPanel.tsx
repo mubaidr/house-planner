@@ -6,30 +6,34 @@ import { WindowConfigPanel } from './WindowConfigPanel';
 
 export function PropertiesPanel() {
   // Use a selector that returns the specific element to avoid re-renders when unrelated elements change
-  // Simpler selector: read selected ID/type then resolve the concrete element.
-  const selectedElementId = useDesignStore(state => state.selectedElementId);
-  const selectedElementType = useDesignStore(state => state.selectedElementType);
+  const { selectedElement, selectedElementType } = useDesignStore(state => {
+    if (!state.selectedElementId || !state.selectedElementType) {
+      return { selectedElement: null, selectedElementType: null };
+    }
 
-  let selectedElement: Wall | Door | Window | Stair | null = null;
-  if (selectedElementId && selectedElementType) {
-    const state = useDesignStore.getState();
-    switch (selectedElementType) {
+    let element = null;
+    switch (state.selectedElementType) {
       case 'wall':
-        selectedElement = state.walls.find(w => w.id === selectedElementId) || null;
+        element = state.walls.find(w => w.id === state.selectedElementId) || null;
         break;
       case 'door':
-        selectedElement = state.doors.find(d => d.id === selectedElementId) || null;
+        element = state.doors.find(d => d.id === state.selectedElementId) || null;
         break;
       case 'window':
-        selectedElement = state.windows.find(w => w.id === selectedElementId) || null;
+        element = state.windows.find(w => w.id === state.selectedElementId) || null;
         break;
       case 'stair':
-        selectedElement = state.stairs.find(s => s.id === selectedElementId) || null;
+        element = state.stairs.find(s => s.id === state.selectedElementId) || null;
         break;
       default:
-        selectedElement = null;
+        element = null;
     }
-  }
+
+    return {
+      selectedElement: element,
+      selectedElementType: state.selectedElementType,
+    };
+  });
 
   const updateWall = useDesignStore(state => state.updateWall);
   const updateDoor = useDesignStore(state => state.updateDoor);

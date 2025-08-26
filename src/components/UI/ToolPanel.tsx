@@ -95,20 +95,8 @@ export function ToolPanel() {
     }
   };
 
-  const handleWallTool = () => {
-    setActiveTool(activeTool === 'wall' ? null : 'wall');
-  };
-
-  const handleRoomTool = () => {
-    setActiveTool(activeTool === 'room' ? null : 'room');
-  };
-
-  const handleMeasureTool = () => {
-    setActiveTool(activeTool === 'measure' ? null : 'measure');
-  };
-
-  const handleSelectTool = () => {
-    setActiveTool(activeTool === 'select' ? null : 'select');
+  const handleToolToggle = (tool: 'wall' | 'room' | 'measure' | 'select') => {
+    setActiveTool(activeTool === tool ? null : tool);
   };
 
   return (
@@ -117,7 +105,7 @@ export function ToolPanel() {
         <h2 className="text-lg font-bold mb-2">Tools</h2>
         <div className="space-y-2">
           <button
-            onClick={handleWallTool}
+            onClick={() => handleToolToggle('wall')}
             className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
               activeTool === 'wall' ? 'bg-blue-700' : 'bg-blue-500'
             }`}
@@ -125,7 +113,7 @@ export function ToolPanel() {
             {activeTool === 'wall' ? 'Drawing Wall (Click to Cancel)' : 'Draw Wall'}
           </button>
           <button
-            onClick={handleRoomTool}
+            onClick={() => handleToolToggle('room')}
             className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
               activeTool === 'room' ? 'bg-purple-700' : 'bg-purple-500'
             }`}
@@ -133,7 +121,7 @@ export function ToolPanel() {
             {activeTool === 'room' ? 'Creating Room (Click to Cancel)' : 'Create Room'}
           </button>
           <button
-            onClick={handleSelectTool}
+            onClick={() => handleToolToggle('select')}
             className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
               activeTool === 'select' ? 'bg-gray-700' : 'bg-gray-500'
             }`}
@@ -141,7 +129,7 @@ export function ToolPanel() {
             {activeTool === 'select' ? 'Selection Mode (Click to Cancel)' : 'Select & Manipulate'}
           </button>
           <button
-            onClick={handleMeasureTool}
+            onClick={() => handleToolToggle('measure')}
             className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
               activeTool === 'measure' ? 'bg-teal-700' : 'bg-teal-500'
             }`}

@@ -21,18 +21,14 @@ export function Wall3D({ wallId }: Wall3DProps) {
 
   const geometryRef = useRef<THREE.BufferGeometry | null>(null);
 
-  // Clean up geometry on unmount
-  useEffect(() => {
-    return () => {
-      if (geometryRef.current) {
-        geometryRef.current.dispose();
-      }
-    };
-  }, []);
-
   const { geometry, position, rotation } = useMemo(() => {
     if (!wall)
       return { geometry: null, position: new THREE.Vector3(), rotation: new THREE.Euler() };
+
+    // Clean up previous geometry if it exists
+    if (geometryRef.current) {
+      geometryRef.current.dispose();
+    }
 
     const geometry = GeometryGenerator.createWallGeometry(wall, connectedWalls);
     geometryRef.current = geometry;
@@ -50,6 +46,16 @@ export function Wall3D({ wallId }: Wall3DProps) {
 
     return { geometry, position, rotation };
   }, [wall, connectedWalls]);
+
+  // Clean up geometry on unmount
+  useEffect(() => {
+    return () => {
+      if (geometryRef.current) {
+        geometryRef.current.dispose();
+        geometryRef.current = null;
+      }
+    };
+  }, []);
 
   // If wall doesn't exist, don't render
   if (!wall) return null;
