@@ -34,6 +34,7 @@
     "lucide-react": "^0.541.0",
     "pdfmake": "^0.2.20",
     "react": "^19.1.1",
+    "react-contexify": "^6.0.0",
     "react-dom": "^19.1.1",
     "react-spring": "^10.0.1",
     "tailwindcss": "^4.1.12",

@@ -1,13 +1,17 @@
 import { Scene3D } from '@/components/Canvas3D/Scene3D';
 import { CADLayout } from '@/components/Layout/CADLayout';
+import { ElementContextMenu } from '@/components/UI/ContextMenu';
 import { PropertiesPanel } from '@/components/UI/PropertiesPanel';
 import { ToolPanel } from '@/components/UI/ToolPanel';
 import { ViewControls } from '@/components/UI/ViewControls';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useState } from 'react';
 
 export default function App() {
   const [useCADInterface, setUseCADInterface] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark' | 'classic'>('dark');
+
+  useKeyboardShortcuts();
 
   // Toggle between CAD interface and simple interface
   const toggleInterface = () => {
@@ -18,6 +22,7 @@ export default function App() {
     return (
       <div className="h-screen w-screen overflow-hidden">
         <CADLayout theme={theme} workspaceLayout="3d-modeling" />
+        <ElementContextMenu />
 
         {/* Interface Toggle Button */}
         <button
@@ -51,6 +56,7 @@ export default function App() {
       <ToolPanel />
       <ViewControls />
       <PropertiesPanel />
+      <ElementContextMenu />
 
       {/* Interface Toggle Button */}
       <button

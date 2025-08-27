@@ -1,5 +1,6 @@
 import { useConstraints } from '@/hooks/useConstraints';
 import { useDesignStore } from '@/stores/designStore';
+import { useStatusBarStore } from '@/stores/statusBarStore';
 import { ThreeEvent, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useState } from 'react';
 import * as THREE from 'three';
@@ -9,8 +10,11 @@ interface WallDrawingToolProps {
   onDeactivate: () => void;
 }
 
+const SNAP_DISTANCE = 0.5;
+
 export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolProps) {
-  const addWall = useDesignStore(state => state.addWall);
+  const { walls, addWall } = useDesignStore(state => ({ walls: state.walls, addWall: state.addWall }));
+  const setAngle = useStatusBarStore(state => state.setAngle);
 
   const { applyGridSnap, applyAngleSnap } = useConstraints({
     snapToGrid: true,
@@ -24,13 +28,27 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
   const [startPoint, setStartPoint] = useState<THREE.Vector3 | null>(null);
   const [currentPoint, setCurrentPoint] = useState<THREE.Vector3 | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [snappedAngle, setSnappedAngle] = useState<number | null>(null);
+  const [snapPoint, setSnapPoint] = useState<THREE.Vector3 | null>(null);
+
+  const getSnapPoint = useCallback(
+    (point: THREE.Vector3): THREE.Vector3 | null => {
+      for (const wall of walls) {
+        const start = new THREE.Vector3(wall.start.x, wall.start.y, wall.start.z);
+        const end = new THREE.Vector3(wall.end.x, wall.end.y, wall.end.z);
+        if (point.distanceTo(start) < SNAP_DISTANCE) return start;
+        if (point.distanceTo(end) < SNAP_DISTANCE) return end;
+      }
+      return null;
+    },
+    [walls]
+  );
 
   // Handle mouse move for drawing preview
   const handleMouseMove = useCallback(
     (event: ThreeEvent<MouseEvent>) => {
       if (!isDrawing || !startPoint) return;
 
-      // Get the point on the ground plane (y = 0)
       const mouse = new THREE.Vector2(
         (event.clientX / gl.domElement.clientWidth) * 2 - 1,
         -(event.clientY / gl.domElement.clientHeight) * 2 + 1
@@ -43,26 +61,33 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
       const intersection = new THREE.Vector3();
 
       if (raycaster.ray.intersectPlane(plane, intersection)) {
-        // Apply grid snapping
-        const snappedPoint = applyGridSnap(intersection);
+        let finalPoint = intersection;
+        const objectSnapPoint = getSnapPoint(intersection);
+        if (objectSnapPoint) {
+          finalPoint = objectSnapPoint;
+          setSnapPoint(objectSnapPoint);
+        } else {
+          setSnapPoint(null);
+          finalPoint = applyGridSnap(intersection);
+        }
 
-        // Apply angle snapping relative to start point
-        const delta = new THREE.Vector3().subVectors(snappedPoint, startPoint);
+        const delta = new THREE.Vector3().subVectors(finalPoint, startPoint);
         const angle = Math.atan2(delta.z, delta.x);
-        const snappedAngle = applyAngleSnap(angle);
+        const newSnappedAngle = applyAngleSnap(angle);
+        setSnappedAngle(newSnappedAngle);
+        setAngle(THREE.MathUtils.radToDeg(newSnappedAngle));
 
-        // Calculate new endpoint with snapped angle
-        const distance = startPoint.distanceTo(snappedPoint);
+        const distance = startPoint.distanceTo(finalPoint);
         const newEndPoint = new THREE.Vector3(
-          startPoint.x + Math.cos(snappedAngle) * distance,
+          startPoint.x + Math.cos(newSnappedAngle) * distance,
           0,
-          startPoint.z + Math.sin(snappedAngle) * distance
+          startPoint.z + Math.sin(newSnappedAngle) * distance
         );
 
         setCurrentPoint(newEndPoint);
       }
     },
-    [isDrawing, startPoint, camera, gl, applyGridSnap, applyAngleSnap]
+    [isDrawing, startPoint, camera, gl, applyGridSnap, applyAngleSnap, setAngle, getSnapPoint]
   );
 
   // Handle mouse down to start drawing
@@ -72,7 +97,6 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
 
       event.stopPropagation();
 
-      // Get the point on the ground plane (y = 0)
       const mouse = new THREE.Vector2(
         (event.clientX / gl.domElement.clientWidth) * 2 - 1,
         -(event.clientY / gl.domElement.clientHeight) * 2 + 1
@@ -85,20 +109,20 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
       const intersection = new THREE.Vector3();
 
       if (raycaster.ray.intersectPlane(plane, intersection)) {
-        const snappedPoint = applyGridSnap(intersection);
+        const objectSnapPoint = getSnapPoint(intersection);
+        const snappedPoint = objectSnapPoint || applyGridSnap(intersection);
         setStartPoint(snappedPoint);
         setCurrentPoint(snappedPoint);
         setIsDrawing(true);
       }
     },
-    [isActive, camera, gl, applyGridSnap]
+    [isActive, camera, gl, applyGridSnap, getSnapPoint]
   );
 
   // Handle mouse up to finish drawing
   const handleMouseUp = useCallback(() => {
     if (!isDrawing || !startPoint || !currentPoint) return;
 
-    // Only create wall if start and end points are different
     if (startPoint.distanceTo(currentPoint) > 0.01) {
       addWall({
         start: { x: startPoint.x, y: 0, z: startPoint.z },
@@ -109,79 +133,89 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
       });
     }
 
-    // Reset drawing state
     setStartPoint(null);
     setCurrentPoint(null);
     setIsDrawing(false);
+    setSnappedAngle(null);
+    setAngle(null);
+    setSnapPoint(null);
 
-    // Deactivate tool after drawing
     onDeactivate();
-  }, [isDrawing, startPoint, currentPoint, addWall, onDeactivate]);
+  }, [isDrawing, startPoint, currentPoint, addWall, onDeactivate, setAngle]);
 
-  // Handle escape key to cancel drawing
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isDrawing) {
         setStartPoint(null);
         setCurrentPoint(null);
         setIsDrawing(false);
+        setSnappedAngle(null);
+        setAngle(null);
+        setSnapPoint(null);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDrawing]);
+  }, [isDrawing, setAngle]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       setStartPoint(null);
       setCurrentPoint(null);
       setIsDrawing(false);
+      setSnappedAngle(null);
+      setAngle(null);
+      setSnapPoint(null);
     };
-  }, []);
+  }, [setAngle]);
 
-  // Don't render anything if not active
   if (!isActive) return null;
 
   return (
     <>
-      {/* Drawing preview line */}
       {isDrawing && startPoint && currentPoint && (
         <line>
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
               count={2}
-              array={
-                new Float32Array([
-                  startPoint.x,
-                  startPoint.y,
-                  startPoint.z,
-                  currentPoint.x,
-                  currentPoint.y,
-                  currentPoint.z,
-                ])
-              }
+              array={new Float32Array([...startPoint.toArray(), ...currentPoint.toArray()])}
               itemSize={3}
-              args={[
-                new Float32Array([
-                  startPoint.x,
-                  startPoint.y,
-                  startPoint.z,
-                  currentPoint.x,
-                  currentPoint.y,
-                  currentPoint.z,
-                ]),
-                3,
-              ]}
             />
           </bufferGeometry>
           <lineBasicMaterial color="blue" linewidth={2} />
         </line>
       )}
 
-      {/* Event handlers */}
+      {isDrawing && startPoint && snappedAngle !== null && (
+        <line>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              count={2}
+              array={new Float32Array([
+                startPoint.x,
+                startPoint.y,
+                startPoint.z,
+                startPoint.x + Math.cos(snappedAngle) * 2,
+                startPoint.y,
+                startPoint.z + Math.sin(snappedAngle) * 2,
+              ])}
+              itemSize={3}
+            />
+          </bufferGeometry>
+          <lineBasicMaterial color="red" dashed={true} dashSize={0.1} gapSize={0.1} />
+        </line>
+      )}
+
+      {snapPoint && (
+        <mesh position={snapPoint}>
+          <sphereGeometry args={[0.1, 16, 16]} />
+          <meshBasicMaterial color="red" transparent opacity={0.5} />
+        </mesh>
+      )}
+
       <mesh
         position={[0, -0.01, 0]}
         rotation={[-Math.PI / 2, 0, 0]}

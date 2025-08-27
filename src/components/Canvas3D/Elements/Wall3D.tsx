@@ -1,3 +1,4 @@
+import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
 import { useDesignStore } from '@/stores/designStore';
 import { GeometryGenerator } from '@/utils/3d/geometry3D';
@@ -18,6 +19,7 @@ export function Wall3D({ wallId }: Wall3DProps) {
   }));
 
   const materialProps = useMaterial3D(wall?.materialId);
+  const { show } = useElementContextMenu();
 
   const { geometry, position, rotation } = useMemo(() => {
     if (!wall)
@@ -57,11 +59,16 @@ export function Wall3D({ wallId }: Wall3DProps) {
     selectElement(wallId, 'wall');
   };
 
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    show({ event: e, props: { id: wallId, type: 'wall' } });
+  };
+
   // Check if wall is selected
   const isSelected = selectedElementId === wallId;
 
   return (
-    <group position={position} rotation={rotation} onClick={handleSelect}>
+    <group position={position} rotation={rotation} onClick={handleSelect} onContextMenu={handleContextMenu}>
       {/* Wall mesh */}
       {geometry && (
         <mesh geometry={geometry} castShadow receiveShadow>

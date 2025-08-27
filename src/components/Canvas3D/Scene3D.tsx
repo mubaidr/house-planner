@@ -1,4 +1,5 @@
 import { useDesignStore } from '@/stores/designStore';
+import { useGridStore } from '@/stores/gridStore';
 import { useLightingStore } from '@/stores/lightingStore';
 import { Grid, OrbitControls, Stats } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
@@ -19,6 +20,7 @@ export function Scene3D() {
   const activeTool = useDesignStore(state => state.activeTool);
   const setActiveTool = useDesignStore(state => state.setActiveTool);
   const selectedElementId = useDesignStore(state => state.selectedElementId);
+  const { isVisible: isGridVisible, spacing: gridSpacing } = useGridStore();
 
   // Phase 4: Lighting and material system
   const { currentConfig: lightingConfig, renderQuality, performanceMode } = useLightingStore();
@@ -47,18 +49,20 @@ export function Scene3D() {
         <SceneLighting config={lightingConfig} />
 
         {/* Grid for reference */}
-        <Grid
-          position={[0, -0.01, 0]}
-          args={[20, 20]}
-          cellSize={1}
-          cellThickness={0.5}
-          cellColor="#6f6f6f"
-          sectionSize={5}
-          sectionThickness={1}
-          sectionColor="#9d4b4b"
-          fadeDistance={30}
-          fadeStrength={1}
-        />
+        {isGridVisible && (
+          <Grid
+            position={[0, -0.01, 0]}
+            args={[20, 20]}
+            cellSize={gridSpacing}
+            cellThickness={0.5}
+            cellColor="#6f6f6f"
+            sectionSize={gridSpacing * 5}
+            sectionThickness={1}
+            sectionColor="#9d4b4b"
+            fadeDistance={30}
+            fadeStrength={1}
+          />
+        )}
 
         {/* Camera controls */}
         <CameraControls />

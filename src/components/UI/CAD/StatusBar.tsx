@@ -1,3 +1,4 @@
+import { useStatusBarStore } from '@/stores/statusBarStore';
 import {
   Clock,
   Cpu,
@@ -76,6 +77,7 @@ export function StatusBar({ height, theme }: StatusBarProps) {
   const [units, setUnits] = useState('mm');
   const [scale, setScale] = useState('1:100');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const angle = useStatusBarStore(state => state.angle);
 
   // Update time every second
   useEffect(() => {
@@ -154,6 +156,13 @@ export function StatusBar({ height, theme }: StatusBarProps) {
           <span>Z: {formatCoordinate(coordinates.z)}</span>
           <span className="text-gray-500">({units})</span>
         </div>
+
+        {/* Angle */}
+        {angle !== null && (
+          <div className="flex items-center space-x-1">
+            <span>Angle: {angle.toFixed(1)}°</span>
+          </div>
+        )}
 
         {/* Current Layer */}
         <div className="flex items-center space-x-1">

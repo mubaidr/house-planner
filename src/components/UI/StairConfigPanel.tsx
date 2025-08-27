@@ -1,4 +1,5 @@
 import type { Stair } from '@/stores/designStore';
+import { SliderInput } from './SliderInput';
 
 export function StairConfigPanel({
   stair,
@@ -11,50 +12,43 @@ export function StairConfigPanel({
     onUpdate(stair.id, { [field]: value });
 
   return (
-    <div className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Steps</label>
-        <input
-          type="number"
-          min={1}
-          value={stair.steps}
-          onChange={e => handleChange('steps', parseInt(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300"
-        />
-      </div>
+    <div className="space-y-4">
+      <SliderInput
+        label="Steps"
+        value={stair.steps}
+        min={2}
+        max={30}
+        step={1}
+        onChange={value => handleChange('steps', value)}
+        unit="steps"
+      />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Step Height (m)</label>
-        <input
-          type="number"
-          step="0.01"
-          value={stair.stepHeight}
-          onChange={e => handleChange('stepHeight', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300"
-        />
-      </div>
+      <SliderInput
+        label="Step Height"
+        value={stair.stepHeight}
+        min={0.1}
+        max={0.3}
+        step={0.01}
+        onChange={value => handleChange('stepHeight', value)}
+      />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Step Depth (m)</label>
-        <input
-          type="number"
-          step="0.01"
-          value={stair.stepDepth}
-          onChange={e => handleChange('stepDepth', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300"
-        />
-      </div>
+      <SliderInput
+        label="Step Depth"
+        value={stair.stepDepth}
+        min={0.2}
+        max={0.5}
+        step={0.01}
+        onChange={value => handleChange('stepDepth', value)}
+      />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Width (m)</label>
-        <input
-          type="number"
-          step="0.01"
-          value={stair.width}
-          onChange={e => handleChange('width', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300"
-        />
-      </div>
+      <SliderInput
+        label="Width"
+        value={stair.width}
+        min={0.8}
+        max={2.0}
+        step={0.01}
+        onChange={value => handleChange('width', value)}
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Type</label>
@@ -79,16 +73,16 @@ export function StairConfigPanel({
         <label className="text-sm">Has handrail</label>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Railing Height (m)</label>
-        <input
-          type="number"
-          step="0.01"
+      {stair.hasHandrail && (
+        <SliderInput
+          label="Railing Height"
           value={stair.railingHeight || 0.9}
-          onChange={e => handleChange('railingHeight', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300"
+          min={0.8}
+          max={1.2}
+          step={0.01}
+          onChange={value => handleChange('railingHeight', value)}
         />
-      </div>
+      )}
     </div>
   );
 }

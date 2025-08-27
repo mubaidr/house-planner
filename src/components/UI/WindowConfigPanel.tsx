@@ -1,4 +1,6 @@
 import type { Window as WindowType } from '@/stores/designStore';
+import { useDesignStore } from '@/stores/designStore';
+import { SliderInput } from './SliderInput';
 
 export function WindowConfigPanel({
   window,
@@ -7,32 +9,51 @@ export function WindowConfigPanel({
   window: WindowType;
   onUpdate: (id: string, updates: Partial<WindowType>) => void;
 }) {
+  const walls = useDesignStore(state => state.walls);
+  const parentWall = walls.find(w => w.id === window.wallId);
+
+  const wallLength = parentWall
+    ? Math.sqrt(
+        Math.pow(parentWall.end.x - parentWall.start.x, 2) +
+          Math.pow(parentWall.end.z - parentWall.start.z, 2)
+      )
+    : 3.0;
+
   const handleChange = <K extends keyof WindowType>(field: K, value: WindowType[K]) =>
     onUpdate(window.id, { [field]: value });
 
+  const handleWidthPreset = (width: number) => {
+    onUpdate(window.id, { width });
+  };
+
   return (
-    <div className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Width (m)</label>
-        <input
-          type="number"
-          step="0.1"
-          value={window.width}
-          onChange={e => handleChange('width', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300"
-        />
-      </div>
+    <div className="space-y-4">
+      <SliderInput
+        label="Width"
+        value={window.width}
+        min={0.4}
+        max={wallLength}
+        step={0.01}
+        onChange={value => handleChange('width', value)}
+      />
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Height (m)</label>
-        <input
-          type="number"
-          step="0.1"
-          value={window.height}
-          onChange={e => handleChange('height', parseFloat(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300"
-        />
+        <label className="block text-sm font-medium text-gray-500">Presets</label>
+        <div className="mt-1 flex space-x-2">
+          <button onClick={() => handleWidthPreset(0.6)} className="px-2 py-1 text-xs rounded-md bg-gray-200 hover:bg-gray-300">0.6m</button>
+          <button onClick={() => handleWidthPreset(0.9)} className="px-2 py-1 text-xs rounded-md bg-gray-200 hover:bg-gray-300">0.9m</button>
+          <button onClick={() => handleWidthPreset(1.2)} className="px-2 py-1 text-xs rounded-md bg-gray-200 hover:bg-gray-300">1.2m</button>
+        </div>
       </div>
+
+      <SliderInput
+        label="Height"
+        value={window.height}
+        min={0.4}
+        max={2.0}
+        step={0.01}
+        onChange={value => handleChange('height', value)}
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Type</label>
