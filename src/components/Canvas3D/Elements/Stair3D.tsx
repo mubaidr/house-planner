@@ -1,3 +1,4 @@
+import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useDesignStore } from '@/stores/designStore';
 import {
   generateLShapedStairs,
@@ -6,7 +7,7 @@ import {
   generateUShapedStairs,
 } from '@/utils/3d/geometry3D';
 import { ThreeEvent } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 interface Stair3DProps {
@@ -17,6 +18,8 @@ export function Stair3D({ stairId }: Stair3DProps) {
   const stair = useDesignStore(state => state.stairs.find(s => s.id === stairId));
   const selectedElementId = useDesignStore(state => state.selectedElementId);
   const selectElement = useDesignStore(state => state.selectElement);
+  const { show } = useElementContextMenu();
+  const [isHovered, setIsHovered] = useState(false);
 
   const geometriesRef = useRef<THREE.BufferGeometry[]>([]);
 
@@ -122,11 +125,23 @@ export function Stair3D({ stairId }: Stair3DProps) {
     selectElement(stairId, 'stair');
   };
 
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    show({ event: e, props: { id: stairId, type: 'stair' } });
+  };
+
   // Check if stair is selected
   const isSelected = selectedElementId === stairId;
 
   return (
-    <group position={stairPosition} rotation={stairRotation} onClick={handleSelect}>
+    <group 
+      position={stairPosition} 
+      rotation={stairRotation} 
+      onClick={handleSelect} 
+      onContextMenu={handleContextMenu}
+      onPointerOver={() => setIsHovered(true)}
+      onPointerOut={() => setIsHovered(false)}
+    >
       {/* Render individual steps */}
       {steps.geometries.map((geometry, index) => (
         <mesh
@@ -138,7 +153,7 @@ export function Stair3D({ stairId }: Stair3DProps) {
           receiveShadow
         >
           <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : '#8B4513'}
+            color={isSelected ? '#3b82f6' : isHovered ? '#fde047' : '#8B4513'}
             roughness={0.7}
             metalness={0.2}
           />
@@ -149,7 +164,7 @@ export function Stair3D({ stairId }: Stair3DProps) {
       {railing && (
         <mesh geometry={railing.geometry} position={railing.position} castShadow receiveShadow>
           <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : '#A9A9A9'}
+            color={isSelected ? '#3b82f6' : isHovered ? '#e2e8f0' : '#A9A9A9'}
             roughness={0.6}
             metalness={0.4}
           />

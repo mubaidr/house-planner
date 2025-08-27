@@ -1,6 +1,7 @@
+import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useDesignStore } from '@/stores/designStore';
 import { ThreeEvent, useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 interface Door3DProps {
@@ -12,6 +13,8 @@ export function Door3D({ doorId }: Door3DProps) {
   const wall = useDesignStore(state => state.walls.find(w => w.id === door?.wallId));
   const selectedElementId = useDesignStore(state => state.selectedElementId);
   const selectElement = useDesignStore(state => state.selectElement);
+  const { show } = useElementContextMenu();
+  const [isHovered, setIsHovered] = useState(false);
 
   const groupRef = useRef<THREE.Group>(null);
   const panelRef = useRef<THREE.Mesh>(null);
@@ -106,21 +109,34 @@ export function Door3D({ doorId }: Door3DProps) {
     selectElement(doorId, 'door');
   };
 
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    show({ event: e, props: { id: doorId, type: 'door' } });
+  };
+
   // Check if door is selected
   const isSelected = selectedElementId === doorId;
 
   return (
-    <group ref={groupRef} position={doorPosition} rotation={doorRotation} onClick={handleSelect}>
+    <group 
+      ref={groupRef} 
+      position={doorPosition} 
+      rotation={doorRotation} 
+      onClick={handleSelect} 
+      onContextMenu={handleContextMenu}
+      onPointerOver={() => setIsHovered(true)}
+      onPointerOut={() => setIsHovered(false)}
+    >
       {/* Door frame */}
       <mesh position={[0, door.height / 2 + 0.025, 0]}>
         <boxGeometry args={[door.width + 0.05, door.height + 0.05, door.thickness + 0.02]} />
-        <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.2} />
+        <meshStandardMaterial color={isSelected ? '#3b82f6' : isHovered ? '#ca8a04' : '#8B4513'} roughness={0.7} metalness={0.2} />
       </mesh>
 
       {/* Door panel */}
       <mesh ref={panelRef} position={[0, door.height / 2, 0]}>
         <boxGeometry args={[door.width, door.height, door.thickness]} />
-        <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.2} />
+        <meshStandardMaterial color={isSelected ? '#3b82f6' : isHovered ? '#ca8a04' : '#8B4513'} roughness={0.7} metalness={0.2} />
       </mesh>
 
       {/* Door light */}

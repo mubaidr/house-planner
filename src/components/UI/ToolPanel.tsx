@@ -26,43 +26,6 @@ export function ToolPanel() {
     });
   };
 
-  const handleAddDoor = () => {
-    // Add a door to the first wall if available
-    if (walls.length > 0) {
-      addDoor({
-        wallId: walls[0].id,
-        position: 50, // Middle of wall
-        width: 0.8 + Math.random() * 0.2,
-        height: 2.0 + Math.random() * 0.2,
-        thickness: 0.05 + Math.random() * 0.05,
-        type: 'hinged',
-        swingDirection: 'left',
-        isOpen: false,
-        openAngle: 0,
-        openOffset: 0,
-      });
-    } else {
-      alert('Please add a wall first');
-    }
-  };
-
-  const handleAddWindow = () => {
-    // Add a window to the first wall if available
-    if (walls.length > 0) {
-      addWindow({
-        wallId: walls[0].id,
-        position: 70, // 70% along the wall
-        width: 1.2 + Math.random() * 0.3,
-        height: 1.5 + Math.random() * 0.3,
-        thickness: 0.05 + Math.random() * 0.05,
-        type: 'double',
-        glazing: 'double',
-      });
-    } else {
-      alert('Please add a wall first');
-    }
-  };
-
   const handleAddStair = (type: 'straight' | 'l-shaped' | 'u-shaped' | 'spiral' = 'straight') => {
     // Add a stair
     addStair({
@@ -97,7 +60,7 @@ export function ToolPanel() {
     }
   };
 
-  const handleToolToggle = (tool: 'wall' | 'room' | 'measure' | 'select') => {
+  const handleToolToggle = (tool: 'wall' | 'room' | 'measure' | 'select' | 'add-door' | 'add-window') => {
     setActiveTool(activeTool === tool ? null : tool);
   };
 
@@ -134,6 +97,22 @@ export function ToolPanel() {
               {activeTool === 'wall' ? 'Drawing Wall (Click to Cancel)' : 'Draw Wall'}
             </button>
             <button
+              onClick={() => handleToolToggle('add-door')}
+              className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+                activeTool === 'add-door' ? 'bg-green-700' : 'bg-green-500'
+              }`}
+            >
+              {activeTool === 'add-door' ? 'Adding Door (Click to Cancel)' : 'Add Door'}
+            </button>
+            <button
+              onClick={() => handleToolToggle('add-window')}
+              className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
+                activeTool === 'add-window' ? 'bg-yellow-700' : 'bg-yellow-500'
+              }`}
+            >
+              {activeTool === 'add-window' ? 'Adding Window (Click to Cancel)' : 'Add Window'}
+            </button>
+            <button
               onClick={() => handleToolToggle('room')}
               className={`w-full px-3 py-2 text-white rounded hover:opacity-90 transition ${
                 activeTool === 'room' ? 'bg-purple-700' : 'bg-purple-500'
@@ -162,18 +141,6 @@ export function ToolPanel() {
               className="w-full px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
             >
               Add Wall (Random)
-            </button>
-            <button
-              onClick={handleAddDoor}
-              className="w-full px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
-            >
-              Add Door
-            </button>
-            <button
-              onClick={handleAddWindow}
-              className="w-full px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
-            >
-              Add Window
             </button>
             <button
               onClick={() => handleAddStair('straight')}

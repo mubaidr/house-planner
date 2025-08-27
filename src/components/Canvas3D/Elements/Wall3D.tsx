@@ -1,9 +1,10 @@
 import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
 import { useDesignStore } from '@/stores/designStore';
+import { useToolStore } from '@/stores/toolStore';
 import { GeometryGenerator } from '@/utils/3d/geometry3D';
 import { ThreeEvent } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 
 interface Wall3DProps {
@@ -17,9 +18,11 @@ export function Wall3D({ wallId }: Wall3DProps) {
     selectedElementId: state.selectedElementId,
     selectElement: state.selectElement,
   }));
+  const hoveredWallId = useToolStore(state => state.hoveredWallId);
 
   const materialProps = useMaterial3D(wall?.materialId);
   const { show } = useElementContextMenu();
+  const [isHovered, setIsHovered] = useState(false);
 
   const { geometry, position, rotation } = useMemo(() => {
     if (!wall)
@@ -66,15 +69,24 @@ export function Wall3D({ wallId }: Wall3DProps) {
 
   // Check if wall is selected
   const isSelected = selectedElementId === wallId;
+  const isToolHovered = hoveredWallId === wallId;
 
   return (
-    <group position={position} rotation={rotation} onClick={handleSelect} onContextMenu={handleContextMenu}>
+    <group 
+      position={position} 
+      rotation={rotation} 
+      onClick={handleSelect} 
+      onContextMenu={handleContextMenu}
+      onPointerOver={() => setIsHovered(true)}
+      onPointerOut={() => setIsHovered(false)}
+      userData={{ type: 'wall', id: wallId }}
+    >
       {/* Wall mesh */}
       {geometry && (
         <mesh geometry={geometry} castShadow receiveShadow>
           <meshStandardMaterial
             {...materialProps}
-            color={isSelected ? '#3b82f6' : materialProps.color || '#cccccc'}
+            color={isSelected ? '#3b82f6' : isToolHovered ? '#93c5fd' : isHovered ? '#dbeafe' : materialProps.color || '#cccccc'}
           />
         </mesh>
       )}

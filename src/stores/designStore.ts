@@ -104,7 +104,7 @@ export interface DesignState {
   selectedElementId: string | null;
   selectedElementType: 'wall' | 'door' | 'window' | 'room' | 'stair' | 'roof' | null;
   viewMode: '2d' | '3d' | 'hybrid';
-  activeTool: 'select' | 'wall' | 'door' | 'window' | 'room' | 'measure' | null;
+  activeTool: 'select' | 'wall' | 'door' | 'window' | 'room' | 'measure' | 'add-door' | 'add-window' | null;
 }
 
 export interface DesignActions {

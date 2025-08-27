@@ -1,7 +1,8 @@
+import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useDesignStore } from '@/stores/designStore';
 // RectAreaLight is created via three primitives when needed
 import { ThreeEvent } from '@react-three/fiber';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import * as THREE from 'three';
 
 interface Window3DProps {
@@ -13,6 +14,8 @@ export function Window3D({ windowId }: Window3DProps) {
   const wall = useDesignStore(state => state.walls.find(w => w.id === windowElement?.wallId));
   const selectedElementId = useDesignStore(state => state.selectedElementId);
   const selectElement = useDesignStore(state => state.selectElement);
+  const { show } = useElementContextMenu();
+  const [isHovered, setIsHovered] = useState(false);
 
   // Calculate window position on wall
   const windowPosition = useMemo(() => {
@@ -55,11 +58,23 @@ export function Window3D({ windowId }: Window3DProps) {
     selectElement(windowId, 'window');
   };
 
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    show({ event: e, props: { id: windowId, type: 'window' } });
+  };
+
   // Check if window is selected
   const isSelected = selectedElementId === windowId;
 
   return (
-    <group position={windowPosition} rotation={windowRotation} onClick={handleSelect}>
+    <group 
+      position={windowPosition} 
+      rotation={windowRotation} 
+      onClick={handleSelect} 
+      onContextMenu={handleContextMenu}
+      onPointerOver={() => setIsHovered(true)}
+      onPointerOut={() => setIsHovered(false)}
+    >
       {/* Window frame */}
       <mesh>
         <boxGeometry
@@ -69,7 +84,7 @@ export function Window3D({ windowId }: Window3DProps) {
             windowElement.thickness + 0.05,
           ]}
         />
-        <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.2} />
+        <meshStandardMaterial color={isSelected ? '#3b82f6' : isHovered ? '#a5f3fc' : '#8B4513'} roughness={0.7} metalness={0.2} />
       </mesh>
 
       {/* Window glass - multiple panes based on glazing */}
