@@ -5,11 +5,13 @@ import { PropertiesPanel } from '@/components/UI/PropertiesPanel';
 import { ToolPanel } from '@/components/UI/ToolPanel';
 import { ViewControls } from '@/components/UI/ViewControls';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useDesignStore } from '@/stores/designStore';
 import { useState } from 'react';
 
 export default function App() {
   const [useCADInterface, setUseCADInterface] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark' | 'classic'>('dark');
+  const activeTool = useDesignStore(state => state.activeTool);
 
   useKeyboardShortcuts();
 
@@ -18,10 +20,28 @@ export default function App() {
     setUseCADInterface(!useCADInterface);
   };
 
+  const getCursorClass = () => {
+    switch (activeTool) {
+      case 'wall':
+        return 'cursor-crosshair';
+      case 'add-door':
+      case 'add-window':
+        return 'cursor-pointer';
+      case 'measure':
+        return 'cursor-ruler';
+      case 'select':
+        return 'cursor-default';
+      case 'room':
+        return 'cursor-cell';
+      default:
+        return 'cursor-default';
+    }
+  };
+
   if (useCADInterface) {
     return (
-      <div className="h-screen w-screen overflow-hidden">
-        <CADLayout theme={theme} workspaceLayout="3d-modeling" />
+      <div className={`h-screen w-screen overflow-hidden ${getCursorClass()}`}>
+        <CADLayout theme={theme} workspaceLayout="3d-modeling" activeTool={activeTool} />
         <ElementContextMenu />
 
         {/* Interface Toggle Button */}
@@ -51,7 +71,7 @@ export default function App() {
 
   // Fallback to original simple interface
   return (
-    <div className="h-screen w-screen relative">
+    <div className={`h-screen w-screen relative ${getCursorClass()}`}>
       <Scene3D />
       <ToolPanel />
       <ViewControls />

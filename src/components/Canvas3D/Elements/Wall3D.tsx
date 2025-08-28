@@ -19,6 +19,7 @@ export function Wall3D({ wallId }: Wall3DProps) {
     selectElement: state.selectElement,
   }));
   const hoveredWallId = useToolStore(state => state.hoveredWallId);
+  const setHoveredElement = useToolStore(state => state.setHoveredElement);
 
   const materialProps = useMaterial3D(wall?.materialId);
   const { show } = useElementContextMenu();
@@ -77,8 +78,8 @@ export function Wall3D({ wallId }: Wall3DProps) {
       rotation={rotation} 
       onClick={handleSelect} 
       onContextMenu={handleContextMenu}
-      onPointerOver={() => setIsHovered(true)}
-      onPointerOut={() => setIsHovered(false)}
+      onPointerOver={() => { setIsHovered(true); setHoveredElement(wallId, 'wall'); }}
+      onPointerOut={() => { setIsHovered(false); setHoveredElement(null, null); }}
       userData={{ type: 'wall', id: wallId }}
     >
       {/* Wall mesh */}

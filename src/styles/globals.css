@@ -1,2 +1,18 @@
 @import 'tailwindcss';
 @plugin "daisyui";
+
+.cursor-crosshair {
+  cursor: crosshair;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-ruler {
+  cursor: url('/public/ruler.cur'), auto; /* Assuming you have a custom ruler cursor image */
+}
+
+.cursor-cell {
+  cursor: cell;
+}

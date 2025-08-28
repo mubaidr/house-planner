@@ -15,6 +15,7 @@ import { useCallback, useState } from 'react';
 export interface CADLayoutProps {
   theme?: 'light' | 'dark' | 'classic';
   workspaceLayout?: 'drafting' | '3d-modeling' | 'planning' | 'custom';
+  activeTool: string | null;
 }
 
 export interface PanelState {
@@ -45,7 +46,7 @@ const defaultWorkspaceState: WorkspaceState = {
   quickAccess: { isVisible: true, isCollapsed: false, height: 48 },
 };
 
-export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: CADLayoutProps) {
+export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling', activeTool }: CADLayoutProps) {
   const [workspace, setWorkspace] = useState<WorkspaceState>(defaultWorkspaceState);
   const [activeViewport, setActiveViewport] = useState('perspective');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -292,7 +293,7 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling' }: C
       )}
 
       {/* Status Bar */}
-      {workspace.statusBar.isVisible && <StatusBar height={statusBarHeight} theme={theme} />}
+      {workspace.statusBar.isVisible && <StatusBar height={statusBarHeight} theme={theme} activeTool={activeTool} />}
     </div>
   );
 }

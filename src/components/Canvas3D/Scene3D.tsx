@@ -43,6 +43,7 @@ import { Grid, OrbitControls, Stats } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
 import { Canvas2D } from '../Canvas2D/Canvas2D';
+import { HoverInfoDisplay } from '../UI/HoverInfoDisplay';
 import { CameraControls } from './Camera/CameraControls';
 import { PostProcessing3D } from './Effects/PostProcessing3D';
 import { ElementRenderer3D } from './Elements/ElementRenderer3D';
@@ -155,6 +156,7 @@ export function Scene3D() {
           maxDistance={50}
         />
       </Suspense>
+      <HoverInfoDisplay />
     </Canvas>
   );
 }
