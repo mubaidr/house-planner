@@ -76,7 +76,7 @@ export function Room3D({ roomId }: Room3DProps) {
         >
           <meshStandardMaterial
             {...floorMaterialProps}
-            color={isSelected ? '#3b82f6' : floorMaterialProps.color || '#DEB887'}
+            color={isSelected ? '#3b82f6' : (floorMaterialProps as any).color || '#DEB887'}
           />
         </mesh>
       )}
@@ -90,7 +90,7 @@ export function Room3D({ roomId }: Room3DProps) {
         >
           <meshStandardMaterial
             {...ceilingMaterialProps}
-            color={ceilingMaterialProps.color || '#F5F5F5'}
+            color={(ceilingMaterialProps as any).color || '#F5F5F5'}
           />
         </mesh>
       )}

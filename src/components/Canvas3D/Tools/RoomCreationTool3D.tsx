@@ -64,7 +64,6 @@ export function RoomCreationTool3D({ isActive, onDeactivate }: RoomCreationToolP
 
     addRoom({
       wallIds: Array.from(selectedWallIds),
-      name: `Room ${Math.floor(roomArea)}m²`,
     });
 
     // Clear selection

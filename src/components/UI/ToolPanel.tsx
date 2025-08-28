@@ -45,22 +45,23 @@ export function ToolPanel() {
     if (walls.length > 0) {
       addRoom({
         wallIds: walls.slice(0, Math.min(4, walls.length)).map(w => w.id),
-        name: `Room ${Date.now()}`,
       });
     } else {
       alert('Please add walls first');
     }
   };
 
-  const clearAll = useDesignStore(state => state.clearAll);
+  const newProject = useDesignStore(state => state.newProject);
 
   const handleClearAll = () => {
     if (confirm('Are you sure you want to clear all elements?')) {
-      clearAll();
+      newProject();
     }
   };
 
-  const handleToolToggle = (tool: 'wall' | 'room' | 'measure' | 'select' | 'add-door' | 'add-window') => {
+  const handleToolToggle = (
+    tool: 'wall' | 'room' | 'measure' | 'select' | 'add-door' | 'add-window'
+  ) => {
     setActiveTool(activeTool === tool ? null : tool);
   };
 

@@ -12,7 +12,7 @@ import {
   Settings,
   Unlock,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 interface LayerManagerProps {
   theme: 'light' | 'dark' | 'classic';

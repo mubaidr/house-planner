@@ -78,6 +78,7 @@ export interface Roof {
   id: string;
   type: 'flat' | 'pitched' | 'hipped' | 'mansard';
   height: number;
+  wallIds: string[]; // The walls that define the roof footprint
   materialId?: string;
   layerId?: string;
 }

@@ -12,7 +12,7 @@ interface ContextMenuProps {
 export function ElementContextMenu() {
   const { removeWall, removeDoor, removeWindow, removeStair } = useDesignStore();
 
-  const handleItemClick = ({ id, props }: { id: string; props?: ContextMenuProps }) => {
+  const handleItemClick = ({ id, props }: any) => {
     if (!props) return;
 
     switch (id) {

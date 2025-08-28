@@ -1,23 +1,7 @@
 import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useDesignStore } from '@/stores/designStore';
-import {
-  generateLShapedStairs,
-  generateSpiralStairs,
-  generateStraightStairs,
-  generateUShapedStairs,
-} from '@/utils/3d/geometry3D';
-import { ThreeEvent } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useElementContextMenu } from '@/components/UI/ContextMenu';
-import { useDesignStore } from '@/stores/designStore';
 import { useToolStore } from '@/stores/toolStore';
-import {
-  generateLShapedStairs,
-  generateSpiralStairs,
-  generateStraightStairs,
-  generateUShapedStairs,
-} from '@/utils/3d/geometry3D';
-import { ThreeEvent } from '@react-three/fiber';
+import { generateStraightStairs } from '@/utils/3d/geometry3D';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -54,7 +38,6 @@ export function Stair3D({ stairId }: Stair3DProps) {
   const stairRotation = useMemo(() => {
     if (!stair) return new THREE.Euler();
     const angle = Math.atan2(stair.end.z - stair.start.z, stair.end.x - stair.start.x);
-
     return new THREE.Euler(0, angle, 0);
   }, [stair]);
 
@@ -62,310 +45,122 @@ export function Stair3D({ stairId }: Stair3DProps) {
   const steps = useMemo(() => {
     if (!stair) return { geometries: [], positions: [], rotations: [] };
 
-    // Choose generator based on stair.type
-    let transforms = generateStraightStairs(
+    const stepTransforms = generateStraightStairs(
       stair.steps,
       stair.stepDepth,
       stair.stepHeight,
       stair.width
     );
-    if (stair.type === 'l-shaped') {
-      transforms = generateLShapedStairs(
-        stair.steps,
-        stair.stepDepth,
-        stair.stepHeight,
-        stair.width
-      );
-    } else if (stair.type === 'u-shaped') {
-      transforms = generateUShapedStairs(
-        stair.steps,
-        stair.stepDepth,
-        stair.stepHeight,
-        stair.width
-      );
-    } else if (stair.type === 'spiral') {
-      transforms = generateSpiralStairs(
-        stair.steps,
-        stair.stepDepth,
-        stair.stepHeight,
-        stair.width,
-        stair.radius || 2
-      );
-    }
 
-    const stepGeometries: THREE.BufferGeometry[] = [];
-    const stepPositions: THREE.Vector3[] = [];
-    const stepRotations: number[] = [];
+    const geometries: THREE.BufferGeometry[] = [];
+    const positions: THREE.Vector3[] = [];
+    const rotations: THREE.Euler[] = [];
 
-    transforms.forEach(t => {
-      const geometry = new THREE.BoxGeometry(stair.stepDepth, stair.stepHeight, stair.width);
-      stepGeometries.push(geometry);
-      geometriesRef.current.push(geometry);
-      stepPositions.push(new THREE.Vector3(t.position.x, t.position.y, t.position.z));
-      stepRotations.push(t.rotationY);
+    stepTransforms.forEach(transform => {
+      // Create step geometry (simple box)
+      const stepGeometry = new THREE.BoxGeometry(stair.width, stair.stepHeight, stair.stepDepth);
+      geometries.push(stepGeometry);
+      geometriesRef.current.push(stepGeometry);
+
+      positions.push(
+        new THREE.Vector3(transform.position.x, transform.position.y, transform.position.z)
+      );
+      rotations.push(new THREE.Euler(0, transform.rotationY, 0));
     });
 
-    return { geometries: stepGeometries, positions: stepPositions, rotations: stepRotations };
+    return { geometries, positions, rotations };
   }, [stair]);
 
-  // Create railing if needed
+  // Create railing if specified
   const railing = useMemo(() => {
     if (!stair || !stair.hasHandrail) return null;
 
-    // Calculate stair length
-    const length = Math.sqrt(
+    const stairLength = Math.sqrt(
       Math.pow(stair.end.x - stair.start.x, 2) + Math.pow(stair.end.z - stair.start.z, 2)
     );
 
-    // Create railing geometry
-    const geometry = new THREE.CylinderGeometry(0.02, 0.02, length, 8);
+    const railingGeometry = new THREE.CylinderGeometry(0.02, 0.02, stairLength);
+    const railingMaterial = new THREE.MeshStandardMaterial({ color: '#C0C0C0' });
 
-    // Position railing at the top of the stairs
-    const height = stair.steps * stair.stepHeight + (stair.railingHeight || 0.9);
-    const y = height;
-    const z = stair.width / 2 - 0.05; // Position at the edge of the stairs
-
-    return { geometry, position: new THREE.Vector3(0, y, z) };
+    return { geometry: railingGeometry, material: railingMaterial };
   }, [stair]);
 
   // If stair doesn't exist, don't render
   if (!stair) return null;
 
   // Handle stair selection
-  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+  const handleSelect = (e: any) => {
     e.stopPropagation();
     selectElement(stairId, 'stair');
   };
 
-  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
+  const handleContextMenu = (e: any) => {
     e.stopPropagation();
     show({ event: e, props: { id: stairId, type: 'stair' } });
   };
 
-  // Check if stair is selected
   const isSelected = selectedElementId === stairId;
 
   return (
-    <group 
-      position={stairPosition} 
-      rotation={stairRotation} 
-      onClick={handleSelect} 
+    <group
+      position={stairPosition}
+      rotation={stairRotation}
+      onClick={handleSelect}
       onContextMenu={handleContextMenu}
-      onPointerOver={() => { setIsHovered(true); setHoveredElement(stairId, 'stair'); }}
-      onPointerOut={() => { setIsHovered(false); setHoveredElement(null, null); }}
+      onPointerOver={() => {
+        setIsHovered(true);
+        setHoveredElement(stairId, 'stair');
+      }}
+      onPointerOut={() => {
+        setIsHovered(false);
+        setHoveredElement(null, null);
+      }}
     >
-      {/* Render individual steps */}
+      {/* Individual steps */}
       {steps.geometries.map((geometry, index) => (
         <mesh
           key={index}
           geometry={geometry}
           position={steps.positions[index]}
-          rotation={[0, steps.rotations[index], 0]}
-          castShadow
-          receiveShadow
+          rotation={steps.rotations[index]}
         >
           <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : isHovered ? '#fde047' : '#8B4513'}
-            roughness={0.7}
-            metalness={0.2}
+            color={isSelected ? '#3b82f6' : isHovered ? '#ca8a04' : '#8B4513'}
+            roughness={0.8}
+            metalness={0.1}
           />
         </mesh>
       ))}
 
-      {/* Render railing if needed */}
+      {/* Railing */}
       {railing && (
-        <mesh geometry={railing.geometry} position={railing.position} castShadow receiveShadow>
-          <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : isHovered ? '#e2e8f0' : '#A9A9A9'}
-            roughness={0.6}
-            metalness={0.4}
-          />
-        </mesh>
-      )}
-
-      {/* Selection highlight - using a single box around all steps */}
-      {isSelected && (
-        <mesh>
-          <boxGeometry
-            args={[stair.stepDepth * stair.steps, stair.stepHeight * stair.steps, stair.width]}
-          />
-          <meshBasicMaterial color="#3b82f6" wireframe={true} transparent={true} opacity={0.5} />
-        </mesh>
-      )}
-    </group>
-  );
-}
-
-
-interface Stair3DProps {
-  stairId: string;
-}
-
-export function Stair3D({ stairId }: Stair3DProps) {
-  const stair = useDesignStore(state => state.stairs.find(s => s.id === stairId));
-  const selectedElementId = useDesignStore(state => state.selectedElementId);
-  const selectElement = useDesignStore(state => state.selectElement);
-  const { show } = useElementContextMenu();
-  const [isHovered, setIsHovered] = useState(false);
-
-  const geometriesRef = useRef<THREE.BufferGeometry[]>([]);
-
-  // Clean up geometries on unmount
-  useEffect(() => {
-    const geometries = geometriesRef.current;
-    return () => {
-      geometries.forEach(geometry => {
-        geometry.dispose();
-      });
-    };
-  }, []);
-
-  // Calculate stair position and rotation
-  const stairPosition = useMemo(() => {
-    if (!stair) return new THREE.Vector3();
-    return new THREE.Vector3(stair.start.x, stair.start.y, stair.start.z);
-  }, [stair]);
-
-  const stairRotation = useMemo(() => {
-    if (!stair) return new THREE.Euler();
-    const angle = Math.atan2(stair.end.z - stair.start.z, stair.end.x - stair.start.x);
-
-    return new THREE.Euler(0, angle, 0);
-  }, [stair]);
-
-  // Create individual steps using generators
-  const steps = useMemo(() => {
-    if (!stair) return { geometries: [], positions: [], rotations: [] };
-
-    // Choose generator based on stair.type
-    let transforms = generateStraightStairs(
-      stair.steps,
-      stair.stepDepth,
-      stair.stepHeight,
-      stair.width
-    );
-    if (stair.type === 'l-shaped') {
-      transforms = generateLShapedStairs(
-        stair.steps,
-        stair.stepDepth,
-        stair.stepHeight,
-        stair.width
-      );
-    } else if (stair.type === 'u-shaped') {
-      transforms = generateUShapedStairs(
-        stair.steps,
-        stair.stepDepth,
-        stair.stepHeight,
-        stair.width
-      );
-    } else if (stair.type === 'spiral') {
-      transforms = generateSpiralStairs(
-        stair.steps,
-        stair.stepDepth,
-        stair.stepHeight,
-        stair.width,
-        stair.radius || 2
-      );
-    }
-
-    const stepGeometries: THREE.BufferGeometry[] = [];
-    const stepPositions: THREE.Vector3[] = [];
-    const stepRotations: number[] = [];
-
-    transforms.forEach(t => {
-      const geometry = new THREE.BoxGeometry(stair.stepDepth, stair.stepHeight, stair.width);
-      stepGeometries.push(geometry);
-      geometriesRef.current.push(geometry);
-      stepPositions.push(new THREE.Vector3(t.position.x, t.position.y, t.position.z));
-      stepRotations.push(t.rotationY);
-    });
-
-    return { geometries: stepGeometries, positions: stepPositions, rotations: stepRotations };
-  }, [stair]);
-
-  // Create railing if needed
-  const railing = useMemo(() => {
-    if (!stair || !stair.hasHandrail) return null;
-
-    // Calculate stair length
-    const length = Math.sqrt(
-      Math.pow(stair.end.x - stair.start.x, 2) + Math.pow(stair.end.z - stair.start.z, 2)
-    );
-
-    // Create railing geometry
-    const geometry = new THREE.CylinderGeometry(0.02, 0.02, length, 8);
-
-    // Position railing at the top of the stairs
-    const height = stair.steps * stair.stepHeight + (stair.railingHeight || 0.9);
-    const y = height;
-    const z = stair.width / 2 - 0.05; // Position at the edge of the stairs
-
-    return { geometry, position: new THREE.Vector3(0, y, z) };
-  }, [stair]);
-
-  // If stair doesn't exist, don't render
-  if (!stair) return null;
-
-  // Handle stair selection
-  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation();
-    selectElement(stairId, 'stair');
-  };
-
-  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation();
-    show({ event: e, props: { id: stairId, type: 'stair' } });
-  };
-
-  // Check if stair is selected
-  const isSelected = selectedElementId === stairId;
-
-  return (
-    <group 
-      position={stairPosition} 
-      rotation={stairRotation} 
-      onClick={handleSelect} 
-      onContextMenu={handleContextMenu}
-      onPointerOver={() => setIsHovered(true)}
-      onPointerOut={() => setIsHovered(false)}
-    >
-      {/* Render individual steps */}
-      {steps.geometries.map((geometry, index) => (
         <mesh
-          key={index}
-          geometry={geometry}
-          position={steps.positions[index]}
-          rotation={[0, steps.rotations[index], 0]}
-          castShadow
-          receiveShadow
-        >
-          <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : isHovered ? '#fde047' : '#8B4513'}
-            roughness={0.7}
-            metalness={0.2}
-          />
-        </mesh>
-      ))}
-
-      {/* Render railing if needed */}
-      {railing && (
-        <mesh geometry={railing.geometry} position={railing.position} castShadow receiveShadow>
-          <meshStandardMaterial
-            color={isSelected ? '#3b82f6' : isHovered ? '#e2e8f0' : '#A9A9A9'}
-            roughness={0.6}
-            metalness={0.4}
-          />
-        </mesh>
+          geometry={railing.geometry}
+          material={railing.material}
+          position={[stair.width / 2, stair.railingHeight || 0.9, 0]}
+          rotation={[0, 0, Math.PI / 2]}
+        />
       )}
 
-      {/* Selection highlight - using a single box around all steps */}
+      {/* Selection highlight */}
       {isSelected && (
-        <mesh>
-          <boxGeometry
-            args={[stair.stepDepth * stair.steps, stair.stepHeight * stair.steps, stair.width]}
-          />
-          <meshBasicMaterial color="#3b82f6" wireframe={true} transparent={true} opacity={0.5} />
-        </mesh>
+        <group>
+          {steps.geometries.map((geometry, index) => (
+            <mesh
+              key={`highlight-${index}`}
+              geometry={geometry}
+              position={steps.positions[index]}
+              rotation={steps.rotations[index]}
+            >
+              <meshBasicMaterial
+                color="#3b82f6"
+                wireframe={true}
+                transparent={true}
+                opacity={0.5}
+              />
+            </mesh>
+          ))}
+        </group>
       )}
     </group>
   );
