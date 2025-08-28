@@ -19,12 +19,13 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
   }));
   const setAngle = useStatusBarStore(state => state.setAngle);
 
-  const { applyGridSnap, applyAngleSnap } = useConstraints({
+  const constraints = useConstraints({
     snapToGrid: true,
     gridSize: 0.1,
     snapToAngle: true,
     angleIncrement: 15,
   });
+  const { applyGridSnap, applyAngleSnap, applyAdvancedSnap } = constraints;
 
   const { camera, gl } = useThree();
 
@@ -71,7 +72,7 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
           setSnapPoint(objectSnapPoint);
         } else {
           setSnapPoint(null);
-          finalPoint = applyGridSnap(intersection);
+          finalPoint = applyAdvancedSnap(intersection, walls);
         }
 
         const delta = new THREE.Vector3().subVectors(finalPoint, startPoint);
@@ -113,7 +114,7 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
 
       if (raycaster.ray.intersectPlane(plane, intersection)) {
         const objectSnapPoint = getSnapPoint(intersection);
-        const snappedPoint = objectSnapPoint || applyGridSnap(intersection);
+        const snappedPoint = objectSnapPoint || applyAdvancedSnap(intersection, walls);
         setStartPoint(snappedPoint);
         setCurrentPoint(snappedPoint);
         setIsDrawing(true);

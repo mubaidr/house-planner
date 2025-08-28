@@ -46,7 +46,7 @@ export function AddElementTool({ isActive, elementType, onDeactivate }: AddEleme
         width: 0.9,
         height: 2.1,
         thickness: 0.1,
-        type: 'hinged',
+        type: 'single',
         swingDirection: 'left',
         isOpen: false,
         openAngle: 0,

@@ -88,6 +88,48 @@ export function CADLayout({
     }));
   }, []);
 
+  // File operations
+  const saveProject = useCallback(async () => {
+    try {
+      await useDesignStore.getState().saveProject('my-house-project', 'House design project');
+      console.log('Project saved successfully');
+    } catch (error) {
+      console.error('Failed to save project:', error);
+    }
+  }, []);
+
+  const openFile = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.house';
+    input.onchange = async e => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          await useDesignStore.getState().loadProject(file);
+          console.log('Project loaded successfully');
+        } catch (error) {
+          console.error('Failed to load project:', error);
+        }
+      }
+    };
+    input.click();
+  }, []);
+
+  const newProject = useCallback(() => {
+    useDesignStore.getState().newProject();
+    console.log('New project created');
+  }, []);
+
+  const exportToOBJ = useCallback(async () => {
+    try {
+      await useDesignStore.getState().exportToOBJ('house-export');
+      console.log('Model exported successfully');
+    } catch (error) {
+      console.error('Failed to export model:', error);
+    }
+  }, []);
+
   const executeCommand = useCallback(
     (command: string) => {
       setCommandHistory(prev => [...prev, command]);
@@ -154,12 +196,65 @@ export function CADLayout({
         case 'O':
           // Toggle ortho mode
           break;
+        case 'COPY':
+        case 'CO':
+          setActiveTool('copy');
+          break;
+        case 'ROTATE':
+        case 'RO':
+          setActiveTool('select'); // Placeholder - rotate tool not implemented
+          break;
+        case 'SCALE':
+        case 'SC':
+          setActiveTool('select'); // Placeholder - scale tool not implemented
+          break;
+        case 'MIRROR':
+        case 'MI':
+          setActiveTool('select'); // Placeholder - mirror tool not implemented
+          break;
+        case 'TRIM':
+        case 'TR':
+          setActiveTool('select'); // Placeholder - trim tool not implemented
+          break;
+        case 'EXTEND':
+        case 'EX':
+          setActiveTool('select'); // Placeholder - extend tool not implemented
+          break;
+        case 'FILLET':
+        case 'F':
+          setActiveTool('select'); // Placeholder - fillet tool not implemented
+          break;
+        case 'UNDO':
+        case 'U':
+          useDesignStore.getState().undo();
+          break;
+        case 'REDO':
+          useDesignStore.getState().redo();
+          break;
+        case 'SAVE':
+          // Trigger file save
+          saveProject();
+          break;
+        case 'OPEN':
+          // Trigger file open dialog
+          openFile();
+          break;
+        case 'NEW':
+        case 'N':
+          // Create new project
+          newProject();
+          break;
+        case 'EXPORT':
+        case 'EXP':
+          // Export to OBJ format
+          exportToOBJ();
+          break;
         default:
           // Unknown command - could show error message
           break;
       }
     },
-    [setActiveTool]
+    [setActiveTool, saveProject, openFile, newProject]
   );
 
   const resetWorkspace = useCallback(() => {

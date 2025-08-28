@@ -72,6 +72,13 @@ export function useKeyboardShortcuts() {
             event.preventDefault();
             setActiveTool(null);
             break;
+          case 's':
+            event.preventDefault();
+            // Save project (Ctrl+S is handled separately)
+            if (!event.ctrlKey) {
+              setActiveTool('select');
+            }
+            break;
         }
       }
 
@@ -85,13 +92,17 @@ export function useKeyboardShortcuts() {
             break;
           case 'z':
             event.preventDefault();
-            // TODO: Implement undo functionality
-            console.log('Undo not implemented yet');
+            // Import here to avoid circular dependencies
+            import('@/stores/designStore').then(({ useDesignStore }) => {
+              useDesignStore.getState().undo();
+            });
             break;
           case 'y':
             event.preventDefault();
-            // TODO: Implement redo functionality
-            console.log('Redo not implemented yet');
+            // Import here to avoid circular dependencies
+            import('@/stores/designStore').then(({ useDesignStore }) => {
+              useDesignStore.getState().redo();
+            });
             break;
           case 's':
             event.preventDefault();

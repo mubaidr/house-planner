@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { useLayerStore } from './layerStore';
 
 // Types
 export interface Vector3 {
@@ -15,37 +16,38 @@ export interface Wall {
   end: Vector3;
   height: number;
   thickness: number;
+  type: 'interior' | 'exterior' | 'load-bearing';
   materialId?: string;
-  type: 'load-bearing' | 'partition';
+  layerId?: string;
 }
 
 export interface Door {
   id: string;
   wallId: string;
-  position: number; // Normalized position (0-100) along the wall
+  position: number; // Position along wall (0-100)
   width: number;
   height: number;
   thickness: number;
-  type: 'hinged' | 'sliding' | 'folding' | 'revolving';
-  swingDirection: 'left' | 'right' | 'both';
-  materialId?: string;
-  frameMaterialId?: string;
+  type: 'single' | 'double' | 'sliding';
+  swingDirection: 'left' | 'right';
   isOpen: boolean;
-  openAngle: number; // 0-90 degrees for hinged doors
-  openOffset: number; // 0-1 for sliding doors
+  openAngle: number;
+  openOffset: number;
+  materialId?: string;
+  layerId?: string;
 }
 
 export interface Window {
   id: string;
   wallId: string;
-  position: number; // Normalized position (0-100) along the wall
+  position: number; // Position along wall (0-100)
   width: number;
   height: number;
   thickness: number;
-  type: 'single' | 'double' | 'triple' | 'awning' | 'casement' | 'slider';
+  type: 'single' | 'double' | 'triple';
   glazing: 'single' | 'double' | 'triple';
   materialId?: string;
-  frameMaterialId?: string;
+  layerId?: string;
 }
 
 export interface Stair {
@@ -61,6 +63,7 @@ export interface Stair {
   materialId?: string;
   railingHeight?: number;
   hasHandrail?: boolean;
+  layerId?: string;
 }
 
 export interface Room {
@@ -68,15 +71,15 @@ export interface Room {
   wallIds: string[]; // The walls that form the boundary of the room
   floorMaterialId?: string;
   ceilingMaterialId?: string;
-  name?: string;
+  layerId?: string;
 }
 
 export interface Roof {
   id: string;
-  points: Vector3[]; // Points defining the roof shape
-  type: 'flat' | 'gable' | 'hip' | 'mansard';
+  type: 'flat' | 'pitched' | 'hipped' | 'mansard';
+  height: number;
   materialId?: string;
-  height?: number; // For non-flat roofs
+  layerId?: string;
 }
 
 export interface Material {
@@ -118,54 +121,70 @@ export interface DesignState {
 }
 
 export interface DesignActions {
-  // Wall actions
+  // Wall operations
   addWall: (wall: Omit<Wall, 'id'>) => void;
   updateWall: (id: string, updates: Partial<Wall>) => void;
   removeWall: (id: string) => void;
+  getConnectedWalls: (wallId: string) => { start: Wall[]; end: Wall[] };
 
-  // Door actions
+  // Door operations
   addDoor: (door: Omit<Door, 'id'>) => void;
   updateDoor: (id: string, updates: Partial<Door>) => void;
   removeDoor: (id: string) => void;
 
-  // Window actions
+  // Window operations
   addWindow: (window: Omit<Window, 'id'>) => void;
   updateWindow: (id: string, updates: Partial<Window>) => void;
   removeWindow: (id: string) => void;
 
-  // Stair actions
+  // Stair operations
   addStair: (stair: Omit<Stair, 'id'>) => void;
   updateStair: (id: string, updates: Partial<Stair>) => void;
   removeStair: (id: string) => void;
 
-  // Room actions
+  // Room operations
   addRoom: (room: Omit<Room, 'id'>) => void;
   updateRoom: (id: string, updates: Partial<Room>) => void;
   removeRoom: (id: string) => void;
 
-  // Roof actions
+  // Roof operations
   addRoof: (roof: Omit<Roof, 'id'>) => void;
   updateRoof: (id: string, updates: Partial<Roof>) => void;
   removeRoof: (id: string) => void;
 
-  // Selection actions
-  selectElement: (id: string | null, type: DesignState['selectedElementType']) => void;
-
-  // View mode actions
-  setViewMode: (mode: DesignState['viewMode']) => void;
-
-  // Tool actions
-  setActiveTool: (tool: DesignState['activeTool']) => void;
-
-  // Material actions
+  // Material operations
   addMaterial: (material: Omit<Material, 'id'>) => void;
   updateMaterial: (id: string, updates: Partial<Material>) => void;
+  removeMaterial: (id: string) => void;
 
-  // Clear all
-  clearAll: () => void;
+  // Selection operations
+  selectElement: (id: string | null, type: DesignState['selectedElementType']) => void;
 
-  // Helper functions
-  getConnectedWalls: (wallId: string) => { start: Wall[]; end: Wall[] };
+  // Tool operations
+  setActiveTool: (tool: DesignState['activeTool']) => void;
+
+  // View operations
+  setViewMode: (mode: DesignState['viewMode']) => void;
+
+  // File operations
+  saveProject: (filename?: string, description?: string) => Promise<void>;
+  loadProject: (file: File) => Promise<void>;
+  newProject: () => void;
+  exportAsJSON: () => Promise<string>;
+  importFromJSON: (jsonString: string) => void;
+
+  // Export operations
+  exportToOBJ: (filename?: string) => Promise<void>;
+  exportToSTL: (filename?: string) => Promise<void>;
+  exportToDAE: (filename?: string) => Promise<void>;
+  exportToGLTF: (filename?: string) => Promise<void>;
+
+  // Undo/Redo operations
+  undo: () => boolean;
+  redo: () => boolean;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  clearHistory: () => void;
 }
 
 export const useDesignStore = create<DesignState & DesignActions>()(
@@ -245,7 +264,8 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       addWall: wall =>
         set(state => {
           const id = `wall-${Date.now()}`;
-          state.walls.push({ ...wall, id });
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.walls.push({ ...wall, id, layerId: activeLayerId || 'default' });
         }),
 
       updateWall: (id, updates) =>
@@ -268,7 +288,36 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       addDoor: door =>
         set(state => {
           const id = `door-${Date.now()}`;
-          state.doors.push({ ...door, id, isOpen: false, openAngle: 0, openOffset: 0 });
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.doors.push({ ...door, id, layerId: activeLayerId || 'default' });
+        }),
+
+      addWindow: window =>
+        set(state => {
+          const id = `window-${Date.now()}`;
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.windows.push({ ...window, id, layerId: activeLayerId || 'default' });
+        }),
+
+      addStair: stair =>
+        set(state => {
+          const id = `stair-${Date.now()}`;
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.stairs.push({ ...stair, id, layerId: activeLayerId || 'default' });
+        }),
+
+      addRoom: room =>
+        set(state => {
+          const id = `room-${Date.now()}`;
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.rooms.push({ ...room, id, layerId: activeLayerId || 'default' });
+        }),
+
+      addRoof: roof =>
+        set(state => {
+          const id = `roof-${Date.now()}`;
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.roofs.push({ ...roof, id, layerId: activeLayerId || 'default' });
         }),
 
       updateDoor: (id, updates) =>
@@ -288,7 +337,13 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       addWindow: window =>
         set(state => {
           const id = `window-${Date.now()}`;
-          state.windows.push({ ...window, id, glazing: 'single' });
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.windows.push({
+            ...window,
+            id,
+            glazing: 'single',
+            layerId: activeLayerId || 'default',
+          });
         }),
 
       updateWindow: (id, updates) =>
@@ -308,7 +363,8 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       addStair: stair =>
         set(state => {
           const id = `stair-${Date.now()}`;
-          state.stairs.push({ ...stair, id });
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.stairs.push({ ...stair, id, layerId: activeLayerId || 'default' });
         }),
 
       updateStair: (id, updates) =>
@@ -322,13 +378,6 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       removeStair: id =>
         set(state => {
           state.stairs = state.stairs.filter(s => s.id !== id);
-        }),
-
-      // Room actions
-      addRoom: room =>
-        set(state => {
-          const id = `room-${Date.now()}`;
-          state.rooms.push({ ...room, id });
         }),
 
       updateRoom: (id, updates) =>
@@ -348,7 +397,8 @@ export const useDesignStore = create<DesignState & DesignActions>()(
       addRoof: roof =>
         set(state => {
           const id = `roof-${Date.now()}`;
-          state.roofs.push({ ...roof, id });
+          const activeLayerId = useLayerStore.getState().activeLayerId;
+          state.roofs.push({ ...roof, id, layerId: activeLayerId || 'default' });
         }),
 
       updateRoof: (id, updates) =>
@@ -434,6 +484,109 @@ export const useDesignStore = create<DesignState & DesignActions>()(
         );
 
         return { start: connectedAtStart, end: connectedAtEnd };
+      },
+
+      // Material operations
+      removeMaterial: id => {
+        set(state => {
+          state.materials = state.materials.filter(m => m.id !== id);
+        });
+      },
+
+      // File operations
+      saveProject: async (filename, description) => {
+        const state = _get();
+        const { FileOperations } = await import('@/utils/fileOperations');
+        await FileOperations.saveProject(state, filename, description);
+      },
+
+      loadProject: async file => {
+        const { FileOperations } = await import('@/utils/fileOperations');
+        const loadedState = await FileOperations.loadProject(file);
+        set(loadedState);
+      },
+
+      newProject: () => {
+        set(state => {
+          state.walls = [];
+          state.doors = [];
+          state.windows = [];
+          state.stairs = [];
+          state.rooms = [];
+          state.roofs = [];
+          state.selectedElementId = null;
+          state.selectedElementType = null;
+          state.activeTool = null;
+        });
+      },
+
+      exportAsJSON: async () => {
+        const state = _get();
+        const { FileOperations } = await import('@/utils/fileOperations');
+        return FileOperations.exportAsJSON(state);
+      },
+
+      importFromJSON: async jsonString => {
+        const { FileOperations } = await import('@/utils/fileOperations');
+        const importedState = FileOperations.importFromJSON(jsonString);
+        set(importedState);
+      },
+
+      // Undo/Redo operations
+      undo: () => {
+        // TODO: Implement undo functionality
+        console.log('Undo not implemented yet');
+        return false;
+      },
+
+      redo: () => {
+        // TODO: Implement redo functionality
+        console.log('Redo not implemented yet');
+        return false;
+      },
+
+      canUndo: () => {
+        // TODO: Check if undo is available
+        return false;
+      },
+
+      canRedo: () => {
+        // TODO: Check if redo is available
+        return false;
+      },
+
+      clearHistory: () => {
+        // TODO: Clear command history
+        console.log('Clear history not implemented yet');
+      },
+
+      // Export operations
+      exportToOBJ: async filename => {
+        const state = _get();
+        const { ExportFormats } = await import('@/utils/exportFormats');
+        const objData = ExportFormats.exportOBJ(state);
+        ExportFormats.downloadExport(objData, filename || 'house-model', 'obj');
+      },
+
+      exportToSTL: async filename => {
+        const state = _get();
+        const { ExportFormats } = await import('@/utils/exportFormats');
+        const stlData = ExportFormats.exportSTL(state);
+        ExportFormats.downloadExport(stlData, filename || 'house-model', 'stl');
+      },
+
+      exportToDAE: async filename => {
+        const state = _get();
+        const { ExportFormats } = await import('@/utils/exportFormats');
+        const daeData = ExportFormats.exportDAE(state);
+        ExportFormats.downloadExport(daeData, filename || 'house-model', 'dae');
+      },
+
+      exportToGLTF: async filename => {
+        const state = _get();
+        const { ExportFormats } = await import('@/utils/exportFormats');
+        const gltfData = await ExportFormats.exportGLTF(state);
+        ExportFormats.downloadExport(gltfData, filename || 'house-model', 'gltf');
       },
     }))
   )
