@@ -216,7 +216,7 @@ export function CommandLine({ height, onExecuteCommand, commandHistory, theme }:
         setCurrentParameters([]);
         setParameterIndex(0);
         setCurrentCommand('');
-        console.log(`Command ${cmdDef.command} started. Enter ${cmdDef.parameters[0]}:`);
+        // Command started, waiting for parameters
       } else {
         // Execute command immediately
         onExecuteCommand(command);
@@ -266,7 +266,7 @@ export function CommandLine({ height, onExecuteCommand, commandHistory, theme }:
                 // More parameters needed
                 setParameterIndex(parameterIndex + 1);
                 setCurrentCommand('');
-                console.log(`Enter ${activeCmdDef.parameters[parameterIndex + 1]}:`);
+                // Waiting for next parameter
               } else {
                 // All parameters collected, execute command
                 onExecuteCommand(

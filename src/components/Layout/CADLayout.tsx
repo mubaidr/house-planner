@@ -10,6 +10,7 @@ import { StatusBar } from '@/components/UI/CAD/StatusBar';
 import { ToolPalette } from '@/components/UI/CAD/ToolPalette';
 import { ViewportManager } from '@/components/UI/CAD/ViewportManager';
 import { ViewportTabs } from '@/components/UI/CAD/ViewportTabs';
+import { useDesignStore } from '@/stores/designStore';
 import { useCallback, useState } from 'react';
 
 export interface CADLayoutProps {
@@ -46,8 +47,13 @@ const defaultWorkspaceState: WorkspaceState = {
   quickAccess: { isVisible: true, isCollapsed: false, height: 48 },
 };
 
-export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling', activeTool }: CADLayoutProps) {
+export function CADLayout({
+  theme = 'dark',
+  workspaceLayout = '3d-modeling',
+  activeTool,
+}: CADLayoutProps) {
   const [workspace, setWorkspace] = useState<WorkspaceState>(defaultWorkspaceState);
+  const setActiveTool = useDesignStore(state => state.setActiveTool);
   const [activeViewport, setActiveViewport] = useState('perspective');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -62,37 +68,99 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling', act
     []
   );
 
-  const togglePanel = useCallback(
-    (panel: string) => {
-      const panelKey = panel as keyof WorkspaceState;
-      setWorkspace(prev => {
-        if (panelKey in prev) {
-          return {
-            ...prev,
-            [panelKey]: { ...prev[panelKey], isVisible: !prev[panelKey].isVisible },
-          };
-        }
-        return prev;
-      });
-    },
-    []
-  );
-
-  const collapsePanel = useCallback(
-    (panelKey: keyof WorkspaceState) => {
-      setWorkspace(prev => ({
-        ...prev,
-        [panelKey]: { ...prev[panelKey], isCollapsed: !prev[panelKey].isCollapsed },
-      }));
-    },
-    []
-  );
-
-  const executeCommand = useCallback((command: string) => {
-    setCommandHistory(prev => [...prev, command]);
-    // Command execution logic will be handled by command processor
-    console.log('Executing command:', command);
+  const togglePanel = useCallback((panel: string) => {
+    const panelKey = panel as keyof WorkspaceState;
+    setWorkspace(prev => {
+      if (panelKey in prev) {
+        return {
+          ...prev,
+          [panelKey]: { ...prev[panelKey], isVisible: !prev[panelKey].isVisible },
+        };
+      }
+      return prev;
+    });
   }, []);
+
+  const collapsePanel = useCallback((panelKey: keyof WorkspaceState) => {
+    setWorkspace(prev => ({
+      ...prev,
+      [panelKey]: { ...prev[panelKey], isCollapsed: !prev[panelKey].isCollapsed },
+    }));
+  }, []);
+
+  const executeCommand = useCallback(
+    (command: string) => {
+      setCommandHistory(prev => [...prev, command]);
+
+      // Parse and execute command
+      const parts = command.toUpperCase().trim().split(/\s+/);
+      const cmd = parts[0];
+
+      switch (cmd) {
+        case 'LINE':
+        case 'L':
+          setActiveTool('wall');
+          break;
+        case 'CIRCLE':
+        case 'C':
+          // Circle tool not implemented yet
+          break;
+        case 'RECTANGLE':
+        case 'REC':
+        case 'RECT':
+          // Rectangle tool not implemented yet
+          break;
+        case 'WALL':
+        case 'W':
+          setActiveTool('wall');
+          break;
+        case 'DOOR':
+        case 'DR':
+          setActiveTool('add-door');
+          break;
+        case 'WINDOW':
+        case 'WI':
+          setActiveTool('add-window');
+          break;
+        case 'ROOM':
+        case 'R':
+          setActiveTool('room');
+          break;
+        case 'MEASURE':
+        case 'ME':
+          setActiveTool('measure');
+          break;
+        case 'SELECT':
+        case 'SEL':
+          setActiveTool('select');
+          break;
+        case 'ZOOM':
+        case 'Z':
+          // Zoom functionality handled by camera controls
+          break;
+        case 'PAN':
+        case 'P':
+          // Pan functionality handled by camera controls
+          break;
+        case 'GRID':
+        case 'G':
+          // Toggle grid visibility
+          break;
+        case 'SNAP':
+        case 'SN':
+          // Toggle snap functionality
+          break;
+        case 'ORTHO':
+        case 'O':
+          // Toggle ortho mode
+          break;
+        default:
+          // Unknown command - could show error message
+          break;
+      }
+    },
+    [setActiveTool]
+  );
 
   const resetWorkspace = useCallback(() => {
     setWorkspace(defaultWorkspaceState);
@@ -293,7 +361,7 @@ export function CADLayout({ theme = 'dark', workspaceLayout = '3d-modeling', act
       )}
 
       {/* Status Bar */}
-      {workspace.statusBar.isVisible && <StatusBar height={statusBarHeight} theme={theme} activeTool={activeTool} />}
+      {workspace.statusBar.isVisible && <StatusBar height={statusBarHeight} theme={theme} />}
     </div>
   );
 }

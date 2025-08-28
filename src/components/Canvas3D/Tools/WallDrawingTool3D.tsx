@@ -13,7 +13,10 @@ interface WallDrawingToolProps {
 const SNAP_DISTANCE = 0.5;
 
 export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolProps) {
-  const { walls, addWall } = useDesignStore(state => ({ walls: state.walls, addWall: state.addWall }));
+  const { walls, addWall } = useDesignStore(state => ({
+    walls: state.walls,
+    addWall: state.addWall,
+  }));
   const setAngle = useStatusBarStore(state => state.setAngle);
 
   const { applyGridSnap, applyAngleSnap } = useConstraints({
@@ -179,9 +182,7 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
-              count={2}
-              array={new Float32Array([...startPoint.toArray(), ...currentPoint.toArray()])}
-              itemSize={3}
+              args={[new Float32Array([...startPoint.toArray(), ...currentPoint.toArray()]), 3]}
             />
           </bufferGeometry>
           <lineBasicMaterial color="blue" linewidth={2} />
@@ -193,19 +194,20 @@ export function WallDrawingTool3D({ isActive, onDeactivate }: WallDrawingToolPro
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
-              count={2}
-              array={new Float32Array([
-                startPoint.x,
-                startPoint.y,
-                startPoint.z,
-                startPoint.x + Math.cos(snappedAngle) * 2,
-                startPoint.y,
-                startPoint.z + Math.sin(snappedAngle) * 2,
-              ])}
-              itemSize={3}
+              args={[
+                new Float32Array([
+                  startPoint.x,
+                  startPoint.y,
+                  startPoint.z,
+                  startPoint.x + Math.cos(snappedAngle) * 2,
+                  startPoint.y,
+                  startPoint.z + Math.sin(snappedAngle) * 2,
+                ]),
+                3,
+              ]}
             />
           </bufferGeometry>
-          <lineBasicMaterial color="red" dashed={true} dashSize={0.1} gapSize={0.1} />
+          <lineBasicMaterial color="red" />
         </line>
       )}
 

@@ -37,8 +37,7 @@ export function useKeyboardShortcuts() {
         setActiveTool('wall');
       }
       if (event.key === 'd') {
-        // This is a placeholder, as we don't have a door tool yet
-        console.log('Door tool selected');
+        setActiveTool('add-door');
       }
       if (event.key === 'r') {
         setActiveTool('room');
@@ -55,5 +54,13 @@ export function useKeyboardShortcuts() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedElementId, selectedElementType, removeWall, removeDoor, removeWindow, removeStair, setActiveTool]);
+  }, [
+    selectedElementId,
+    selectedElementType,
+    removeWall,
+    removeDoor,
+    removeWindow,
+    removeStair,
+    setActiveTool,
+  ]);
 }

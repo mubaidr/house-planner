@@ -3,7 +3,6 @@ import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
 import { useDesignStore } from '@/stores/designStore';
 import { useToolStore } from '@/stores/toolStore';
 import { GeometryGenerator } from '@/utils/3d/geometry3D';
-import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 
@@ -58,12 +57,12 @@ export function Wall3D({ wallId }: Wall3DProps) {
   if (!wall) return null;
 
   // Handle wall selection
-  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
+  const handleSelect = (e: any) => {
     e.stopPropagation();
     selectElement(wallId, 'wall');
   };
 
-  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
+  const handleContextMenu = (e: any) => {
     e.stopPropagation();
     show({ event: e, props: { id: wallId, type: 'wall' } });
   };
@@ -73,13 +72,19 @@ export function Wall3D({ wallId }: Wall3DProps) {
   const isToolHovered = hoveredWallId === wallId;
 
   return (
-    <group 
-      position={position} 
-      rotation={rotation} 
-      onClick={handleSelect} 
+    <group
+      position={position}
+      rotation={rotation}
+      onClick={handleSelect}
       onContextMenu={handleContextMenu}
-      onPointerOver={() => { setIsHovered(true); setHoveredElement(wallId, 'wall'); }}
-      onPointerOut={() => { setIsHovered(false); setHoveredElement(null, null); }}
+      onPointerOver={() => {
+        setIsHovered(true);
+        setHoveredElement(wallId, 'wall');
+      }}
+      onPointerOut={() => {
+        setIsHovered(false);
+        setHoveredElement(null, null);
+      }}
       userData={{ type: 'wall', id: wallId }}
     >
       {/* Wall mesh */}
@@ -87,7 +92,15 @@ export function Wall3D({ wallId }: Wall3DProps) {
         <mesh geometry={geometry} castShadow receiveShadow>
           <meshStandardMaterial
             {...materialProps}
-            color={isSelected ? '#3b82f6' : isToolHovered ? '#93c5fd' : isHovered ? '#dbeafe' : materialProps.color || '#cccccc'}
+            color={
+              isSelected
+                ? '#3b82f6'
+                : isToolHovered
+                  ? '#93c5fd'
+                  : isHovered
+                    ? '#dbeafe'
+                    : (materialProps as any).color || '#cccccc'
+            }
           />
         </mesh>
       )}

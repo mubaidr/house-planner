@@ -37,7 +37,7 @@ export function AddElementTool({ isActive, elementType, onDeactivate }: AddEleme
     const wallStart = new THREE.Vector3(wall.start.x, wall.start.y, wall.start.z);
     const wallEnd = new THREE.Vector3(wall.end.x, wall.end.y, wall.end.z);
     const wallLength = wallStart.distanceTo(wallEnd);
-    const position = wallStart.distanceTo(intersectionPoint) / wallLength * 100;
+    const position = (wallStart.distanceTo(intersectionPoint) / wallLength) * 100;
 
     if (elementType === 'door') {
       addDoor({
@@ -68,7 +68,7 @@ export function AddElementTool({ isActive, elementType, onDeactivate }: AddEleme
   };
 
   return (
-    <mesh onMouseMove={handleMouseMove} onClick={handleClick} visible={false}>
+    <mesh onPointerMove={handleMouseMove} onClick={handleClick} visible={false}>
       <planeGeometry args={[100, 100]} />
       <meshBasicMaterial transparent opacity={0} />
     </mesh>

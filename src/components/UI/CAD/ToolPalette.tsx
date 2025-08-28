@@ -1,3 +1,4 @@
+import { useDesignStore } from '@/stores/designStore';
 import {
   ChevronLeft,
   ChevronRight,
@@ -49,12 +50,13 @@ interface Tool {
 }
 
 export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
-  const [activeTool, setActiveTool] = useState<string>('select');
   const [activeCategory, setActiveCategory] = useState<string>('draw');
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
 
+  const setActiveTool = useDesignStore(state => state.setActiveTool);
+  const activeToolFromStore = useDesignStore(state => state.activeTool);
+
   const handleToolSelect = useCallback((toolId: string, action: () => void) => {
-    setActiveTool(toolId);
     action();
   }, []);
 
@@ -66,7 +68,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'L',
       category: 'draw',
       description: 'Draw a line between two points',
-      action: () => console.log('Line tool activated'),
+      action: () => setActiveTool('wall'), // Using wall tool for line drawing
     },
     {
       id: 'rectangle',
@@ -75,7 +77,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'REC',
       category: 'draw',
       description: 'Draw a rectangle',
-      action: () => console.log('Rectangle tool activated'),
+      action: () => setActiveTool('wall'), // Using wall tool for rectangle drawing
     },
     {
       id: 'circle',
@@ -84,7 +86,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'C',
       category: 'draw',
       description: 'Draw a circle',
-      action: () => console.log('Circle tool activated'),
+      action: () => setActiveTool('wall'), // Placeholder - circle tool not implemented
     },
     {
       id: 'arc',
@@ -93,7 +95,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'A',
       category: 'draw',
       description: 'Draw an arc',
-      action: () => console.log('Arc tool activated'),
+      action: () => setActiveTool('wall'), // Placeholder - arc tool not implemented
     },
     {
       id: 'wall',
@@ -102,7 +104,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'W',
       category: 'draw',
       description: 'Draw architectural walls',
-      action: () => console.log('Wall tool activated'),
+      action: () => setActiveTool('wall'),
       hasSubmenu: true,
       submenu: [
         {
@@ -111,7 +113,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <Minus size={16} />,
           category: 'draw',
           description: 'Draw straight wall segments',
-          action: () => console.log('Straight wall'),
+          action: () => setActiveTool('wall'),
         },
         {
           id: 'wall-curved',
@@ -119,7 +121,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <Spline size={16} />,
           category: 'draw',
           description: 'Draw curved wall segments',
-          action: () => console.log('Curved wall'),
+          action: () => setActiveTool('wall'), // Placeholder - curved walls not implemented
         },
       ],
     },
@@ -130,7 +132,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'DR',
       category: 'draw',
       description: 'Insert doors',
-      action: () => console.log('Door tool activated'),
+      action: () => setActiveTool('add-door'),
       hasSubmenu: true,
       submenu: [
         {
@@ -139,7 +141,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <DoorOpen size={16} />,
           category: 'draw',
           description: 'Single swing door',
-          action: () => console.log('Single door'),
+          action: () => setActiveTool('add-door'),
         },
         {
           id: 'door-double',
@@ -147,7 +149,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <DoorOpen size={16} />,
           category: 'draw',
           description: 'Double swing door',
-          action: () => console.log('Double door'),
+          action: () => setActiveTool('add-door'), // Placeholder - double doors not implemented
         },
         {
           id: 'door-sliding',
@@ -155,7 +157,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
           icon: <RectangleHorizontal size={16} />,
           category: 'draw',
           description: 'Sliding door',
-          action: () => console.log('Sliding door'),
+          action: () => setActiveTool('add-door'), // Placeholder - sliding doors not implemented
         },
       ],
     },
@@ -166,7 +168,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'WI',
       category: 'draw',
       description: 'Insert windows',
-      action: () => console.log('Window tool activated'),
+      action: () => setActiveTool('add-window'),
     },
     {
       id: 'stair',
@@ -175,7 +177,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'ST',
       category: 'draw',
       description: 'Insert stairs',
-      action: () => console.log('Stair tool activated')
+      action: () => setActiveTool('wall'), // Placeholder - stair tool not implemented
     },
   ];
 
@@ -187,7 +189,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'M',
       category: 'modify',
       description: 'Move selected objects',
-      action: () => console.log('Move tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - move tool not implemented
     },
     {
       id: 'copy',
@@ -196,7 +198,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'CO',
       category: 'modify',
       description: 'Copy selected objects',
-      action: () => console.log('Copy tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - copy tool not implemented
     },
     {
       id: 'rotate',
@@ -205,7 +207,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'RO',
       category: 'modify',
       description: 'Rotate selected objects',
-      action: () => console.log('Rotate tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - rotate tool not implemented
     },
     {
       id: 'scale',
@@ -214,7 +216,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'SC',
       category: 'modify',
       description: 'Scale selected objects',
-      action: () => console.log('Scale tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - scale tool not implemented
     },
     {
       id: 'mirror',
@@ -223,7 +225,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'MI',
       category: 'modify',
       description: 'Mirror selected objects',
-      action: () => console.log('Mirror tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - mirror tool not implemented
     },
     {
       id: 'trim',
@@ -232,7 +234,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'TR',
       category: 'modify',
       description: 'Trim objects to boundaries',
-      action: () => console.log('Trim tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - trim tool not implemented
     },
     {
       id: 'extend',
@@ -241,7 +243,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'EX',
       category: 'modify',
       description: 'Extend objects to boundaries',
-      action: () => console.log('Extend tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - extend tool not implemented
     },
     {
       id: 'fillet',
@@ -250,7 +252,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'F',
       category: 'modify',
       description: 'Create rounded corners',
-      action: () => console.log('Fillet tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - fillet tool not implemented
     },
   ];
 
@@ -262,7 +264,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'S',
       category: 'select',
       description: 'Select objects',
-      action: () => console.log('Select tool activated'),
+      action: () => setActiveTool('select'),
     },
     {
       id: 'pan',
@@ -271,7 +273,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'P',
       category: 'view',
       description: 'Pan the view',
-      action: () => console.log('Pan tool activated'),
+      action: () => setActiveTool('select'), // Placeholder - pan tool not implemented
     },
   ];
 
@@ -283,7 +285,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'Z+',
       category: 'view',
       description: 'Zoom in',
-      action: () => console.log('Zoom in'),
+      action: () => setActiveTool('select'), // Placeholder - zoom tools not implemented
     },
     {
       id: 'zoom-out',
@@ -292,7 +294,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'Z-',
       category: 'view',
       description: 'Zoom out',
-      action: () => console.log('Zoom out'),
+      action: () => setActiveTool('select'), // Placeholder - zoom tools not implemented
     },
     {
       id: 'zoom-extents',
@@ -301,7 +303,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'ZE',
       category: 'view',
       description: 'Zoom to show all objects',
-      action: () => console.log('Zoom extents'),
+      action: () => setActiveTool('select'), // Placeholder - zoom tools not implemented
     },
   ];
 
@@ -313,7 +315,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'DIST',
       category: 'measure',
       description: 'Measure distance between points',
-      action: () => console.log('Measure tool activated'),
+      action: () => setActiveTool('measure'),
     },
   ];
 
@@ -324,7 +326,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       icon: <Eye size={18} />,
       category: 'layer',
       description: 'Toggle layer visibility',
-      action: () => console.log('Toggle layer visibility'),
+      action: () => setActiveTool('select'), // Placeholder - layer tools not implemented
     },
     {
       id: 'layer-manager',
@@ -333,7 +335,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'LA',
       category: 'layer',
       description: 'Open layer manager',
-      action: () => console.log('Layer manager'),
+      action: () => setActiveTool('select'), // Placeholder - layer tools not implemented
     },
   ];
 
@@ -349,15 +351,15 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
   const renderTool = (tool: Tool) => (
     <div key={tool.id} className="relative">
       <button
-        aria-pressed={activeTool === tool.id}
+        aria-pressed={activeToolFromStore === tool.id}
         aria-haspopup={tool.hasSubmenu ? 'true' : 'false'}
         aria-expanded={tool.hasSubmenu ? expandedSubmenu === tool.id : undefined}
         className={`w-full p-3 rounded-lg border transition-all duration-200 ${
-          activeTool === tool.id
+          activeToolFromStore === tool.id
             ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
             : theme === 'dark'
-            ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
-            : 'bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+              ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
+              : 'bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'
         }`}
         onClick={() => {
           handleToolSelect(tool.id, tool.action);
