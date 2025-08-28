@@ -11,6 +11,7 @@ import { PostProcessing3D } from './Effects/PostProcessing3D';
 import { ElementRenderer3D } from './Elements/ElementRenderer3D';
 import { SceneLighting } from './Lighting/SceneLighting';
 import { AddElementTool } from './Tools/AddElementTool';
+import { CopyTool3D } from './Tools/CopyTool3D';
 import { ElementManipulationTool3D } from './Tools/ElementManipulationTool3D';
 import { MeasurementTool3D } from './Tools/MeasurementTool3D';
 import { RoomCreationTool3D } from './Tools/RoomCreationTool3D';
@@ -100,6 +101,11 @@ export function Scene3D() {
         {!!selectedElementId && activeTool === null && (
           <group key="manipulation-tool">
             <ElementManipulationTool3D isActive={true} />
+          </group>
+        )}
+        {activeTool === 'copy' && (
+          <group key="copy-tool">
+            <CopyTool3D isActive={true} onDeactivate={() => setActiveTool(null)} />
           </group>
         )}
 

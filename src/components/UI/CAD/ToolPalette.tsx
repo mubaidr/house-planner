@@ -198,7 +198,7 @@ export function ToolPalette({ onCollapsePanel, theme }: ToolPaletteProps) {
       shortcut: 'CO',
       category: 'modify',
       description: 'Copy selected objects',
-      action: () => setActiveTool('select'), // Placeholder - copy tool not implemented
+      action: () => setActiveTool('copy'),
     },
     {
       id: 'rotate',
