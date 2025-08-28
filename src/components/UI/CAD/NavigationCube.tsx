@@ -19,7 +19,7 @@ export function NavigationCube({ className = '', theme }: NavigationCubeProps) {
   ];
 
   const handleFaceClick = (faceId: string) => {
-    console.log(`Navigate to ${faceId} view`);
+    // Navigation functionality can be implemented here
     // This would trigger the camera to move to the corresponding view
   };
 

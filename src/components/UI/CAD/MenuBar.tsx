@@ -1,3 +1,4 @@
+import { useDesignStore } from '@/stores/designStore';
 import {
   Copy,
   Download,
@@ -40,13 +41,7 @@ interface MenuItem {
 }
 
 const MenuItemComponent = React.memo(
-  ({
-    item,
-    onAction,
-  }: {
-    item: MenuItem;
-    onAction: (action?: () => void) => void;
-  }) => {
+  ({ item, onAction }: { item: MenuItem; onAction: (action?: () => void) => void }) => {
     if (item.separator) {
       return <div role="separator" className="border-t border-gray-600 my-1" />;
     }
@@ -87,6 +82,44 @@ export function MenuBar({
   ]);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // File operations
+  const handleNewFile = () => {
+    useDesignStore.getState().newProject();
+  };
+
+  const handleOpenFile = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.house';
+    input.onchange = async e => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          await useDesignStore.getState().loadProject(file);
+        } catch (error) {
+          console.error('Failed to load project:', error);
+        }
+      }
+    };
+    input.click();
+  };
+
+  const handleSaveFile = async () => {
+    try {
+      await useDesignStore.getState().saveProject('house-project', 'House design project');
+    } catch (error) {
+      console.error('Failed to save project:', error);
+    }
+  };
+
+  const handleExportOBJ = async () => {
+    try {
+      await useDesignStore.getState().exportToOBJ('house-model');
+    } catch (error) {
+      console.error('Failed to export OBJ:', error);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -110,22 +143,22 @@ export function MenuBar({
       label: 'New',
       icon: <FileText size={16} />,
       shortcut: 'Ctrl+N',
-      action: () => console.log('New file'),
+      action: handleNewFile,
     },
     {
       label: 'Open',
       icon: <FolderOpen size={16} />,
       shortcut: 'Ctrl+O',
-      action: () => console.log('Open file'),
+      action: handleOpenFile,
     },
     { separator: true },
     {
       label: 'Save',
       icon: <Save size={16} />,
       shortcut: 'Ctrl+S',
-      action: () => console.log('Save file'),
+      action: handleSaveFile,
     },
-    { label: 'Save As...', shortcut: 'Ctrl+Shift+S', action: () => console.log('Save as') },
+    { label: 'Save As...', shortcut: 'Ctrl+Shift+S', action: handleSaveFile },
     { separator: true },
     {
       label: 'Recent Files',
@@ -149,10 +182,19 @@ export function MenuBar({
       label: 'Export',
       icon: <Download size={16} />,
       submenu: [
-        { label: 'DWG/DXF...', action: () => console.log('Export DWG') },
-        { label: 'PDF...', action: () => console.log('Export PDF') },
-        { label: 'Image...', action: () => console.log('Export Image') },
-        { label: '3D Model...', action: () => console.log('Export 3D') },
+        { label: 'OBJ Model...', action: handleExportOBJ },
+        {
+          label: 'STL Model...',
+          action: () => useDesignStore.getState().exportToSTL('house-model'),
+        },
+        {
+          label: 'DAE Model...',
+          action: () => useDesignStore.getState().exportToDAE('house-model'),
+        },
+        {
+          label: 'GLTF Model...',
+          action: () => useDesignStore.getState().exportToGLTF('house-model'),
+        },
       ],
     },
     { separator: true },
@@ -165,13 +207,13 @@ export function MenuBar({
       label: 'Undo',
       icon: <Undo size={16} />,
       shortcut: 'Ctrl+Z',
-      action: () => console.log('Undo'),
+      action: () => useDesignStore.getState().undo(),
     },
     {
       label: 'Redo',
       icon: <Redo size={16} />,
       shortcut: 'Ctrl+Y',
-      action: () => console.log('Redo'),
+      action: () => useDesignStore.getState().redo(),
     },
     { separator: true },
     { label: 'Cut', shortcut: 'Ctrl+X', action: () => console.log('Cut') },

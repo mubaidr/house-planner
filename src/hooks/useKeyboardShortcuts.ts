@@ -74,7 +74,7 @@ export function useKeyboardShortcuts() {
             break;
           case 's':
             event.preventDefault();
-            // Save project (Ctrl+S is handled separately)
+            // Save functionality is handled by Ctrl+S
             if (!event.ctrlKey) {
               setActiveTool('select');
             }

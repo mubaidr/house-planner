@@ -1,3 +1,4 @@
+import { useDesignStore } from '@/stores/designStore';
 import {
   ClipboardPaste,
   Copy,
@@ -44,21 +45,42 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
       name: 'New',
       icon: <FileText size={16} />,
       shortcut: 'Ctrl+N',
-      action: () => console.log('New file'),
+      action: () => useDesignStore.getState().newProject(),
     },
     {
       id: 'open',
       name: 'Open',
       icon: <FolderOpen size={16} />,
       shortcut: 'Ctrl+O',
-      action: () => console.log('Open file'),
+      action: () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.house';
+        input.onchange = async e => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            try {
+              await useDesignStore.getState().loadProject(file);
+            } catch (error) {
+              console.error('Failed to load project:', error);
+            }
+          }
+        };
+        input.click();
+      },
     },
     {
       id: 'save',
       name: 'Save',
       icon: <Save size={16} />,
       shortcut: 'Ctrl+S',
-      action: () => console.log('Save file'),
+      action: async () => {
+        try {
+          await useDesignStore.getState().saveProject('house-project', 'House design project');
+        } catch (error) {
+          console.error('Failed to save project:', error);
+        }
+      },
     },
     { separator: true, id: 'sep1', name: '', icon: null, action: () => {} },
     {
@@ -66,14 +88,14 @@ export function QuickAccessToolbar({ height, theme }: QuickAccessToolbarProps) {
       name: 'Undo',
       icon: <Undo size={16} />,
       shortcut: 'Ctrl+Z',
-      action: () => console.log('Undo'),
+      action: () => useDesignStore.getState().undo(),
     },
     {
       id: 'redo',
       name: 'Redo',
       icon: <Redo size={16} />,
       shortcut: 'Ctrl+Y',
-      action: () => console.log('Redo'),
+      action: () => useDesignStore.getState().redo(),
     },
     { separator: true, id: 'sep2', name: '', icon: null, action: () => {} },
     {
