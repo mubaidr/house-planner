@@ -157,45 +157,140 @@ export class GeometryGenerator {
   static createWallGeometry(
     wall: Wall,
     connectedWalls: { start: Wall[]; end: Wall[] }
-  ): THREE.BoxGeometry {
-    const start = new THREE.Vector3(wall.start.x, wall.start.y, wall.start.z);
-    const end = new THREE.Vector3(wall.end.x, wall.end.y, wall.end.z);
+  ): THREE.BufferGeometry {
+    const wallStart = new THREE.Vector2(wall.start.x, wall.start.z);
+    const wallEnd = new THREE.Vector2(wall.end.x, wall.end.z);
+    const wallThickness = wall.thickness;
+    const wallHeight = wall.height;
 
-    const wallDir = new THREE.Vector2(end.x - start.x, end.z - start.z).normalize();
+    let actualStart = wallStart.clone();
+    let actualEnd = wallEnd.clone();
 
+    // Helper to get the perpendicular vector for offsetting
+    const getPerpendicular = (p1: THREE.Vector2, p2: THREE.Vector2) => {
+      const dir = new THREE.Vector2().subVectors(p2, p1).normalize();
+      return new THREE.Vector2(-dir.y, dir.x);
+    };
+
+    // Calculate intersection point for two lines
+    const getLineIntersection = (
+      p1: THREE.Vector2,
+      p2: THREE.Vector2,
+      p3: THREE.Vector2,
+      p4: THREE.Vector2
+    ): THREE.Vector2 | null => {
+      const den = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+      if (den === 0) return null; // Lines are parallel or collinear
+
+      const t = ((p1.x - p3.x) * (p3.y - p4.y) - (p1.y - p3.y) * (p3.x - p4.x)) / den;
+      const u = -((p1.x - p2.x) * (p1.y - p3.y) - (p1.y - p2.y) * (p1.x - p3.x)) / den;
+
+      if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+        return new THREE.Vector2(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y));
+      }
+      return null;
+    };
+
+    // Adjust start point
     if (connectedWalls.start.length > 0) {
-      const otherWall = connectedWalls.start[0];
-      const otherDir = new THREE.Vector2(
-        otherWall.end.x - otherWall.start.x,
-        otherWall.end.z - otherWall.start.z
-      ).normalize();
-      const angle = wallDir.angle() - otherDir.angle();
+      const connectedWall = connectedWalls.start[0]; // Assuming one connected wall for now
+      const otherWallStart = new THREE.Vector2(connectedWall.start.x, connectedWall.start.z);
+      const otherWallEnd = new THREE.Vector2(connectedWall.end.x, connectedWall.end.z);
 
-      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) {
-        const offset = wall.thickness / 2 / Math.tan(Math.abs(angle) / 2);
-        start.x += wallDir.x * offset;
-        start.z += wallDir.y * offset;
+      // Calculate offset lines for current wall
+      const wallDir = new THREE.Vector2().subVectors(wallEnd, wallStart).normalize();
+      const wallPerp = getPerpendicular(wallStart, wallEnd).multiplyScalar(wallThickness / 2);
+
+      const wallLine1_p1 = new THREE.Vector2().addVectors(wallStart, wallPerp);
+      const wallLine1_p2 = new THREE.Vector2().addVectors(wallEnd, wallPerp);
+      const wallLine2_p1 = new THREE.Vector2().subVectors(wallStart, wallPerp);
+      const wallLine2_p2 = new THREE.Vector2().subVectors(wallEnd, wallPerp);
+
+      // Calculate offset lines for connected wall
+      const otherWallDir = new THREE.Vector2().subVectors(otherWallEnd, otherWallStart).normalize();
+      const otherWallPerp = getPerpendicular(otherWallStart, otherWallEnd).multiplyScalar(wallThickness / 2);
+
+      const otherWallLine1_p1 = new THREE.Vector2().addVectors(otherWallStart, otherWallPerp);
+      const otherWallLine1_p2 = new THREE.Vector2().addVectors(otherWallEnd, otherWallPerp);
+      const otherWallLine2_p1 = new THREE.Vector2().subVectors(otherWallStart, otherWallPerp);
+      const otherWallLine2_p2 = new THREE.Vector2().subVectors(otherWallEnd, otherWallPerp);
+
+      // Find intersection points of the outer edges
+      let intersection1 = getLineIntersection(wallLine1_p1, wallLine1_p2, otherWallLine1_p1, otherWallLine1_p2);
+      let intersection2 = getLineIntersection(wallLine2_p1, wallLine2_p2, otherWallLine2_p1, otherWallLine2_p2);
+
+      if (intersection1 && intersection2) {
+        // Determine which intersection point is the "outer" corner
+        const center = new THREE.Vector2().addVectors(wallStart, otherWallStart).multiplyScalar(0.5);
+        const dist1 = intersection1.distanceTo(center);
+        const dist2 = intersection2.distanceTo(center);
+
+        actualStart = dist1 > dist2 ? intersection1 : intersection2;
+      } else {
+        // Fallback to simple offset if no clear intersection (e.g., parallel walls)
+        const offsetDir = new THREE.Vector2().subVectors(wallStart, otherWallStart).normalize();
+        actualStart.add(offsetDir.multiplyScalar(wallThickness / 2));
       }
     }
 
+    // Adjust end point (similar logic as start point)
     if (connectedWalls.end.length > 0) {
-      const otherWall = connectedWalls.end[0];
-      const otherDir = new THREE.Vector2(
-        otherWall.end.x - otherWall.start.x,
-        otherWall.end.z - otherWall.start.z
-      ).normalize();
-      const angle = wallDir.angle() - otherDir.angle();
+      const connectedWall = connectedWalls.end[0]; // Assuming one connected wall for now
+      const otherWallStart = new THREE.Vector2(connectedWall.start.x, connectedWall.start.z);
+      const otherWallEnd = new THREE.Vector2(connectedWall.end.x, connectedWall.end.z);
 
-      if (Math.abs(Math.abs(angle) - Math.PI) > 0.01) {
-        const offset = wall.thickness / 2 / Math.tan(Math.abs(angle) / 2);
-        end.x -= wallDir.x * offset;
-        end.z -= wallDir.y * offset;
+      const wallDir = new THREE.Vector2().subVectors(wallStart, wallEnd).normalize(); // Direction from end to start for consistency
+      const wallPerp = getPerpendicular(wallEnd, wallStart).multiplyScalar(wallThickness / 2);
+
+      const wallLine1_p1 = new THREE.Vector2().addVectors(wallEnd, wallPerp);
+      const wallLine1_p2 = new THREE.Vector2().addVectors(wallStart, wallPerp);
+      const wallLine2_p1 = new THREE.Vector2().subVectors(wallEnd, wallPerp);
+      const wallLine2_p2 = new THREE.Vector2().subVectors(wallStart, wallPerp);
+
+      const otherWallDir = new THREE.Vector2().subVectors(otherWallStart, otherWallEnd).normalize();
+      const otherWallPerp = getPerpendicular(otherWallEnd, otherWallStart).multiplyScalar(wallThickness / 2);
+
+      const otherWallLine1_p1 = new THREE.Vector2().addVectors(otherWallEnd, otherWallPerp);
+      const otherWallLine1_p2 = new THREE.Vector2().addVectors(otherWallStart, otherWallPerp);
+      const otherWallLine2_p1 = new THREE.Vector2().subVectors(otherWallEnd, otherWallPerp);
+      const otherWallLine2_p2 = new THREE.Vector2().subVectors(otherWallStart, otherWallPerp);
+
+      let intersection1 = getLineIntersection(wallLine1_p1, wallLine1_p2, otherWallLine1_p1, otherWallLine1_p2);
+      let intersection2 = getLineIntersection(wallLine2_p1, wallLine2_p2, otherWallLine2_p1, otherWallLine2_p2);
+
+      if (intersection1 && intersection2) {
+        const center = new THREE.Vector2().addVectors(wallEnd, otherWallEnd).multiplyScalar(0.5);
+        const dist1 = intersection1.distanceTo(center);
+        const dist2 = intersection2.distanceTo(center);
+
+        actualEnd = dist1 > dist2 ? intersection1 : intersection2;
+      } else {
+        const offsetDir = new THREE.Vector2().subVectors(wallEnd, otherWallEnd).normalize();
+        actualEnd.add(offsetDir.multiplyScalar(wallThickness / 2));
       }
     }
 
-    const length = start.distanceTo(end);
-    const geometry = new THREE.BoxGeometry(length, wall.height, wall.thickness);
-    geometry.translate(0, 0, 0);
+    // Create the geometry based on adjusted start and end points
+    const path = new THREE.LineCurve3(
+      new THREE.Vector3(actualStart.x, 0, actualStart.y),
+      new THREE.Vector3(actualEnd.x, 0, actualEnd.y)
+    );
+
+    const shape = new THREE.Shape();
+    shape.moveTo(-wallThickness / 2, 0);
+    shape.lineTo(wallThickness / 2, 0);
+    shape.lineTo(wallThickness / 2, wallHeight);
+    shape.lineTo(-wallThickness / 2, wallHeight);
+    shape.lineTo(-wallThickness / 2, 0);
+
+    const extrudeSettings = {
+      steps: 1,
+      bevelEnabled: false,
+      extrudePath: path,
+    };
+
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    geometry.center(); // Center the geometry for proper positioning in Wall3D
 
     return geometry;
   }
