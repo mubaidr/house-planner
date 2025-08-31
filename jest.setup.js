@@ -1,5 +1,36 @@
 // Setup file for Jest tests using CommonJS
 require('@testing-library/jest-dom/jest-globals');
+
+// Mock React Three Fiber
+jest.mock('@react-three/fiber', () => ({
+  Canvas: ({ children }) => React.createElement('div', { 'data-testid': 'r3f-canvas' }, children),
+  useFrame: jest.fn(),
+  useThree: jest.fn(() => ({
+    camera: {
+      position: { x: 0, y: 10, z: 10 },
+      lookAt: jest.fn(),
+      updateProjectionMatrix: jest.fn(),
+      fov: 75,
+    },
+    scene: {},
+    gl: {},
+    size: { width: 800, height: 600 },
+  })),
+  extend: jest.fn(),
+}));
+
+// Mock React Three Drei
+jest.mock('@react-three/drei', () => ({
+  Grid: () => React.createElement('mesh', { 'data-testid': 'grid' }),
+  OrbitControls: () => React.createElement('group', { 'data-testid': 'orbit-controls' }),
+  Stats: () => React.createElement('div', { 'data-testid': 'stats' }),
+  Text: ({ children }) => React.createElement('mesh', { 'data-testid': 'text' }, children),
+  Html: ({ children }) => React.createElement('div', { 'data-testid': 'html' }, children),
+}));
+
+// Mock window functions
+global.confirm = jest.fn(() => true);
+global.alert = jest.fn();
 require('jest-canvas-mock');
 
 // Mock DOM APIs not available in JSDOM

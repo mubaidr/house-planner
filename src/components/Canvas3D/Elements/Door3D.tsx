@@ -1,7 +1,7 @@
 import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useDesignStore } from '@/stores/designStore';
 import { useToolStore } from '@/stores/toolStore';
-import { useFrame } from '@react-three/fiber';
+import { ThreeEvent, useFrame } from '@react-three/fiber';
 import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -49,12 +49,12 @@ export function Door3D({ doorId }: Door3DProps) {
   }, [wall]);
 
   // Handle door selection
-  const handleSelect = (e: any) => {
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     selectElement(doorId, 'door');
   };
 
-  const handleContextMenu = (e: any) => {
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     show({ event: e, props: { id: doorId, type: 'door' } });
   };

@@ -6,9 +6,9 @@ interface CoordinateDisplayProps {
   theme: 'light' | 'dark' | 'classic';
 }
 
-export function CoordinateDisplay({ className = '', theme }: CoordinateDisplayProps) {
+export function CoordinateDisplay({ className = '', theme: _theme }: CoordinateDisplayProps) {
   const [coordinates, setCoordinates] = useState({ x: 0, y: 0, z: 0 });
-  const [snapPoint, setSnapPoint] = useState<{ x: number; y: number; z: number } | null>(null);
+  const [snapPoint, _setSnapPoint] = useState<{ x: number; y: number; z: number } | null>(null);
   const [units, setUnits] = useState('mm');
   const [precision, setPrecision] = useState(2);
 

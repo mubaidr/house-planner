@@ -284,12 +284,12 @@ export function LayerManager({ theme }: LayerManagerProps) {
     });
   }, []);
 
-  const deleteLayer = useCallback((layerId: string) => {
+  const _deleteLayer = useCallback((layerId: string) => {
     if (layerId === '0') return; // Can't delete layer 0
     setLayers(prev => prev.filter(layer => layer.id !== layerId));
   }, []);
 
-  const duplicateLayer = useCallback((layerId: string) => {
+  const _duplicateLayer = useCallback((layerId: string) => {
     setLayers(prev => {
       const sourceLayer = prev.find(l => l.id === layerId);
       if (!sourceLayer) return prev;
@@ -305,7 +305,7 @@ export function LayerManager({ theme }: LayerManagerProps) {
     });
   }, []);
 
-  const updateLayerProperty = useCallback(
+  const _updateLayerProperty = useCallback(
     (layerId: string, property: keyof Layer, value: string | number | boolean) => {
       setLayers(prev =>
         prev.map(layer => (layer.id === layerId ? { ...layer, [property]: value } : layer))

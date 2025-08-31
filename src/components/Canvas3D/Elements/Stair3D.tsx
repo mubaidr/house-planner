@@ -2,6 +2,7 @@ import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useDesignStore } from '@/stores/designStore';
 import { useToolStore } from '@/stores/toolStore';
 import { generateStraightStairs } from '@/utils/3d/geometry3D';
+import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -89,12 +90,12 @@ export function Stair3D({ stairId }: Stair3DProps) {
   if (!stair) return null;
 
   // Handle stair selection
-  const handleSelect = (e: any) => {
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     selectElement(stairId, 'stair');
   };
 
-  const handleContextMenu = (e: any) => {
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     show({ event: e, props: { id: stairId, type: 'stair' } });
   };

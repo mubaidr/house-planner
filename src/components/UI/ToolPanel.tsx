@@ -5,8 +5,8 @@ import { GridControls } from './GridControls';
 
 export function ToolPanel() {
   const addWall = useDesignStore(state => state.addWall);
-  const addDoor = useDesignStore(state => state.addDoor);
-  const addWindow = useDesignStore(state => state.addWindow);
+  const _addDoor = useDesignStore(state => state.addDoor);
+  const _addWindow = useDesignStore(state => state.addWindow);
   const addStair = useDesignStore(state => state.addStair);
   const addRoom = useDesignStore(state => state.addRoom);
   const walls = useDesignStore(state => state.walls);

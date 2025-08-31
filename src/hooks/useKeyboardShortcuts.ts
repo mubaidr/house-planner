@@ -72,13 +72,6 @@ export function useKeyboardShortcuts() {
             event.preventDefault();
             setActiveTool(null);
             break;
-          case 's':
-            event.preventDefault();
-            // Save functionality is handled by Ctrl+S
-            if (!event.ctrlKey) {
-              setActiveTool('select');
-            }
-            break;
         }
       }
 

@@ -293,32 +293,11 @@ export const useDesignStore = create<DesignState & DesignActions>()(
           state.doors.push({ ...door, id, layerId: activeLayerId || 'default' });
         }),
 
-      addWindow: window =>
-        set(state => {
-          const id = `window-${Date.now()}`;
-          const activeLayerId = useLayerStore.getState().activeLayerId;
-          state.windows.push({ ...window, id, layerId: activeLayerId || 'default' });
-        }),
-
-      addStair: stair =>
-        set(state => {
-          const id = `stair-${Date.now()}`;
-          const activeLayerId = useLayerStore.getState().activeLayerId;
-          state.stairs.push({ ...stair, id, layerId: activeLayerId || 'default' });
-        }),
-
       addRoom: room =>
         set(state => {
           const id = `room-${Date.now()}`;
           const activeLayerId = useLayerStore.getState().activeLayerId;
           state.rooms.push({ ...room, id, layerId: activeLayerId || 'default' });
-        }),
-
-      addRoof: roof =>
-        set(state => {
-          const id = `roof-${Date.now()}`;
-          const activeLayerId = useLayerStore.getState().activeLayerId;
-          state.roofs.push({ ...roof, id, layerId: activeLayerId || 'default' });
         }),
 
       updateDoor: (id, updates) =>

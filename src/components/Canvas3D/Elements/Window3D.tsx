@@ -1,6 +1,7 @@
 import { useElementContextMenu } from '@/components/UI/ContextMenu';
 import { useDesignStore } from '@/stores/designStore';
 import { useToolStore } from '@/stores/toolStore';
+import { ThreeEvent } from '@react-three/fiber';
 import { useMemo, useState } from 'react';
 import * as THREE from 'three';
 
@@ -50,12 +51,12 @@ export function Window3D({ windowId }: Window3DProps) {
   }, [window, walls]);
 
   // Handle window selection
-  const handleSelect = (e: any) => {
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     selectElement(windowId, 'window');
   };
 
-  const handleContextMenu = (e: any) => {
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     show({ event: e, props: { id: windowId, type: 'window' } });
   };

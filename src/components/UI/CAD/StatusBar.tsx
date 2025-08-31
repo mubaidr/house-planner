@@ -61,7 +61,7 @@ const StatusButton = ({
 );
 
 export function StatusBar({ height, theme }: StatusBarProps) {
-  const [coordinates, setCoordinates] = useState<CoordinateInfo>({ x: 0, y: 0, z: 0 });
+  const [coordinates, _setCoordinates] = useState<CoordinateInfo>({ x: 0, y: 0, z: 0 });
   const [systemInfo, setSystemInfo] = useState<SystemInfo>({
     fps: 60,
     memoryUsage: 45,
@@ -72,10 +72,10 @@ export function StatusBar({ height, theme }: StatusBarProps) {
   const [snapMode, setSnapMode] = useState(true);
   const [gridMode, setGridMode] = useState(true);
   const [orthoMode, setOrthoMode] = useState(false);
-  const [currentLayer, setCurrentLayer] = useState('0');
-  const [currentTool, setCurrentTool] = useState('Select');
-  const [units, setUnits] = useState('mm');
-  const [scale, setScale] = useState('1:100');
+  const [currentLayer, _setCurrentLayer] = useState('0');
+  const [currentTool, _setCurrentTool] = useState('Select');
+  const [units, _setUnits] = useState('mm');
+  const [scale, _setScale] = useState('1:100');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const angle = useStatusBarStore(state => state.angle);
 

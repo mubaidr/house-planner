@@ -3,6 +3,7 @@ import { useMaterial3D } from '@/hooks/3d/useMaterial3D';
 import { useDesignStore } from '@/stores/designStore';
 import { useToolStore } from '@/stores/toolStore';
 import { GeometryGenerator } from '@/utils/3d/geometry3D';
+import { ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 
@@ -57,12 +58,12 @@ export function Wall3D({ wallId }: Wall3DProps) {
   if (!wall) return null;
 
   // Handle wall selection
-  const handleSelect = (e: any) => {
+  const handleSelect = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     selectElement(wallId, 'wall');
   };
 
-  const handleContextMenu = (e: any) => {
+  const handleContextMenu = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     show({ event: e, props: { id: wallId, type: 'wall' } });
   };
@@ -99,7 +100,7 @@ export function Wall3D({ wallId }: Wall3DProps) {
                   ? '#93c5fd'
                   : isHovered
                     ? '#dbeafe'
-                    : (materialProps as any).color || '#cccccc'
+                    : (materialProps as { color?: string }).color || '#cccccc'
             }
           />
         </mesh>
